@@ -63,15 +63,10 @@ class CDSE:
                     response = requests.get(
                         f"https://catalogue.dataspace.copernicus.eu/resto/api/collections/{self.collection}/search.json?startDate={start_date}&completionDate={end_date}&productType={self.processing_level}&cloudCover=[0,{cloudcover}]&maxRecords={page_size}&page={page}&tileId={tile_id}"
                         ).json()
-
                     json['features'].extend(response.get('features', []))
-
-                    print(f"# Found {len(response['features'])} results")
 
             print('## Query finished!')
             print(f"# Found {len(json['features'])} results")
-
-            sys.exit()
             
             total_results = json["properties"]["totalResults"]
             if total_results == None:
