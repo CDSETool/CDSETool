@@ -1,6 +1,6 @@
 import requests
 import netrc
-import geopandas as gpd
+#import geopandas as gpd
 from datetime import datetime, timedelta
 import sys
 import os
@@ -208,18 +208,18 @@ class CDSE:
         if isinstance(footprint, list):
             print('## Querying by tile ID')
             return ["tileid", footprint]
-        elif isinstance(footprint, str):
-            print('## Querying by shape file')
-            return ["shape", CDSE.convert_to_odata_polygon(footprint)]
+#        elif isinstance(footprint, str):
+#            print('## Querying by shape file')
+#            return ["shape", CDSE.convert_to_odata_polygon(footprint)]
         else:
             raise Exception('## Footprint must be either path to shape file or tileid list!')
         
-    def convert_to_odata_polygon(footprint):
-        footprint = gpd.read_file(footprint).geometry[0]
-        exterior = footprint.exterior
-        coordinates = list(exterior.coords)
-        odata_str = "POLYGON((" + ", ".join(" ".join(map(str, coord)) for coord in coordinates) + "))"
-        return(odata_str)
+#    def convert_to_odata_polygon(footprint):
+#        footprint = gpd.read_file(footprint).geometry[0]
+#        exterior = footprint.exterior
+#        coordinates = list(exterior.coords)
+#        odata_str = "POLYGON((" + ", ".join(" ".join(map(str, coord)) for coord in coordinates) + "))"
+#        return(odata_str)
     
     def __validate_required_params_present(self):
         params = ["collection", "processing_level"]
