@@ -1,6 +1,5 @@
 import requests
 import netrc
-#import geopandas as gpd
 from datetime import datetime, timedelta
 import sys
 import os
@@ -57,17 +56,23 @@ class CDSE:
             elif footprint[0] == 'tileid':
 
                 tile_id_list = footprint[1]
-                json = {'features':[]}
+                json = {'features': [], 'properties': {'totalResults': 0}}
 
-                for i, tile_id in enumerate(tile_id_list):
+                for tile_id in tile_id_list:
                     response = requests.get(
                         f"https://catalogue.dataspace.copernicus.eu/resto/api/collections/{self.collection}/search.json?startDate={start_date}&completionDate={end_date}&productType={self.processing_level}&cloudCover=[0,{cloudcover}]&maxRecords={page_size}&page={page}&tileId={tile_id}"
-                        ).json()
+                    ).json()
+
                     json['features'].extend(response.get('features', []))
 
+                    results = response.get('properties', {}).get('totalResults')
+
+                    if results is not None:
+                        json['properties']['totalResults'] += results
+                        
             print('## Query finished!')
             print(f"# Found {len(json['features'])} results")
-            
+
             total_results = json["properties"]["totalResults"]
             if total_results == None:
                 total_results = len(json["features"])
@@ -208,18 +213,22 @@ class CDSE:
         if isinstance(footprint, list):
             print('## Querying by tile ID')
             return ["tileid", footprint]
-#        elif isinstance(footprint, str):
-#            print('## Querying by shape file')
-#            return ["shape", CDSE.convert_to_odata_polygon(footprint)]
+        elif isinstance(footprint, str):
+            print('## Querying by shape file')
+            return ["shape", CDSE.convert_to_odata_polygon(footprint)]
         else:
             raise Exception('## Footprint must be either path to shape file or tileid list!')
         
-#    def convert_to_odata_polygon(footprint):
-#        footprint = gpd.read_file(footprint).geometry[0]
-#        exterior = footprint.exterior
-#        coordinates = list(exterior.coords)
-#        odata_str = "POLYGON((" + ", ".join(" ".join(map(str, coord)) for coord in coordinates) + "))"
-#        return(odata_str)
+    def convert_to_odata_polygon(footprint):
+        try:
+            import geopandas as gpd
+        except ImportError:
+            print("## Error: Shape file handling requires geopandas be installed!")
+        footprint = gpd.read_file(footprint).geometry[0]
+        exterior = footprint.exterior
+        coordinates = list(exterior.coords)
+        odata_str = "POLYGON((" + ", ".join(" ".join(map(str, coord)) for coord in coordinates) + "))"
+        return(odata_str)
     
     def __validate_required_params_present(self):
         params = ["collection", "processing_level"]
