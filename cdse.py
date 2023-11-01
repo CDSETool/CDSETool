@@ -74,7 +74,7 @@ class CDSE:
             print(f"# Found {len(json['features'])} results")
 
             total_results = json["properties"]["totalResults"]
-            if total_results == None:
+            if total_results == 0 or total_results == None:
                 total_results = len(json["features"])
 
             if not max_records == None:
