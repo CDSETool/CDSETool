@@ -127,6 +127,8 @@ class CDSE:
     # TODO: implement error handling to avoid crashing worker thread
     def download_feature(self, feature, dir, monitor = None):
         url = feature.get("properties", {}).get("services", {}).get("download", {}).get("url")
+        if not os.path.exists(dir):
+            os.makedirs(dir)
 
         if not url:
             print("No download url found in feature, skipping...")
