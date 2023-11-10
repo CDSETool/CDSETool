@@ -1,0 +1,13 @@
+# docker compose file for development of local cli application in python using typer
+# utilizing existing Dockerfile
+# not flash
+
+version: '3'
+services:
+  app:
+    build: .
+    volumes:
+      - .:/app
+    tty: true
+    stdin_open: true
+
