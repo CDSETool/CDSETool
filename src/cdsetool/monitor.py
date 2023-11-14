@@ -6,11 +6,14 @@ import signal
 
 line_length, _ = os.get_terminal_size()
 
+
 def set_line_length(_a, _b):
     global line_length
     line_length, _ = os.get_terminal_size()
 
+
 signal.signal(signal.SIGWINCH, set_line_length)
+
 
 class StatusMonitor(threading.Thread):
     __is_running = True
@@ -75,7 +78,9 @@ class StatusMonitor(threading.Thread):
     def __draw(self):
         self.__progress_lines = 1
 
-        print(f"[[ {len(self.__status)} files in progress | {len(self.__done)} files done | {bytes_to_human(self.__total_downloaded())} total downloaded | {bytes_to_human(self.__download_speed())}/s ]]")
+        print(
+            f"[[ {len(self.__status)} files in progress | {len(self.__done)} files done | {bytes_to_human(self.__total_downloaded())} total downloaded | {bytes_to_human(self.__download_speed())}/s ]]"
+        )
 
         for status in self.__status:
             filename_line, progress_line = status.status_lines()
@@ -84,7 +89,9 @@ class StatusMonitor(threading.Thread):
             self.__progress_lines += 2
 
     def __total_downloaded(self):
-        return sum([status.downloaded for status in self.__status]) + sum([status.size for status in self.__done])
+        return sum([status.downloaded for status in self.__status]) + sum(
+            [status.size for status in self.__done]
+        )
 
     def __enter__(self):
         print("starting monitor")
@@ -93,6 +100,7 @@ class StatusMonitor(threading.Thread):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
+
 
 class NoopMonitor:
     def status(self):
@@ -113,6 +121,7 @@ class NoopMonitor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
+
 class Status:
     __monitor = None
     filename = None
@@ -126,7 +135,10 @@ class Status:
 
     def status_lines(self):
         if self.downloaded == 0:
-            return 'Thread waiting for connection to start...', f"[{' ' * (line_length - 2)}]"
+            return (
+                "Thread waiting for connection to start...",
+                f"[{' ' * (line_length - 2)}]",
+            )
 
         progress = self.downloaded / self.size
         filename_line = f"{self.filename[0:line_length - 6]} {bytes_to_human(self.size)} ({int(progress * 100)}%)"
@@ -151,6 +163,7 @@ class Status:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.__monitor.remove_status(self)
+
 
 def bytes_to_human(bytes):
     if bytes < 1000:

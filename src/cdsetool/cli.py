@@ -16,6 +16,7 @@ app.add_typer(query_app, name="query")
 query_app = typer.Typer()
 app.add_typer(query_app, name="query")
 
+
 @query_app.command("search-terms")
 def query_search_terms(collection: str):
     print(f"Available search terms for collection {collection}:")
@@ -23,12 +24,18 @@ def query_search_terms(collection: str):
     for key, value in describe_collection(collection).items():
         print(f"\t- {key}")
 
+
 # TODO: implement limit
 @query_app.command("search")
 def query_search(
     collection: str,
     limit: Annotated[int, typer.Option(help="Limit the number of results")] = 10,
-    search_term: Annotated[Optional[List[str]], typer.Option(help="Search by term=value pairs. Pass multiple times for multiple search terms")] = [],
+    search_term: Annotated[
+        Optional[List[str]],
+        typer.Option(
+            help="Search by term=value pairs. Pass multiple times for multiple search terms"
+        ),
+    ] = [],
     json: Annotated[bool, typer.Option(help="Output JSON")] = False,
 ):
     search_term = to_dict(search_term)
@@ -40,22 +47,36 @@ def query_search(
         else:
             print(feature.get("properties").get("title"))
 
+
 # TODO: implement limit
 @app.command("download")
 def download(
     collection: str,
     path: str,
-    concurrency: Annotated[int, typer.Option(help="Number of concurrent connections")] = 1,
-    search_term: Annotated[Optional[List[str]], typer.Option(help="Search by term=value pairs. Pass multiple times for multiple search terms")] = [],
+    concurrency: Annotated[
+        int, typer.Option(help="Number of concurrent connections")
+    ] = 1,
+    search_term: Annotated[
+        Optional[List[str]],
+        typer.Option(
+            help="Search by term=value pairs. Pass multiple times for multiple search terms"
+        ),
+    ] = [],
     json: Annotated[bool, typer.Option(help="Output JSON")] = False,
 ):
     search_term = to_dict(search_term)
     features = query_features(collection, {**search_term})
 
-    list(download_features(features, path, {"monitor": StatusMonitor, "concurrency": concurrency}))
+    list(
+        download_features(
+            features, path, {"monitor": StatusMonitor, "concurrency": concurrency}
+        )
+    )
+
 
 def main():
     app()
+
 
 def to_dict(l):
     d = {}

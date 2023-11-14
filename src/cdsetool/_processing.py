@@ -1,8 +1,9 @@
-from concurrent.futures import wait, FIRST_COMPLETED 
+from concurrent.futures import wait, FIRST_COMPLETED
 from concurrent.futures import ThreadPoolExecutor
 from cdsetool.query import query_features
 import time
 import os
+
 
 def _concurrent_process(fun, iterable, workers=4):
     low_water_mark = int(workers * 1.5)
