@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cdsetool"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
-  { name="Jacob Vejby", email="jave@c.dk" },
+  { name="Jacob Vejby", email="javej@sdfi.dk" },
 ]
 description = "Tools & CLI for interacting with CDSE product APIs"
 readme = "README.md"
