@@ -1,12 +1,13 @@
+"""
+Command line interface
+"""
+import json as JSON
+from typing import List, Optional
+from typing_extensions import Annotated
+import typer
 from cdsetool.query import describe_collection, query_features
 from cdsetool.monitor import StatusMonitor
 from cdsetool.download import download_features
-import typer
-import signal
-import sys
-from typing import List, Optional
-from typing_extensions import Annotated
-import json as JSON
 
 app = typer.Typer()
 
@@ -19,9 +20,12 @@ app.add_typer(query_app, name="query")
 
 @query_app.command("search-terms")
 def query_search_terms(collection: str):
+    """
+    List the available search terms for a collection
+    """
     print(f"Available search terms for collection {collection}:")
     # TODO: print validators
-    for key, value in describe_collection(collection).items():
+    for key, _ in describe_collection(collection).items():
         print(f"\t- {key}")
 
 
@@ -29,16 +33,20 @@ def query_search_terms(collection: str):
 @query_app.command("search")
 def query_search(
     collection: str,
-    limit: Annotated[int, typer.Option(help="Limit the number of results")] = 10,
     search_term: Annotated[
         Optional[List[str]],
         typer.Option(
-            help="Search by term=value pairs. Pass multiple times for multiple search terms"
+            help="Search by term=value pairs. "
+            + "Pass multiple times for multiple search terms"
         ),
-    ] = [],
+    ] = None,
     json: Annotated[bool, typer.Option(help="Output JSON")] = False,
 ):
-    search_term = to_dict(search_term)
+    """
+    Search for features matching the search terms
+    """
+    search_term = search_term or []
+    search_term = _to_dict(search_term)
     features = query_features(collection, {**search_term})
 
     for feature in features:
@@ -59,12 +67,16 @@ def download(
     search_term: Annotated[
         Optional[List[str]],
         typer.Option(
-            help="Search by term=value pairs. Pass multiple times for multiple search terms"
+            help="Search by term=value pairs. "
+            + "Pass multiple times for multiple search terms"
         ),
-    ] = [],
-    json: Annotated[bool, typer.Option(help="Output JSON")] = False,
+    ] = None,
 ):
-    search_term = to_dict(search_term)
+    """
+    Download all features matching the search terms
+    """
+    search_term = search_term or []
+    search_term = _to_dict(search_term)
     features = query_features(collection, {**search_term})
 
     list(
@@ -75,12 +87,15 @@ def download(
 
 
 def main():
+    """
+    Main entry point
+    """
     app()
 
 
-def to_dict(l):
-    d = {}
-    for item in l:
+def _to_dict(term_list: List[str]):
+    search_terms = {}
+    for item in term_list:
         key, value = item.split("=")
-        d[key] = value
-    return d
+        search_terms[key] = value
+    return search_terms

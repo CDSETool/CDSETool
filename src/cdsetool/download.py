@@ -1,16 +1,27 @@
-from cdsetool.credentials import Credentials
-from cdsetool.monitor import NoopMonitor
-from cdsetool._processing import _concurrent_process
+"""
+Download features from a Copernicus Data Space Ecosystem OpenSearch API result
+
+Provides a function to download a single feature, and a function to download
+all features in a result set.
+"""
 import os
-import time
 import random
 import tempfile
+import time
+from cdsetool._processing import _concurrent_process
+from cdsetool.credentials import Credentials
+from cdsetool.monitor import NoopMonitor
 
 
-def download_feature(feature, path, options={}):
+def download_feature(feature, path, options=None):
+    """
+    Download a single feature
+
+    Returns the feature ID
+    """
+    options = options or {}
     url = _get_feature_url(feature)
     filename = feature.get("properties").get("title")
-    file = os.path.join(path, filename)
 
     if not url or not filename:
         return feature.get("id")
@@ -18,8 +29,8 @@ def download_feature(feature, path, options={}):
     # if os.path.exists(file):
     #     return feature.get("id")
 
-    with options.get("monitor", NoopMonitor()).status() as s:
-        s.set_filename(filename)
+    with options.get("monitor", NoopMonitor()).status() as status:
+        status.set_filename(filename)
 
         session = options.get("credentials", Credentials()).get_session()
         url = _follow_redirect(url, session)
@@ -27,24 +38,31 @@ def download_feature(feature, path, options={}):
 
         content_length = int(response.headers["Content-Length"])
 
-        s.set_filesize(content_length)
+        status.set_filesize(content_length)
 
-        fd, tmp = tempfile.mkstemp()
-        with open(tmp, "wb") as f:
+        fd, tmp = tempfile.mkstemp()  # pylint: disable=invalid-name
+        with open(tmp, "wb") as file:
             for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
                 if not chunk:
                     continue
 
-                f.write(chunk)
-                s.update_progress(len(chunk))
+                file.write(chunk)
+                status.add_progress(len(chunk))
 
         os.close(fd)
-        os.rename(tmp, file)
+        os.rename(tmp, os.path.join(path, filename))
 
     return feature.get("id")
 
 
-def download_features(features, path, options={}):
+def download_features(features, path, options=None):
+    """
+    Download all features in a result set
+
+    Returns a list of feature IDs that were downloaded
+    """
+    options = options or {}
+
     monitor = options.get("monitor", NoopMonitor)()
     monitor.start()
 
