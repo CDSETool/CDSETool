@@ -21,7 +21,7 @@ more results will be requested and the process repeated until no more results ar
 the iterator is discarded.
 
 ```python
-from cdse.query import query_features
+from cdsetool.query import query_features
 
 collection = "Sentinel2"
 search_terms = {
@@ -51,7 +51,7 @@ To query by shapes, you must first convert your shape to Well Known Text (WKT). 
 `shape_to_wkt` can solve this.
 
 ```python
-from cdse.query import query_features, shape_to_wkt
+from cdsetool.query import query_features, shape_to_wkt
 
 geometry = shape_to_wkt("path/to/shape.shp")
 
@@ -64,7 +64,7 @@ Most search terms only accept a single argument. To query by a list of arguments
 and pass them one by one to the query function.
 
 ```python
-from cdse.query import query_features
+from cdsetool.query import query_features
 
 tile_ids = ["32TPT", "32UPU", "32UPU", "31RFL", "37XDA"]
 
