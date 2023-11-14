@@ -3,6 +3,14 @@
 ## About CDSETool
 This script downloads copernicus data from the Copernicus Data Space Ecosystem
 
+## Installation
+
+Install `cdsetool` using pip:
+
+```bash
+pip install cdsetool
+```
+
 ## Usage
 
 ### Querying features
