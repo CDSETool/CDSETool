@@ -8,7 +8,7 @@ This script downloads copernicus data from the Copernicus Data Space Ecosystem
 ### Querying features
 
 Querying is always done in batches, returning `len(results) <= maxRecords` records each time.
-a local buffer is filled and gradually emptied as results are yielded. When the buffer is empty,
+A local buffer is filled and gradually emptied as results are yielded. When the buffer is empty,
 more results will be requested and the process repeated until no more results are available, or
 the iterator is discarded.
 
