@@ -13,7 +13,7 @@ import sys
 import os
 import signal
 
-LINE_LENGTH, _ = os.get_terminal_size()
+LINE_LENGTH = 80
 
 
 def _set_line_length(_signal_num, _stack):
@@ -21,7 +21,11 @@ def _set_line_length(_signal_num, _stack):
     LINE_LENGTH, _ = os.get_terminal_size()
 
 
-signal.signal(signal.SIGWINCH, _set_line_length)
+_set_line_length(None, None)
+
+# handle sigwinch on linux
+if os.name != "nt":
+    signal.signal(signal.SIGWINCH, _set_line_length)
 
 
 class StatusMonitor(threading.Thread):
