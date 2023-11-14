@@ -1,6 +1,8 @@
 """
 Command line interface
 """
+import os
+import sys
 import json as JSON
 from typing import List, Optional
 from typing_extensions import Annotated
@@ -47,7 +49,7 @@ def query_search(
     """
     search_term = search_term or []
     search_term = _to_dict(search_term)
-    features = query_features(collection, {**search_term})
+    features = query_features(collection, search_term)
 
     for feature in features:
         if json:
@@ -75,9 +77,13 @@ def download(
     """
     Download all features matching the search terms
     """
+    if not os.path.exists(path):
+        print(f"Path {path} does not exist")
+        sys.exit(1)
+
     search_term = search_term or []
     search_term = _to_dict(search_term)
-    features = query_features(collection, {**search_term})
+    features = query_features(collection, search_term)
 
     list(
         download_features(

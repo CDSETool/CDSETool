@@ -17,7 +17,7 @@ class FeatureQuery:
 
     def __init__(self, collection, search_terms):
         self.features = []
-        self.next_url = _query_url(collection, {search_terms})
+        self.next_url = _query_url(collection, search_terms)
 
     def __iter__(self):
         return self
