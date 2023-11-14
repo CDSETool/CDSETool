@@ -23,7 +23,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "black==23.1.0",
-    "pytest==2.16.2",
+    "pylint==2.16.2",
 ]
 
 [project.urls]
