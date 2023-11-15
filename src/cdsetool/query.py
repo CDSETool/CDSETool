@@ -4,6 +4,7 @@ Query the Copernicus Data Space Ecosystem OpenSearch API
 https://documentation.dataspace.copernicus.eu/APIs/OpenSearch.html
 """
 from xml.etree import ElementTree
+from datetime import datetime, date
 import requests
 
 
@@ -69,12 +70,25 @@ def _query_url(collection, search_terms):
 
     query_list = []
     for key, value in search_terms.items():
-        query_list.append(f"{key}={value}")
+        query_list.append(f"{key}={_serialize_search_term(value)}")
 
     return (
         "https://catalogue.dataspace.copernicus.eu"
         + f"/resto/api/collections/{collection}/search.json?{'&'.join(query_list)}"
     )
+
+
+def _serialize_search_term(search_term):
+    if isinstance(search_term, list):
+        return ",".join(search_term)
+
+    if isinstance(search_term, date):
+        return search_term.strftime("%Y-%m-%d")
+
+    if isinstance(search_term, datetime):
+        return search_term.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    return str(search_term)
 
 
 def _validate_search_terms(collection, search_terms):

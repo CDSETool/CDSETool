@@ -74,6 +74,20 @@ for tile_id in tile_ids:
         # do things with feature
 ```
 
+#### Querying by dates
+
+Its quite common to query for features created before, after or between dates.
+
+```python
+from cdsetool.query import query_features
+from datetime import date, datetime
+
+date_from = date(2020, 1, 1) # or datetime(2020, 1, 1, 23, 59, 59, 123456) or "2020-01-01" or "2020-01-01T23:59:59.123456Z"
+date_to = date(2020, 12, 31)
+
+features = query_features("Sentinel2", {"startDate": date_from, "completionDate": date_to})
+```
+
 #### Listing search terms
 
 To get a list of all search terms for a given collection, you may either use the `describe_collection` function or
