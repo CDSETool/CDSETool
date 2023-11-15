@@ -36,3 +36,8 @@ cdsetool = "cdsetool:cli.main"
 [tool.pylint.format]
 max-line-length = "88"
 disable="fixme"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]

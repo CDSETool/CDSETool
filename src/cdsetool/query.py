@@ -82,11 +82,11 @@ def _serialize_search_term(search_term):
     if isinstance(search_term, list):
         return ",".join(search_term)
 
-    if isinstance(search_term, date):
-        return search_term.strftime("%Y-%m-%d")
-
     if isinstance(search_term, datetime):
         return search_term.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    if isinstance(search_term, date):
+        return search_term.strftime("%Y-%m-%d")
 
     return str(search_term)
 
