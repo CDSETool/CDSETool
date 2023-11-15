@@ -22,8 +22,9 @@ dependencies = [
 ]
 [project.optional-dependencies]
 test = [
-    "black==23.1.0",
-    "pylint==2.16.2",
+    "black==23.11.0",
+    "pylint==3.0.2",
+    "pytest==7.4.3"
 ]
 
 [project.urls]
@@ -36,3 +37,8 @@ cdsetool = "cdsetool:cli.main"
 [tool.pylint.format]
 max-line-length = "88"
 disable="fixme"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
