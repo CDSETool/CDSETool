@@ -24,6 +24,7 @@ dependencies = [
 test = [
     "black==23.1.0",
     "pylint==2.16.2",
+    "pytest==7.2.1"
 ]
 
 [project.urls]
