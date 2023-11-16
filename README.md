@@ -13,6 +13,41 @@ pip install cdsetool
 
 ## Usage
 
+### Quick start
+
+```python
+from cdsetool.query import query_features, shape_to_wkt
+from cdsetool.credentials import Credentials
+from cdsetool.download import download_features
+from cdsetool.monitor import StatusMonitor
+from datetime import date
+
+features = query_features(
+    "Sentinel1",
+    {
+        "startDate": "2020-12-20",
+        "completionDate": date(2020, 12, 25),
+        "processingLevel": "LEVEL1",
+        "sensorMode": "IW",
+        "productType": "IW_GRDH_1S",
+        "geometry": shape_to_wkt("path/to/shapefile.shp"),
+    },
+)
+
+list(
+    download_features(
+        features,
+        "path/to/output/folder/",
+        {
+            "concurrency": 4,
+            "monitor": StatusMonitor,
+            "credentials": Credentials("username", "password"),
+        },
+    )
+)
+´´´
+
+
 ### Querying features
 
 Querying is always done in batches, returning `len(results) <= maxRecords` records each time.
@@ -147,7 +182,8 @@ download_features(features, "/some/download/path", {"credentials": credentials})
 #### Concurrently downloading features
 
 CDSETool provides a method for concurrently downloading features. The concurrency level
-should match your accounts privileges
+should match your accounts privileges. 
+See https://documentation.dataspace.copernicus.eu/Quotas.html
 
 The downloaded feature ids are yielded, so its required to await the results.
 
