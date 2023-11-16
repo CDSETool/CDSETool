@@ -47,7 +47,6 @@ pip install cdsetool
 
 ## Usage
 
-
 ### Querying features
 
 Querying is always done in batches, returning `len(results) <= maxRecords` records each time.
