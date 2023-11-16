@@ -3,17 +3,7 @@
 ## About CDSETool
 This script downloads copernicus data from the Copernicus Data Space Ecosystem
 
-## Installation
-
-Install `cdsetool` using pip:
-
-```bash
-pip install cdsetool
-```
-
-## Usage
-
-### Quick start
+## Quick start
 
 ```python
 from cdsetool.query import query_features, shape_to_wkt
@@ -46,6 +36,16 @@ list(
     )
 )
 ´´´
+
+## Installation
+
+Install `cdsetool` using pip:
+
+```bash
+pip install cdsetool
+```
+
+## Usage
 
 
 ### Querying features
@@ -183,7 +183,7 @@ download_features(features, "/some/download/path", {"credentials": credentials})
 
 CDSETool provides a method for concurrently downloading features. The concurrency level
 should match your accounts privileges. 
-See https://documentation.dataspace.copernicus.eu/Quotas.html
+See [CDSE quotas](https://documentation.dataspace.copernicus.eu/Quotas.html)
 
 The downloaded feature ids are yielded, so its required to await the results.
 
