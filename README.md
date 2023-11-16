@@ -37,12 +37,15 @@ A local buffer is filled and gradually emptied as results are yielded. When the 
 more results will be requested and the process repeated until no more results are available, or
 the iterator is discarded.
 
+Since downloading features is the most common use-case, `query_features` assumes that the query will run till the end.
+Because of this, the batch size is set to `2000`, which is the size limit set by CDSE.
+
 ```python
 from cdsetool.query import query_features
 
 collection = "Sentinel2"
 search_terms = {
-    "maxRecords": "100", # batch size, between 1 and 2000 (default 50).
+    "maxRecords": "100", # batch size, between 1 and 2000 (default: 2000).
     "startDate": "1999-01-01",
     "processingLevel": "S2MSI1C"
 }
