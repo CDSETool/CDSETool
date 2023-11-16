@@ -37,6 +37,7 @@ class FeatureQuery:
                 ),
                 {},
             ).get("href")
+            return
         return self.features.pop(0)
 
 
@@ -67,6 +68,7 @@ def shape_to_wkt(shape):
 
 def _query_url(collection, search_terms):
     _validate_search_terms(collection, search_terms)
+    search_terms = format_dates(search_terms)
 
     query_list = []
     for key, value in search_terms.items():
@@ -101,6 +103,19 @@ def _validate_search_terms(collection, search_terms):
             + f" Available terms are: {', '.join(keys)}"
         )
         # TODO: validate patterns, minInclude, maxInclusive
+
+
+def format_dates(search_terms):
+    """
+    Ensures time string inputs conforms to CDSE specifications
+    """
+    for key, value in search_terms.items():
+        if key == "startDate" or key == "completionDate":
+            for time_format in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
+                parsed_date = datetime.strptime(value, time_format)
+                value = parsed_date.strftime("%Y-%m-%dT%H:%M:%S")
+                search_terms.update({key: value})
+    return search_terms
 
 
 def describe_collection(collection):
