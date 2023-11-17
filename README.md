@@ -3,9 +3,47 @@
 ## About CDSETool
 This script downloads copernicus data from the Copernicus Data Space Ecosystem
 
+## Quick start
+
+```python
+from cdsetool.query import query_features, shape_to_wkt
+from cdsetool.credentials import Credentials
+from cdsetool.download import download_features
+from cdsetool.monitor import StatusMonitor
+from datetime import date
+
+features = query_features(
+    "Sentinel1",
+    {
+        "startDate": "2020-12-20",
+        "completionDate": date(2020, 12, 25),
+        "processingLevel": "LEVEL1",
+        "sensorMode": "IW",
+        "productType": "IW_GRDH_1S",
+        "geometry": shape_to_wkt("path/to/shapefile.shp"),
+    },
+)
+
+list(
+    download_features(
+        features,
+        "path/to/output/folder/",
+        {
+            "concurrency": 4,
+            "monitor": StatusMonitor,
+            "credentials": Credentials("username", "password"),
+        },
+    )
+)
+```
+
+## Table of Contents
+
 - [CDSETool](#cdsetool)
   * [About CDSETool](#about-cdsetool)
-  * [Installation](#installation)
+  * [Quick Start](#quick-start)
+  * [Table of Contents](#table-of-contents)
+  * [Installatson](#installation)
   * [Usage](#usage)
     + [Querying features](#querying-features)
       - [Querying by shapes](#querying-by-shapes)
@@ -16,9 +54,9 @@ This script downloads copernicus data from the Copernicus Data Space Ecosystem
       - [Authenticating](#authenticating)
       - [Concurrently downloading features](#concurrently-downloading-features)
       - [Sequentially downloading features](#sequentially-downloading-features)
-  + [Roadmap](#roadmap)
-  + [Contributing](#contributing)
-  + [LICENSE](#license)
+  * [Roadmap](#roadmap)
+  * [Contributing](#contributing)
+  * [LICENSE](#license)
 
 ## Installation
 
@@ -167,7 +205,8 @@ download_features(features, "/some/download/path", {"credentials": credentials})
 #### Concurrently downloading features
 
 CDSETool provides a method for concurrently downloading features. The concurrency level
-should match your accounts privileges
+should match your accounts privileges. 
+See [CDSE quotas](https://documentation.dataspace.copernicus.eu/Quotas.html)
 
 The downloaded feature ids are yielded, so its required to await the results.
 
