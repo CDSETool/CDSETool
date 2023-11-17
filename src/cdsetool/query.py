@@ -65,6 +65,15 @@ def shape_to_wkt(shape):
     )
 
 
+def geojson_to_wkt(geojson):
+    """
+    Convert a geojson geometry to a WKT string
+    """
+    coordinates = str(tuple([item for sublist in geojson["coordinates"][0] for item in sublist]))
+    paired_coord = ",".join([f"{a}{b}" for a, b in zip(coordinates.split(",")[0::2], coordinates.split(",")[1::2])])
+    return f"POLYGON({paired_coord})"
+
+
 def _query_url(collection, search_terms):
     _validate_search_terms(collection, search_terms)
 
