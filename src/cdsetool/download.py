@@ -50,7 +50,7 @@ def download_feature(feature, path, options=None):
                 status.add_progress(len(chunk))
 
         os.close(fd)
-        os.rename(tmp, os.path.join(path, filename.replace('.SAFE', '.zip')))
+        os.rename(tmp, os.path.join(path, filename.replace(".SAFE", ".zip")))
 
     return feature.get("id")
 
