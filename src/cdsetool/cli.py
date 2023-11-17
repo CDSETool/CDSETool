@@ -27,8 +27,18 @@ def query_search_terms(collection: str):
     """
     print(f"Available search terms for collection {collection}:")
     # TODO: print validators
-    for key, _ in describe_collection(collection).items():
-        print(f"\t- {key}")
+    for key, attributes in describe_collection(collection).items():
+        print(f"  - {key}")
+        if attributes.get("title"):
+            print(f"    - Description: {attributes.get('title')}")
+        if attributes.get("pattern"):
+            print(f"    - Pattern: {attributes.get('pattern')}")
+        if attributes.get("minInclusive"):
+            print(f"    - Min: {attributes.get('minInclusive')}")
+        if attributes.get("maxInclusive"):
+            print(f"    - Max: {attributes.get('maxInclusive')}")
+
+        print()
 
 
 # TODO: implement limit
