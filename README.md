@@ -202,9 +202,23 @@ for feature in features:
 
 ## Roadmap
 
-- [ ] Download by ID
-- [ ] Download by URL
-- [ ] Full test suite
+- [ ] Query schema validation
+- [ ] High-level API
+    - [ ] Query features
+    - [ ] Download features
+        - [ ] Download single feature
+        - [ ] Download list of features
+        - [ ] Download by ID
+        - [ ] Download by URL
+- [ ] Command-Line Interface
+    - [ ] Update to match the high-level API
+    - [ ] Better `--help` messages
+    - [ ] Quickstart guide in README.md
+- [ ] Test suite
+    - [ ] Query
+    - [ ] Credentials
+    - [ ] Download
+    - [ ] Monitor
 
 ## Contributing
 
