@@ -5,8 +5,8 @@ https://documentation.dataspace.copernicus.eu/APIs/OpenSearch.html
 """
 from xml.etree import ElementTree
 from datetime import datetime, date
-import requests
 import re
+import requests
 
 
 class FeatureQuery:
@@ -86,10 +86,10 @@ def describe_collection(collection):
 
         if name:
             parameters[name] = {
-                    "pattern": pattern,
-                    "minInclusive": min_inclusive,
-                    "maxInclusive": max_inclusive,
-                    "title": title,
+                "pattern": pattern,
+                "minInclusive": min_inclusive,
+                "maxInclusive": max_inclusive,
+                "title": title,
             }
 
     return parameters
@@ -122,41 +122,47 @@ def _serialize_search_term(search_term):
 
     return str(search_term)
 
+
 def _validate_search_term(key, search_term, description):
+    _assert_valid_key(key, description)
+    _assert_match_pattern(search_term, description.get(key).get("pattern"))
+    _assert_min_inclusive(search_term, description.get(key).get("minInclusive"))
+    _assert_max_inclusive(search_term, description.get(key).get("maxInclusive"))
+
+
+def _assert_valid_key(key, description):
     assert key in description.keys(), (
         f'search_term with name "{key}" '
-        + f'was not found for collection.'
+        + "was not found for collection."
         + f" Available terms are: {', '.join(description.keys())}"
     )
 
-    _validate_pattern(search_term, description[key]["pattern"])
-    _validate_min_inclusive(search_term, description[key]["minInclusive"])
-    _validate_max_inclusive(search_term, description[key]["maxInclusive"])
 
-
-def _validate_pattern(search_term, pattern):
+def _assert_match_pattern(search_term, pattern):
     if not pattern:
         return
 
-    assert re.match(pattern, search_term), (
-        f"search_term {search_term} does not match pattern {pattern}"
-    )
+    assert re.match(
+        pattern, search_term
+    ), f"search_term {search_term} does not match pattern {pattern}"
 
-def _validate_min_inclusive(search_term, min_inclusive):
+
+def _assert_min_inclusive(search_term, min_inclusive):
     if not min_inclusive:
         return
 
-    assert search_term >= min_inclusive, (
-        f"search_term {search_term} is less than min_inclusive {min_inclusive}"
-    )
+    assert (
+        search_term >= min_inclusive
+    ), f"search_term {search_term} is less than min_inclusive {min_inclusive}"
 
-def _validate_max_inclusive(search_term, max_inclusive):
+
+def _assert_max_inclusive(search_term, max_inclusive):
     if not max_inclusive:
         return
 
-    assert search_term <= max_inclusive, (
-        f"search_term {search_term} is greater than max_inclusive {max_inclusive}"
-    )
+    assert (
+        search_term <= max_inclusive
+    ), f"search_term {search_term} is greater than max_inclusive {max_inclusive}"
 
 
 _describe_docs = {}
