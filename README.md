@@ -35,14 +35,35 @@ list(
         },
     )
 )
-´´´
+```
+
+## Table of Contents
+
+- [CDSETool](#cdsetool)
+  * [About CDSETool](#about-cdsetool)
+  * [Quick Start](#quick-start)
+  * [Table of Contents](#table-of-contents)
+  * [Installatson](#installation)
+  * [Usage](#usage)
+    + [Querying features](#querying-features)
+      - [Querying by shapes](#querying-by-shapes)
+      - [Querying by lists of parameters](#querying-by-lists-of-parameters)
+      - [Querying by dates](#querying-by-dates)
+      - [Listing search terms](#listing-search-terms)
+    + [Downloading features](#downloading-features)
+      - [Authenticating](#authenticating)
+      - [Concurrently downloading features](#concurrently-downloading-features)
+      - [Sequentially downloading features](#sequentially-downloading-features)
+  * [Roadmap](#roadmap)
+  * [Contributing](#contributing)
+  * [LICENSE](#license)
 
 ## Installation
 
 Install `cdsetool` using pip:
 
 ```bash
-pip install cdsetool
+pip install cdsetool==0.1.2
 ```
 
 ## Usage
@@ -54,12 +75,15 @@ A local buffer is filled and gradually emptied as results are yielded. When the 
 more results will be requested and the process repeated until no more results are available, or
 the iterator is discarded.
 
+Since downloading features is the most common use-case, `query_features` assumes that the query will run till the end.
+Because of this, the batch size is set to `2000`, which is the size limit set by CDSE.
+
 ```python
 from cdsetool.query import query_features
 
 collection = "Sentinel2"
 search_terms = {
-    "maxRecords": "100", # batch size, between 1 and 2000 (default 50).
+    "maxRecords": "100", # batch size, between 1 and 2000 (default: 2000).
     "startDate": "1999-01-01",
     "processingLevel": "S2MSI1C"
 }
@@ -218,6 +242,25 @@ for feature in features:
     download_feature(feature, download_path)
 ```
 
+## Roadmap
 
+- [ ] Download by ID
+- [ ] Download by URL
+- [ ] Full test suite
 
+## Contributing
 
+Any contributions you make are **greatly appreciated**.
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request.
+You can also simply open an issue with the tag "enhancement".
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/cool-new-feature`)
+3. Commit your Changes (`git commit -m 'Add some feature'`)
+4. Push to the Branch (`git push origin feature/cool-new-feature`)
+5. Open a Pull Request
+
+## LICENSE
+
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.

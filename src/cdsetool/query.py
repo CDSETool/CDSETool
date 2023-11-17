@@ -44,7 +44,7 @@ def query_features(collection, search_terms):
     """
     Returns an iterator over the features matching the search terms
     """
-    return FeatureQuery(collection, search_terms)
+    return FeatureQuery(collection, {"maxRecords": 2000, **search_terms})
 
 
 def shape_to_wkt(shape):
