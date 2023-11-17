@@ -15,7 +15,9 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-
+    permissions:
+      pull-requests: write
+      contents: write
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -28,4 +30,9 @@ jobs:
         pip install -e .[test]
     - name: Test with pytest
       run: |
-        pytest
+        pytest --cov=cdsetool --cov-report xml
+    - name: Python Coverage
+      uses: orgoro/coverage@v3.1
+      with:
+          coverageFile: coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
