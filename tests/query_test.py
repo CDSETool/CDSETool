@@ -61,6 +61,7 @@ def test_assert_match_pattern():
     with pytest.raises(AssertionError):
         _assert_match_pattern("01-01-2020", pattern)
 
+    _assert_match_pattern("2020-01-01", None)
     _assert_match_pattern("2020-01-01", pattern)
     _assert_match_pattern("2020-01-01T20:31:28.888Z", pattern)
 
