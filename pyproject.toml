@@ -27,6 +27,9 @@ test = [
     "pytest==7.4.3",
     "pytest-cov==4.1.0",
 ]
+shape = [
+    "geopandas==0.14.1",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/SDFIdk/CDSETool"
