@@ -28,7 +28,7 @@ test = [
     "pytest-cov==4.1.0",
 ]
 shape = [
-    "geopandas==0.14.1",
+    "geopandas==0.13.2",
 ]
 
 [project.urls]
