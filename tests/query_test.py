@@ -7,6 +7,8 @@ from cdsetool.query import (
     _assert_valid_key,
     _assert_min_inclusive,
     _assert_max_inclusive,
+    shape_to_wkt,
+    geojson_to_wkt,
 )
 from datetime import date, datetime
 
@@ -91,3 +93,19 @@ def test_assert_max_inclusive():
 
     with pytest.raises(AssertionError):
         _assert_max_inclusive(2, 1)
+
+
+def test_shape_to_wkt():
+    wkt = "POLYGON((10.172406299744779 55.48259118004532, 10.172406299744779 55.38234270718456, 10.42371976928382 55.38234270718456, 10.42371976928382 55.48259118004532, 10.172406299744779 55.48259118004532))"
+    assert shape_to_wkt("tests/shape/POLYGON.shp") == wkt
+
+
+def test_geojson_to_wkt():
+    wkt = "POLYGON((10.172406299744779 55.48259118004532, 10.172406299744779 55.38234270718456, 10.42371976928382 55.38234270718456, 10.42371976928382 55.48259118004532, 10.172406299744779 55.48259118004532))"
+    geojson = '{ "type": "Feature", "properties": { }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 10.172406299744779, 55.482591180045318 ], [ 10.172406299744779, 55.382342707184563 ], [ 10.423719769283821, 55.382342707184563 ], [ 10.423719769283821, 55.482591180045318 ], [ 10.172406299744779, 55.482591180045318 ] ] ] } }'
+
+    assert geojson_to_wkt(geojson) == wkt
+
+    geojson = '{ "type": "Polygon", "coordinates": [ [ [ 10.172406299744779, 55.482591180045318 ], [ 10.172406299744779, 55.382342707184563 ], [ 10.423719769283821, 55.382342707184563 ], [ 10.423719769283821, 55.482591180045318 ], [ 10.172406299744779, 55.482591180045318 ] ] ] }'
+
+    assert geojson_to_wkt(geojson) == wkt

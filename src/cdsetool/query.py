@@ -6,6 +6,7 @@ https://documentation.dataspace.copernicus.eu/APIs/OpenSearch.html
 from xml.etree import ElementTree
 from datetime import datetime, date
 import re
+import json
 import requests
 
 
@@ -64,6 +65,28 @@ def shape_to_wkt(shape):
         + ", ".join(" ".join(map(str, coord)) for coord in coordinates)
         + "))"
     )
+
+
+def geojson_to_wkt(geojson):
+    """
+    Convert a geojson geometry to a WKT string
+    """
+    if isinstance(geojson, str):
+        geojson = json.loads(geojson)
+
+    if geojson.get("type") == "Feature":
+        geojson = geojson["geometry"]
+
+    coordinates = str(
+        tuple(item for sublist in geojson["coordinates"][0] for item in sublist)
+    )
+    paired_coord = ",".join(
+        [
+            f"{a}{b}"
+            for a, b in zip(coordinates.split(",")[0::2], coordinates.split(",")[1::2])
+        ]
+    )
+    return f"POLYGON({paired_coord})"
 
 
 def describe_collection(collection):
