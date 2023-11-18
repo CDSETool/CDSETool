@@ -63,7 +63,7 @@ list(
 Install `cdsetool` using pip:
 
 ```bash
-pip install cdsetool==0.1.2
+pip install cdsetool==0.1.3
 ```
 
 ## Usage
@@ -244,7 +244,7 @@ for feature in features:
 
 ## Roadmap
 
-- [ ] Query schema validation
+- [X] Query schema validation
 - [ ] High-level API
     - [ ] Query features
     - [ ] Download features
