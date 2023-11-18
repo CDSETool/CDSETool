@@ -31,8 +31,8 @@ jobs:
     - name: Test with pytest
       run: |
         pytest --cov=cdsetool --cov-report xml
-    - name: Python Coverage
-      uses: orgoro/coverage@v3.1
-      with:
-          coverageFile: coverage.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
+#     - name: Python Coverage
+#       uses: orgoro/coverage@v3.1
+#       with:
+#           coverageFile: coverage.xml
+#           token: ${{ secrets.GITHUB_TOKEN }}
