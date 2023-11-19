@@ -71,7 +71,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         self.__token_exchange(data)
 
     def __token_exchange(self, data):
-        response = requests.post(self.__token_endpoint, data=data, timeout=30)
+        response = requests.post(self.__token_endpoint, data=data, timeout=120)
         response.raise_for_status()
         response = response.json()
 

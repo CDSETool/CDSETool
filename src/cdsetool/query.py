@@ -10,6 +10,26 @@ import json
 import requests
 
 
+class _FeatureIterator:
+    def __init__(self, feature_query):
+        self.index = 0
+        self.feature_query = feature_query
+
+    def __len__(self):
+        return len(self.feature_query)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            item = self.feature_query[self.index]
+            self.index += 1
+            return item
+        except IndexError as exc:
+            raise StopIteration from exc
+
+
 class FeatureQuery:
     """
     An iterator over the features matching the search terms
@@ -18,28 +38,46 @@ class FeatureQuery:
     Queries the next batch when the current batch is exhausted.
     """
 
+    total_results = None
+
     def __init__(self, collection, search_terms):
         self.features = []
-        self.next_url = _query_url(collection, search_terms)
+        self.next_url = _query_url(collection, {**search_terms, "exactCount": "1"})
 
     def __iter__(self):
-        return self
+        return _FeatureIterator(self)
 
-    def __next__(self):
-        if len(self.features) == 0:
-            if self.next_url is None:
-                raise StopIteration
-            res = requests.get(self.next_url, timeout=30).json()
-            self.features += res["features"]
-            self.next_url = next(
-                (
-                    link
-                    for link in res["properties"]["links"]
-                    if link.get("rel") == "next"
-                ),
-                {},
-            ).get("href")
-        return self.features.pop(0)
+    def __len__(self):
+        if self.total_results is None:
+            self.__fetch_features()
+
+        return self.total_results
+
+    def __getitem__(self, index):
+        while index >= len(self.features) and self.next_url is not None:
+            self.__fetch_features()
+
+        return self.features[index]
+
+    def __fetch_features(self):
+        if self.next_url is not None:
+            res = requests.get(self.next_url, timeout=120).json()
+            self.features += res.get("features") or []
+
+            total_results = res.get("properties", {}).get("totalResults")
+            if total_results is not None:
+                self.total_results = total_results
+
+            self.__set_next_url(res)
+
+    def __set_next_url(self, res):
+        links = res.get("properties", {}).get("links") or []
+        self.next_url = next(
+            (link for link in links if link.get("rel") == "next"), {}
+        ).get("href")
+
+        if self.next_url:
+            self.next_url = self.next_url.replace("exactCount=1", "exactCount=0")
 
 
 def query_features(collection, search_terms):
@@ -198,7 +236,7 @@ def _get_describe_doc(collection):
     res = requests.get(
         "https://catalogue.dataspace.copernicus.eu"
         + f"/resto/api/collections/{collection}/describe.xml",
-        timeout=30,
+        timeout=120,
     )
     assert res.status_code == 200, (
         f"Unable to find collection with name {collection}. Please see "
