@@ -261,6 +261,7 @@ for feature in features:
     - [ ] Credentials
     - [ ] Download
     - [ ] Monitor
+- [ ] Strategy for handling HTTP and connection errors
 
 ## Contributing
 
