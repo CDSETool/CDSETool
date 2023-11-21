@@ -37,6 +37,12 @@ list(
 )
 ```
 
+Or use the CLI:
+
+```bash
+cdsetool query search Sentinel2 --search-term startDate=2020-01-01 --search-term completionDate=2020-01-10 --search-term processingLevel=S2MSI2A --search-term box="4","51","4.5","52"  
+```
+
 ## Table of Contents
 
 - [CDSETool](#cdsetool)
