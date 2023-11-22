@@ -71,15 +71,14 @@ pip install cdsetool==0.1.3
 ### Querying features
 
 Querying is always done in batches, returning `len(results) <= maxRecords` records each time.
-A local buffer is filled and gradually emptied as results are yielded. When the buffer is empty,
-more results will be requested and the process repeated until no more results are available, or
-the iterator is discarded.
+Results are stored in an iterable for future use, and will only query the server when the result
+is absent from the local dataset.
 
 Since downloading features is the most common use-case, `query_features` assumes that the query will run till the end.
 Because of this, the batch size is set to `2000`, which is the size limit set by CDSE.
 
 ```python
-from cdsetool.query import query_features
+from cdsetool import CDSETool
 
 collection = "Sentinel2"
 search_terms = {
@@ -88,15 +87,18 @@ search_terms = {
     "processingLevel": "S2MSI1C"
 }
 
+cdse = CDSETool()
+query = cdse.query(collection, search_terms)
+
 # wait for a single batch to finish, yield results immediately
-for feature in query_features(collection, search_terms):
+for feature in query:
     # do something with feature
 
 # wait for all batch requests to complete, returning list
-features = list(query_features(collection, search_terms))
+features = list(query)
 
 # manually iterate
-iter = query_features(collection, search_terms)
+iter = iter(query)
 
 featureA = next(iter)
 featureB = next(iter)
@@ -247,9 +249,12 @@ for feature in features:
 - [X] Query schema validation
 - [ ] High-level API
     - [ ] Query features
+        - [X] Query by search terms
+        - [ ] Validation of date ranges
+        - [ ] Automatic conversion to WKT
     - [ ] Download features
         - [ ] Download single feature
-        - [ ] Download list of features
+        - [X] Download list of features
         - [ ] Download by ID
         - [ ] Download by URL
 - [ ] Command-Line Interface

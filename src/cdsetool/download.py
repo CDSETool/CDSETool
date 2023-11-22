@@ -6,6 +6,8 @@ all features in a result set.
 """
 import os
 import random
+import re
+import shutil
 import tempfile
 import time
 from cdsetool._processing import _concurrent_process
@@ -19,9 +21,11 @@ def download_feature(feature, path, options=None):
 
     Returns the feature ID
     """
+    _ensure_path(path)
+
     options = options or {}
     url = _get_feature_url(feature)
-    filename = feature.get("properties").get("title")
+    filename = feature.get("properties").get("title").replace(".SAFE", ".zip")
 
     if not url or not filename:
         return feature.get("id")
@@ -50,7 +54,7 @@ def download_feature(feature, path, options=None):
                 status.add_progress(len(chunk))
 
         os.close(fd)
-        os.rename(tmp, os.path.join(path, filename.replace(".SAFE", ".zip")))
+        shutil.move(tmp, os.path.join(path, filename))
 
     return feature.get("id")
 
@@ -96,3 +100,9 @@ def _retry_backoff(url, session):
         response = session.get(url, stream=True)
 
     return response
+
+
+def _ensure_path(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path

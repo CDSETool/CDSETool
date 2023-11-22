@@ -32,7 +32,7 @@ class _FeatureIterator:
 
 class FeatureQuery:
     """
-    An iterator over the features matching the search terms
+    An iterable over the features matching the search terms
 
     Queries the API in batches (default: 50) features, and returns them one by one.
     Queries the next batch when the current batch is exhausted.
@@ -82,7 +82,7 @@ class FeatureQuery:
 
 def query_features(collection, search_terms):
     """
-    Returns an iterator over the features matching the search terms
+    Returns an iterable of features matching the search terms
     """
     return FeatureQuery(collection, {"maxRecords": 2000, **search_terms})
 
