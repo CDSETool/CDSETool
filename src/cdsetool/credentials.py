@@ -24,12 +24,18 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         self,
         username=None,
         password=None,
-        token_endpoint="https://identity.dataspace.copernicus.eu"
-        + "/auth/realms/CDSE/protocol/openid-connect/token",
+        token_endpoint=None,
     ):
         self.__username = username
         self.__password = password
-        self.__token_endpoint = token_endpoint
+        self.__token_endpoint = (
+            token_endpoint
+            or "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
+        )
+
+        print(self.__username)
+        print(self.__password)
+        print(self.__token_endpoint)
 
         self.__access_token = None
         self.__refresh_token = None
