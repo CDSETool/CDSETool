@@ -8,7 +8,13 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
-from cdsetool.credentials import Credentials, NoCredentialsException, NoTokenException, InvalidCredentialsException, TokenExchangeException
+from cdsetool.credentials import (
+    Credentials,
+    NoCredentialsException,
+    NoTokenException,
+    InvalidCredentialsException,
+    TokenExchangeException,
+)
 
 
 def _mock_openid(requests_mock):
@@ -230,6 +236,7 @@ def test_get_session(requests_mock, mocker):
         == f"Bearer {credentials._Credentials__access_token}"
     )
 
+
 def test_token_exchange(requests_mock, mocker):
     _mock_openid(requests_mock)
     _mock_token(requests_mock)
@@ -252,7 +259,9 @@ def test_token_exchange(requests_mock, mocker):
         status_code=401,
     )
 
-    with pytest.raises(InvalidCredentialsException, match="with username: myuser123123"):
+    with pytest.raises(
+        InvalidCredentialsException, match="with username: myuser123123"
+    ):
         credentials._Credentials__token_exchange(data)
 
     requests_mock.post(
