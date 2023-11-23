@@ -14,12 +14,15 @@ def _concurrent_process(fun, iterable, workers=4):
     Returns an iterable of the results
     """
     low_water_mark = int(workers * 1.5)
+    iterator = iter(iterable)
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
         futures = []
 
         def submit_item():
-            futures.append(executor.submit(fun, next(iterable)))
+            item = next(iterator, None)
+            if item is not None:
+                futures.append(executor.submit(fun, item))
 
         for _ in range(low_water_mark):
             submit_item()

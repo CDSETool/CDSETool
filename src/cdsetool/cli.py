@@ -97,7 +97,7 @@ def download(
 
     list(
         download_features(
-            features, path, {"monitor": StatusMonitor, "concurrency": concurrency}
+            features, path, {"monitor": StatusMonitor(), "concurrency": concurrency}
         )
     )
 

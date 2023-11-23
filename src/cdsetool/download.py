@@ -29,7 +29,7 @@ def download_feature(feature, path, options=None):
     # if os.path.exists(file):
     #     return feature.get("id")
 
-    with options.get("monitor", NoopMonitor()).status() as status:
+    with _get_monitor(options).status() as status:
         status.set_filename(filename)
 
         session = options.get("credentials", Credentials()).get_session()
@@ -57,23 +57,22 @@ def download_feature(feature, path, options=None):
 
 def download_features(features, path, options=None):
     """
-    Download all features in a result set
+    Generator function that downloads all features in a result set
 
-    Returns a list of feature IDs that were downloaded
+    Feature IDs are yielded as they are downloaded
     """
     options = options or {}
 
-    monitor = options.get("monitor", NoopMonitor)()
-    monitor.start()
-
-    options["monitor"] = monitor
+    options['monitor'] = _get_monitor(options)
+    options['monitor'].start()
 
     def _download_feature(feature):
         return download_feature(feature, path, options)
 
-    return _concurrent_process(
-        _download_feature, features, options.get("concurrency", 1)
-    )
+    for feature in _concurrent_process(_download_feature, features, options.get("concurrency", 1)):
+        yield feature
+
+    options['monitor'].stop()
 
 
 def _get_feature_url(feature):
@@ -96,3 +95,7 @@ def _retry_backoff(url, session):
         response = session.get(url, stream=True)
 
     return response
+
+def _get_monitor(options):
+    return options.get("monitor") or NoopMonitor()
+
