@@ -30,7 +30,7 @@ list(
         "path/to/output/folder/",
         {
             "concurrency": 4,
-            "monitor": StatusMonitor,
+            "monitor": StatusMonitor(),
             "credentials": Credentials("username", "password"),
         },
     )
@@ -102,10 +102,10 @@ for feature in query_features(collection, search_terms):
 features = list(query_features(collection, search_terms))
 
 # manually iterate
-iter = query_features(collection, search_terms)
+iterator = query_features(collection, search_terms)
 
-featureA = next(iter)
-featureB = next(iter)
+featureA = next(iterator)
+featureB = next(iterator)
 # ...
 ```
 
