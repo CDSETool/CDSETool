@@ -63,16 +63,18 @@ def download_features(features, path, options=None):
     """
     options = options or {}
 
-    options['monitor'] = _get_monitor(options)
-    options['monitor'].start()
+    options["monitor"] = _get_monitor(options)
+    options["monitor"].start()
 
     def _download_feature(feature):
         return download_feature(feature, path, options)
 
-    for feature in _concurrent_process(_download_feature, features, options.get("concurrency", 1)):
+    for feature in _concurrent_process(
+        _download_feature, features, options.get("concurrency", 1)
+    ):
         yield feature
 
-    options['monitor'].stop()
+    options["monitor"].stop()
 
 
 def _get_feature_url(feature):
@@ -96,6 +98,6 @@ def _retry_backoff(url, session):
 
     return response
 
+
 def _get_monitor(options):
     return options.get("monitor") or NoopMonitor()
-
