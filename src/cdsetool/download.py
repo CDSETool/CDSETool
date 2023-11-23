@@ -63,6 +63,8 @@ def download_features(features, path, options=None):
     """
     options = options or {}
 
+    options["credentials"] = options.get("credentials") or Credentials()
+
     options["monitor"] = _get_monitor(options)
     options["monitor"].start()
 
