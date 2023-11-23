@@ -69,7 +69,7 @@ cdsetool query search Sentinel2 --search-term startDate=2020-01-01 --search-term
 Install `cdsetool` using pip:
 
 ```bash
-pip install cdsetool==0.1.3
+pip install cdsetool==0.2.0
 ```
 
 ## Usage
