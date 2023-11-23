@@ -15,9 +15,21 @@ class NoCredentialsException(Exception):
     """
 
 
+class InvalidCredentialsException(Exception):
+    """
+    Raised when credentials are invalid
+    """
+
+
 class NoTokenException(Exception):
     """
     Raised when no token is available
+    """
+
+
+class TokenExchangeException(Exception):
+    """
+    Raised when token exchange fails
     """
 
 
@@ -87,7 +99,17 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
     def __token_exchange(self, data):
         response = requests.post(self.__token_endpoint, data=data, timeout=120)
-        response.raise_for_status()
+
+        if response.status_code == 401:
+            raise InvalidCredentialsException(
+                "Unable to exchange token with "
+                + f"username: {self.__username} and "
+                + f"password: {len(self.__password) * '*'}"
+            )
+
+        if response.status_code != 200:
+            raise TokenExchangeException(f"Token exchange failed: {response.text}")
+
         response = response.json()
 
         self.__access_token = response["access_token"]

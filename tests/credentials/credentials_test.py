@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
-from cdsetool.credentials import Credentials, NoCredentialsException, NoTokenException
+from cdsetool.credentials import Credentials, NoCredentialsException, NoTokenException, InvalidCredentialsException, TokenExchangeException
 
 
 def _mock_openid(requests_mock):
@@ -229,3 +229,37 @@ def test_get_session(requests_mock, mocker):
         session.headers.get("Authorization")
         == f"Bearer {credentials._Credentials__access_token}"
     )
+
+def test_token_exchange(requests_mock, mocker):
+    _mock_openid(requests_mock)
+    _mock_token(requests_mock)
+    _mock_jwks(mocker)
+
+    credentials = Credentials("myuser123123", "password")
+
+    data = {
+        "grant_type": "password",
+        "username": credentials._Credentials__username,
+        "password": credentials._Credentials__password,
+        "client_id": "cdse-public",
+    }
+
+    credentials._Credentials__token_exchange(data)
+
+    requests_mock.post(
+        "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token",
+        text="{}",
+        status_code=401,
+    )
+
+    with pytest.raises(InvalidCredentialsException, match="with username: myuser123123"):
+        credentials._Credentials__token_exchange(data)
+
+    requests_mock.post(
+        "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token",
+        text="Failure 123123",
+        status_code=500,
+    )
+
+    with pytest.raises(TokenExchangeException, match="Failure 123123"):
+        credentials._Credentials__token_exchange(data)
