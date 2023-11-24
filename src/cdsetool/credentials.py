@@ -6,11 +6,30 @@ from datetime import datetime, timedelta
 import netrc
 import threading
 import requests
+import jwt
 
 
 class NoCredentialsException(Exception):
     """
     Raised when no credentials are found
+    """
+
+
+class InvalidCredentialsException(Exception):
+    """
+    Raised when credentials are invalid
+    """
+
+
+class NoTokenException(Exception):
+    """
+    Raised when no token is available
+    """
+
+
+class TokenExchangeException(Exception):
+    """
+    Raised when token exchange fails
     """
 
 
@@ -24,12 +43,18 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         self,
         username=None,
         password=None,
-        token_endpoint="https://identity.dataspace.copernicus.eu"
-        + "/auth/realms/CDSE/protocol/openid-connect/token",
+        openid_configuration_endpoint=None,
     ):
         self.__username = username
         self.__password = password
-        self.__token_endpoint = token_endpoint
+
+        self.__openid_conf = None
+        self.__jwks = None
+        self.__openid_configuration_endpoint = (
+            openid_configuration_endpoint
+            or "https://identity.dataspace.copernicus.eu"
+            + "/auth/realms/CDSE/.well-known/openid-configuration"
+        )
 
         self.__access_token = None
         self.__refresh_token = None
@@ -40,6 +65,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
         if self.__username is None or self.__password is None:
             self.__read_credentials()
+
+        self.__ensure_tokens()
 
     def get_session(self):
         """
@@ -72,7 +99,17 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
     def __token_exchange(self, data):
         response = requests.post(self.__token_endpoint, data=data, timeout=120)
-        response.raise_for_status()
+
+        if response.status_code == 401:
+            raise InvalidCredentialsException(
+                "Unable to exchange token with "
+                + f"username: {self.__username} and "
+                + f"password: {len(self.__password) * '*'}"
+            )
+
+        if response.status_code != 200:
+            raise TokenExchangeException(f"Token exchange failed: {response.text}")
+
         response = response.json()
 
         self.__access_token = response["access_token"]
@@ -95,6 +132,23 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                         self.__exchange_credentials()
                     else:
                         self.__refresh_access_token()
+            self.__validate_tokens()
+
+    # validate __access_token and __refresh_token using the jwks certs
+    def __validate_tokens(self):
+        if self.__access_token is None:
+            raise NoTokenException("No access token found")
+
+        if self.__refresh_token is None:
+            raise NoTokenException("No refresh token found")
+
+        key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
+        jwt.decode(
+            self.__access_token,
+            key=key.key,
+            algorithms=key._algorithms,  # pylint: disable=protected-access
+            options={"verify_aud": False},
+        )
 
     def __read_credentials(self):
         info = netrc.netrc()
@@ -104,3 +158,30 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
             self.__username, _, self.__password = auth
         else:
             raise NoCredentialsException("No credentials found")
+
+    @property
+    def __openid_configuration(self):
+        if self.__openid_conf:
+            return self.__openid_conf
+
+        response = requests.get(self.__openid_configuration_endpoint, timeout=120)
+        response.raise_for_status()
+        self.__openid_conf = response.json()
+        return self.__openid_conf
+
+    @property
+    def __token_endpoint(self):
+        return self.__openid_configuration["token_endpoint"]
+
+    @property
+    def __jwks_uri(self):
+        return self.__openid_configuration["jwks_uri"]
+
+    @property
+    def __jwk_client(self):
+        if self.__jwks:
+            return self.__jwks
+
+        self.__jwks = jwt.PyJWKClient(self.__jwks_uri)
+
+        return self.__jwks
