@@ -151,13 +151,12 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         )
 
     def __read_credentials(self):
-        info = netrc.netrc()
-        auth = info.authenticators(self.__token_endpoint)
-
-        if auth:
-            self.__username, _, self.__password = auth
-        else:
-            raise NoCredentialsException("No credentials found")
+        try:
+            self.__username, _, self.__password = netrc.netrc().authenticators(
+                self.__token_endpoint
+            )
+        except Exception as exc:
+            raise NoCredentialsException("No credentials found") from exc
 
     @property
     def __openid_configuration(self):

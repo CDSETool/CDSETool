@@ -12,20 +12,20 @@ import threading
 import sys
 import os
 import signal
+import shutil
 
-LINE_LENGTH = 80
+IS_IPYTHON = True
 
+try:
+    from IPython import get_ipython
+    from IPython.display import clear_output
 
-def _set_line_length(_signal_num, _stack):
-    global LINE_LENGTH  # pylint: disable=global-statement
-    LINE_LENGTH, _ = os.get_terminal_size()
-
-
-_set_line_length(None, None)
-
-# handle sigwinch on linux
-if os.name != "nt":
-    signal.signal(signal.SIGWINCH, _set_line_length)
+    if "IPKernelApp" not in get_ipython().config:
+        IS_IPYTHON = False
+except ImportError:
+    IS_IPYTHON = False
+except AttributeError:
+    IS_IPYTHON = False
 
 
 class StatusMonitor(threading.Thread):
@@ -45,12 +45,35 @@ class StatusMonitor(threading.Thread):
             status.add_progress(512)
     """
 
+    line_length = 80
+
     __is_running = True
     __progress_lines = 0
 
     __download_speed_deltas = []
     __done = []
     __status = []
+
+    def start(self):
+        """
+        Start the monitor
+        """
+
+        def _set_line_length(_signal_num, _stack):
+            self.line_length, _ = shutil.get_terminal_size()
+
+        _set_line_length(None, None)
+
+        if os.name != "nt":
+            signal.signal(signal.SIGWINCH, _set_line_length)
+
+        super().start()
+
+    def stop(self):
+        """
+        Stop the monitor
+        """
+        self.__is_running = False
 
     def status(self):
         """
@@ -67,12 +90,6 @@ class StatusMonitor(threading.Thread):
         self.__done.append(status)
         self.__status.remove(status)
 
-    def stop(self):
-        """
-        Stop the monitor
-        """
-        self.__is_running = False
-
     def run(self):
         """
         Main loop for the monitor, printing the status bars every second until stopped
@@ -88,15 +105,16 @@ class StatusMonitor(threading.Thread):
 
         print("")
 
+    @property
     def __download_speed(self):
         if len(self.__download_speed_deltas) < 2:
             return 0
         return sum(self.__download_speed_deltas) / len(self.__download_speed_deltas)
 
     def __track_download_speed(self):
-        speed_t0 = self.__total_downloaded()
+        speed_t0 = self.__total_downloaded
         time.sleep(1)
-        speed_t1 = self.__total_downloaded()
+        speed_t1 = self.__total_downloaded
         self.__download_speed_deltas.append(speed_t1 - speed_t0)
         if len(self.__download_speed_deltas) > 10:
             self.__download_speed_deltas.pop(0)
@@ -106,6 +124,10 @@ class StatusMonitor(threading.Thread):
             print(status.done_line())
 
     def __clear_progress_lines(self):
+        if IS_IPYTHON:
+            clear_output(wait=True)
+            return
+
         sys.stdout.write("\033[K")
         for _ in range(self.__progress_lines + 2):
             sys.stdout.write("\033[F\033[K")
@@ -125,25 +147,25 @@ class StatusMonitor(threading.Thread):
                     "[[ ",
                     f"{len(self.__status)} files in progress",
                     f"{len(self.__done)} files done",
-                    f"{bytes_to_human(self.__total_downloaded())} total downloaded",
-                    f"{bytes_to_human(self.__download_speed())}/s ]]",
+                    f"{bytes_to_human(self.__total_downloaded)} total downloaded",
+                    f"{bytes_to_human(self.__download_speed)}/s ]]",
                 ]
             )
         )
 
         for status in self.__status:
             filename_line, progress_line = status.status_lines()
-            print(filename_line.ljust(LINE_LENGTH, " "))
-            print(progress_line.ljust(LINE_LENGTH, " "))
+            print(filename_line.ljust(self.line_length, " "))
+            print(progress_line.ljust(self.line_length, " "))
             self.__progress_lines += 2
 
+    @property
     def __total_downloaded(self):
         return sum(status.downloaded for status in self.__status) + sum(
             status.size for status in self.__done
         )
 
     def __enter__(self):
-        print("starting monitor")
         self.start()
         return self
 
@@ -206,21 +228,22 @@ class Status:
         """
         Returns a tuple of lines to print for the status bar
         """
+        line_length = self.__monitor.line_length
         if self.downloaded == 0:
             return (
                 "Thread waiting for connection to start...",
-                f"[{' ' * (LINE_LENGTH - 2)}]",
+                f"[{' ' * (line_length - 2)}]",
             )
 
         progress = self.downloaded / self.size
         filename_line = (
-            f"{self.filename[0:LINE_LENGTH - 6]} "
+            f"{self.filename[0:line_length - 6]} "
             + f"{bytes_to_human(self.size)} ({int(progress * 100)}%)"
         )
         progress_line = (
             "["
-            + f"{'█' * int(progress * (LINE_LENGTH - 2))}"
-            + f"{' ' * (LINE_LENGTH - int(progress * (LINE_LENGTH - 2)) - 2)}"
+            + f"{'█' * int(progress * (line_length - 2))}"
+            + f"{' ' * (line_length - int(progress * (line_length - 2)) - 2)}"
             + "]"
         )
 
