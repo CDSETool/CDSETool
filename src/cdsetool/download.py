@@ -32,7 +32,7 @@ def download_feature(feature, path, options=None):
     with _get_monitor(options).status() as status:
         status.set_filename(filename)
 
-        session = options.get("credentials", Credentials()).get_session()
+        session = _get_credentials(options).get_session()
         url = _follow_redirect(url, session)
         response = _retry_backoff(url, session)
 
@@ -63,7 +63,7 @@ def download_features(features, path, options=None):
     """
     options = options or {}
 
-    options["credentials"] = options.get("credentials") or Credentials()
+    options["credentials"] = _get_credentials(options)
 
     options["monitor"] = _get_monitor(options)
     options["monitor"].start()
@@ -103,3 +103,7 @@ def _retry_backoff(url, session):
 
 def _get_monitor(options):
     return options.get("monitor") or NoopMonitor()
+
+
+def _get_credentials(options):
+    return options.get("credentials") or Credentials()
