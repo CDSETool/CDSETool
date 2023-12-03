@@ -210,6 +210,16 @@ credentials = Credentials()
 download_features(features, "/some/download/path", {"credentials": credentials})
 ```
 
+Credentials can be validated using the `validate_credentials` function which will return a boolean.
+
+```python
+from cdsetool.credentials import validate_credentials
+
+validate_credentials(username='user', password='password')
+```
+
+If None are passed to username and password, `validate_credentials` will validate `.netrc`
+
 #### Concurrently downloading features
 
 CDSETool provides a method for concurrently downloading features. The concurrency level

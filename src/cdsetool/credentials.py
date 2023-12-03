@@ -184,3 +184,21 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         self.__jwks = jwt.PyJWKClient(self.__jwks_uri)
 
         return self.__jwks
+
+
+def validate_credentials(username=None, password=None):
+    """
+    This function validates CDSE credentials and returns a bool.
+    If credentials are none, .netrc will be validated
+    """
+    try:
+        Credentials(username, password)
+        return True
+    except NoCredentialsException:
+        return False
+    except InvalidCredentialsException:
+        return False
+    except NoTokenException:
+        return False
+    except TokenExchangeException:
+        return False
