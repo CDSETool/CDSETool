@@ -213,7 +213,7 @@ def _assert_min_inclusive(search_term, min_inclusive):
         return
 
     assert (
-        search_term >= min_inclusive
+        int(search_term) >= int(min_inclusive)
     ), f"search_term {search_term} is less than min_inclusive {min_inclusive}"
 
 
@@ -222,7 +222,7 @@ def _assert_max_inclusive(search_term, max_inclusive):
         return
 
     assert (
-        search_term <= max_inclusive
+        int(search_term) <= int(max_inclusive)
     ), f"search_term {search_term} is greater than max_inclusive {max_inclusive}"
 
 
