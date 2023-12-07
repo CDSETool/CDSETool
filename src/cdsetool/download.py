@@ -8,6 +8,7 @@ import os
 import random
 import tempfile
 import time
+import shutil
 from cdsetool._processing import _concurrent_process
 from cdsetool.credentials import Credentials
 from cdsetool.monitor import NoopMonitor
@@ -50,7 +51,7 @@ def download_feature(feature, path, options=None):
                 status.add_progress(len(chunk))
 
         os.close(fd)
-        os.rename(tmp, os.path.join(path, filename.replace(".SAFE", ".zip")))
+        shutil.move(tmp, os.path.join(path, filename.replace(".SAFE", ".zip")))
 
     return feature.get("id")
 
