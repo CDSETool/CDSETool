@@ -27,8 +27,12 @@ def download_feature(feature, path, options=None):
     if not url or not filename:
         return feature.get("id")
 
-    # if os.path.exists(file):
-    #     return feature.get("id")
+    overwrite = options.get("overwrite_existing", False)
+
+    result_path = os.path.join(path, filename.replace(".SAFE", ".zip"))
+
+    if not overwrite and os.path.exists(result_path):
+        return feature.get("id")
 
     with _get_monitor(options).status() as status:
         status.set_filename(filename)
@@ -51,7 +55,7 @@ def download_feature(feature, path, options=None):
                 status.add_progress(len(chunk))
 
         os.close(fd)
-        shutil.move(tmp, os.path.join(path, filename.replace(".SAFE", ".zip")))
+        shutil.move(tmp, result_path)
 
     return feature.get("id")
 
