@@ -63,7 +63,7 @@ def download_feature(feature, path, options=None):
 
         status.set_filesize(content_length)
 
-        fd, tmp = tempfile.mkstemp()  # pylint: disable=invalid-name
+        # fd, tmp = tempfile.mkstemp()  # pylint: disable=invalid-name
         with open(temp_path, "wb") as file:
             for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
                 if chunk:
