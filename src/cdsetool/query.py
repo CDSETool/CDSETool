@@ -114,6 +114,8 @@ def geojson_to_wkt(geojson):
 
     if geojson.get("type") == "Feature":
         geojson = geojson["geometry"]
+    elif geojson.get("type") == "FeatureCollection" and len(geojson["features"]) == 1:
+        geojson = geojson["features"][0]["geometry"]
 
     coordinates = str(
         tuple(item for sublist in geojson["coordinates"][0] for item in sublist)
