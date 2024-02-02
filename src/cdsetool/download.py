@@ -4,6 +4,7 @@ Download features from a Copernicus Data Space Ecosystem OpenSearch API result
 Provides a function to download a single feature, and a function to download
 all features in a result set.
 """
+
 import os
 import random
 import tempfile

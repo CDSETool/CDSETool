@@ -2,6 +2,7 @@
 This module provides a class for handling credentials for
 the Copernicus Identity and Access Management (IAM) system.
 """
+
 from datetime import datetime, timedelta
 import netrc
 import threading

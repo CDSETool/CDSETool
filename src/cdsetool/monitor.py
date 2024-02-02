@@ -7,6 +7,7 @@ progress of file downloads.
 For non-interactive programs the NoopMonitor class can be used to disable
 status monitoring.
 """
+
 import time
 import threading
 import sys
