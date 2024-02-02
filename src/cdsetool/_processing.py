@@ -1,6 +1,7 @@
 """
 This module provides functions for processing data concurrently
 """
+
 from concurrent.futures import wait, FIRST_COMPLETED
 from concurrent.futures import ThreadPoolExecutor
 
