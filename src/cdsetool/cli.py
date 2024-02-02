@@ -1,6 +1,7 @@
 """
 Command line interface
 """
+
 import os
 import sys
 import json as JSON

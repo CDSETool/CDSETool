@@ -3,6 +3,7 @@ Query the Copernicus Data Space Ecosystem OpenSearch API
 
 https://documentation.dataspace.copernicus.eu/APIs/OpenSearch.html
 """
+
 from xml.etree import ElementTree
 from datetime import datetime, date
 import re
