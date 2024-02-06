@@ -9,19 +9,6 @@ import re
 import json
 import requests
 from collections import OrderedDict
-from src.cdsetool.exceptions import (
-    InvalidAoi,
-    InvalidDataCollection,
-    InvalidDirection,
-    InvalidFormatDate,
-    InvalidMode,
-    InvalidOrbit,
-    InvalidOrderBy,
-    InvalidPLevel,
-    InvalidProductType,
-    InvalidTileId)
-from src.cdsetool.helper import correct_data_collections, correct_format_date, valid_aoi, valid_direction, valid_mode, valid_orbit, valid_order_by, valid_plevel, valid_product_type, valid_tileId
-
 
 class _FeatureIterator:
     def __init__(self, feature_query):
@@ -167,85 +154,42 @@ class FeatureQuery:
         tileid = None,
         order_by= None,
         ):
-        """Create a OpenSearch API query string. ODATA"""
+        """Create a OpenSearch API query string. ODATA.
+        If passed data is None just ignore that filter"""
         pieces = []
         if data_collection != None:
-            if correct_data_collections(data_collection):
-                data_collection_query = f"$filter=Collection/Name eq '{data_collection}'"
-                pieces.append(data_collection_query)
-            else:
-                error_msg = f"The data collection inderted is not one of the valid! {['Sentinel-1','Sentinel-2']}"
-                raise(InvalidDataCollection(error_msg))
+            data_collection_query = f"$filter=Collection/Name eq '{data_collection}'"
+            pieces.append(data_collection_query)
         if start_date != None:
-            if correct_format_date(start_date):
-                start_date_query = f"ContentDate/Start gt {start_date}"
-                pieces.append(start_date_query)
-            else:
-                error_msg = f"The starting date inserted is not valid! {start_date} is not in the format required yyyy-mm-dd!"
-                raise(InvalidFormatDate(error_msg))
+            start_date_query = f"ContentDate/Start gt {start_date}"
+            pieces.append(start_date_query)
         if end_date != None:
-            if correct_format_date(end_date):
-                end_date_query = f"ContentDate/Start lt {end_date}"
-                pieces.append(end_date_query)
-            else:
-                error_msg = f"The ending date inserted is not valid! {end_date} is not in the format required yyyy-mm-dd!"
-                raise(InvalidFormatDate(error_msg))
+            end_date_query = f"ContentDate/Start lt {end_date}"
+            pieces.append(end_date_query)
         if aoi!= None:
-            if valid_aoi(aoi):
-                aoi_query = f"OData.CSC.Intersects(area=geography'SRID=4326;{aoi}')"
-                pieces.append(aoi_query)
-            else:
-                error_msg = "The aoi geometry inserted is not valid!"
-                raise(InvalidAoi(error_msg))
+            aoi_query = f"OData.CSC.Intersects(area=geography'SRID=4326;{aoi}')"
+            pieces.append(aoi_query)
         if product_type != None:
-            if valid_product_type(product_type):
-                product_type_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'productType' and att/OData.CSC.StringAttribute/Value eq '{product_type}')"
-                pieces.append(product_type_query)
-            else:
-                error_msg = "The product type inserted is not valid!"
-                raise(InvalidProductType(error_msg))
+            product_type_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'productType' and att/OData.CSC.StringAttribute/Value eq '{product_type}')"
+            pieces.append(product_type_query)
         if mode != None:
-            if valid_mode(mode):
-                mode_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'operationalMode' and att/OData.CSC.StringAttribute/Value eq '{mode}')"
-                pieces.append(mode_query)
-            else:
-                error_msg = "The mode inserted is not valid!"
-                raise(InvalidMode(error_msg))
+            mode_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'operationalMode' and att/OData.CSC.StringAttribute/Value eq '{mode}')"
+            pieces.append(mode_query)
         if direction != None:
-            if valid_direction(direction):
-                direction_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'orbitDirection' and att/OData.CSC.StringAttribute/Value eq '{direction}')"
-                pieces.append(direction_query)
-            else:
-                error_msg = "The direction inserted is not valid!"
-                raise(InvalidDirection(error_msg))
+            direction_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'orbitDirection' and att/OData.CSC.StringAttribute/Value eq '{direction}')"
+            pieces.append(direction_query)
         if orbit != None:
-            if valid_orbit(orbit):
-                orbit_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'relativeOrbitNumber' and att/OData.CSC.IntegerAttribute/Value eq {orbit})"
-                pieces.append(orbit_query)
-            else:
-                error_msg = "The orbit inserted is not valid!"
-                raise(InvalidOrbit(error_msg))
+            orbit_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'relativeOrbitNumber' and att/OData.CSC.IntegerAttribute/Value eq {orbit})"
+            pieces.append(orbit_query)
         if plevel != None:
-            if valid_plevel(plevel):
-                plevel_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'processingLevel' and att/OData.CSC.StringAttribute/Value eq '{plevel}')"
-                pieces.append(plevel_query)
-            else:
-                error_msg = "The plevel inserted is not valid!"
-                raise(InvalidPLevel(error_msg))
+            plevel_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'processingLevel' and att/OData.CSC.StringAttribute/Value eq '{plevel}')"
+            pieces.append(plevel_query)
         if tileid != None:
-            if valid_tileId(tileid):
-                tileId_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'tileId' and att/OData.CSC.StringAttribute/Value eq '{tileid}'"
-                pieces.append(tileId_query)
-            else:
-                error_msg = "The tileId by inserted is not valid!"
-                raise(InvalidTileId(error_msg))    
+            tileId_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'tileId' and att/OData.CSC.StringAttribute/Value eq '{tileid}'"
+            pieces.append(tileId_query)  
         if order_by != None:
-            if valid_order_by(order_by):
-                order_by_query = f"&$orderby=ContentDate/Start {order_by}"
-                pieces.append(order_by_query)
-            else:
-                error_msg = "The order_by by inserted is not valid!"
-                raise(InvalidOrderBy(error_msg))
+            order_by_query = f"&$orderby=ContentDate/Start {order_by}"
+            pieces.append(order_by_query)
         else:
             # always order by ascending order if nothing provided
             order_by_query = f"&$orderby=ContentDate/Start asc"
@@ -253,8 +197,8 @@ class FeatureQuery:
         full_query = "Products?"
         for i in range(len(pieces)):
             full_query+= pieces[i]
-            if i == len(pieces)-2 and valid_order_by(order_by):
-                #order by query doen't need the "and"  
+            if i == len(pieces)-2:
+                #order by query doesn't need the "and"  
                 pass
             elif i!= len(pieces)-1:
                 full_query+= " and "

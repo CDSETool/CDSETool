@@ -17,15 +17,17 @@ from src.cdsetool.monitor import NoopMonitor
 
 class InvalidChecksumError(Exception):
     """MD5 checksum of a local file does not match the one from the server."""
-
     pass
 
-def download_feature(feature, path, options=None):
+def download_feature(feature, path, options=None,try_number = 0):
     """
     Download a single feature
 
     Returns the feature ID
     """
+    if try_number ==10:
+        """Tries 10 times to download a partial file """
+        return feature.get("id")
     options = options or {}
     url = _get_feature_url(feature)
     filename = feature.get("properties").get("title")
@@ -39,47 +41,41 @@ def download_feature(feature, path, options=None):
     if not os.path.exists(Path(path)):
         os.makedirs(path)
     result_path = os.path.join(path, filename.replace(".SAFE", ".zip"))
-    temp_path =  Path(path) / filename.replace(".SAFE", ".zip.incomplete") #os.path.join(path, filename.replace(".SAFE", ".zip.incomplete"))
+    temp_path =  Path(path) / filename.replace(".SAFE", ".zip.incomplete")
     if not overwrite and os.path.exists(result_path):
         return feature.get("id")
-    
+    size_temp = 0
     if not continue_ and os.path.exists(temp_path):
-        #TODO decide what to do with partlial files, 
         """
-        it should be appropriate to restart the download from the
-        from where it let off istead of the beginning.
-        The current version remove the partial file and restart the download
-        from the beginning.
+        if temp path exists take the size already downloaded and use it in the headers
         """
-        return feature.get("id")
-    if os.path.exists(temp_path):
+        size_temp = temp_path.stat().st_size
+    elif overwrite and os.path.exists(temp_path):
         os.remove(temp_path)
     with _get_monitor(options).status() as status:
         status.set_filename(filename)
         session = _get_credentials(options).get_session()
+        session = _set_proxy(options,session) # here set the proxy
+        session = _set_partial_download(session=session,size=size_temp) #here sets the header for partial downloads
         url = _follow_redirect(url, session)
         response = _retry_backoff(url, session)
         content_length = int(response.headers["Content-Length"])
 
         status.set_filesize(content_length)
-
-        # fd, tmp = tempfile.mkstemp()  # pylint: disable=invalid-name
         with open(temp_path, "wb") as file:
             for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
                 if chunk:
                     file.write(chunk)
                     status.add_progress(len(chunk))
                 
-    validity_check(Path(result_path),temp_path,feature)
-        # os.close(fd)
-        # shutil.move(tmp, result_path)
-
+    validity_check(Path(result_path),temp_path,feature,options,try_number)
     return feature.get("id")
 
-def validity_check(path: Path,temp_path: Path,product_info, verify_checksum: bool = True):
+def validity_check(path: Path,temp_path: Path,product_info, verify_checksum: bool = True,options={},try_number = 0):
     size = temp_path.stat().st_size
     content_length = product_info.get("properties").get("services").get("download").get("size")
     if size > content_length:
+            """Dowloaded more than the size of the file"""
             temp_path.unlink()
             raise(f"Content length mismatch for {path.name}")
     elif size == content_length:
@@ -91,8 +87,8 @@ def validity_check(path: Path,temp_path: Path,product_info, verify_checksum: boo
                 temp_path.unlink()
                 raise(f"Checksum mismatch for file {path.name}")
     else:
-        """TODO: handle partial downloads"""
-        pass
+        """Partial dowload call back download feature"""
+        download_feature(product_info,path,options,try_number+1)
 
 def _checksum_compare(temp_path, product_info,block_size=2**13):
     """Compare a given MD5 checksum with one calculated from a file."""
@@ -168,9 +164,7 @@ def _follow_redirect(url, session):
     while response.status_code in range(300, 400):
         url = response.headers["Location"]
         response = session.head(url, allow_redirects=False)
-
     return url
-
 
 def _retry_backoff(url, session):
     response = session.get(url, stream=True)
@@ -180,10 +174,19 @@ def _retry_backoff(url, session):
 
     return response
 
+def _set_proxy(options,session):
+    proxies = options.get("proxies", {})
+    if proxies != {}:
+        session.proxies.update(proxies)
+    return session
+
+def _set_partial_download(session,size = 0):
+    if size !=0:
+        session.headers.update({"Range": "bytes={}-".format(size)})
+    return session
 
 def _get_monitor(options):
     return options.get("monitor") or NoopMonitor()
-
 
 def _get_credentials(options):
     return options.get("credentials") or Credentials()
