@@ -177,7 +177,8 @@ def _retry_backoff(url, session):
 def _set_proxy(options,session):
     proxies = options.get("proxies", {})
     if proxies != {}:
-        session.proxies.update(proxies)
+        if "http" in proxies or "https" in proxies:
+            session.proxies.update(proxies)
     return session
 
 def _set_partial_download(session,size = 0):
