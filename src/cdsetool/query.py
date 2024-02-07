@@ -9,6 +9,7 @@ from datetime import datetime, date
 import re
 import json
 import requests
+import geopandas as gpd
 
 
 class _FeatureIterator:
@@ -92,12 +93,6 @@ def shape_to_wkt(shape):
     """
     Convert a shapefile to a WKT string
     """
-    try:
-        import geopandas as gpd  # pylint: disable=import-outside-toplevel
-    except ImportError:
-        print(
-            "geopandas is not installed. Please install it with `pip install geopandas`"
-        )
     coordinates = list(gpd.read_file(shape).geometry[0].exterior.coords)
     return (
         "POLYGON(("
