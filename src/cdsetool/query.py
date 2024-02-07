@@ -40,8 +40,9 @@ class FeatureQuery:
 
     total_results = None
 
-    def __init__(self, collection, search_terms):
+    def __init__(self, collection, search_terms,fetch_odata= False):
         self.features = []
+        self.fetch_odata = fetch_odata
         self.next_url = _query_url(collection, {**search_terms, "exactCount": "1"})
 
     def __iter__(self):
@@ -66,63 +67,48 @@ class FeatureQuery:
             total_results = res.get("properties", {}).get("totalResults")
             if total_results is not None:
                 self.total_results = total_results
-            odata =self.__fetch_odata(res.get("properties", {}))
-            if odata != {}:
-                self.__add_odata_to_features(odata)
+            if self.fetch_odata:
+                # if we need the odata in the query set fetch odata to True while calling the query method
+                odata =self.__fetch_odata_from_product_list(self.features)
+                if odata != {}:
+                    self.__add_odata_to_features(odata)
             self.__set_next_url(res)
+
+    def __fetch_odata_from_product_list(self,product_list):
+        """
+        Given a product list, return the odata response
+        """
+        body = {}
+        list_products = []
+        for product in product_list:
+            if 'properties' in product:
+                if 'title' in product['properties']:
+                    list_products.append({"Name": product['properties']['title']})
+        body['FilterProducts'] = list_products
+        odata_url = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products/OData.CSC.FilterList"
+        res = self.__get_odata(odata_url,body)
+        return res
     
-    def __fetch_odata(self,properties):
-        #TODO ADD all properties still not implemented, the ones descripted in describe_colleciton
-        if properties != {}:
-            if properties.get("query",{}) != {}:
-                if properties.get("query").get("originalFilters",{})!= {}:
-                    original_filters = properties.get("query").get("originalFilters")
-                    odata_url = "https://catalogue.dataspace.copernicus.eu/odata/v1/"
-                    start_date = original_filters.get("startDate")
-                    end_date = original_filters.get("completionDate")
-                    data_collection = original_filters.get("collection")
-                    aoi = original_filters.get("geometry")
-                    order_by = original_filters.get("orderBy", 'asc')
-                    product_type = original_filters.get("productType",None)
-                    mode = original_filters.get("sensorMode",None)
-                    direction = original_filters.get("orbitDirection",None)
-                    orbit = original_filters.get("orbitNumber",None)
-                    tileid = original_filters.get("tileId", None)
-                    plevel = original_filters.get("processingLevel",None)
-                    odata_query = self.format_query(start_date= start_date,end_date= end_date,data_collection= data_collection,aoi= aoi,order_by= order_by,product_type=product_type,mode=mode,direction=direction,orbit=orbit,tileid=tileid,plevel=plevel)
-                    if odata_query.strip() == "":
-                        # An empty query should return the full set of products on the server, which is a bit unreasonable.
-                        # The server actually raises an error instead and it's better to fail early in the client.
-                        raise ValueError("Empty query.")
-                    res = self.__query_call_ordered_dict(url=odata_url,query=odata_query)
-                    return res
-        #one of the filters is missing
-        return {}
-    
-    def __query_call_ordered_dict(self,url=None,query=None)-> OrderedDict:
-        total_url = url
-        if query!= None:
-            total_url += query
-        json_ = requests.get(f"{url}{query}").json()
-        if 'value' in json_:
-            import json
-            string_value = json.dumps(json_['value'])
-            return json.JSONDecoder(object_pairs_hook=OrderedDict).decode(string_value)
-        else:
-            import json
-            string_value = json.dumps(json_)
-            return json.JSONDecoder(object_pairs_hook=OrderedDict).decode(string_value)
+    def __get_odata(self,url,data_json):
+        """
+        From the odata url and request body, get the odata response
+        """
+        res = requests.post(url,json=data_json, timeout=120).json()
+        return res
     
     def __add_odata_to_features(self,odata):
         """
         Given the odatadict, add the to correct (by matching the Ids) checksum the features
         """
         map_id_checksum = {}
-        for ordered_dict in odata:
-            map_id_checksum[ordered_dict["Id"]] = {"Checksum": ordered_dict["Checksum"], "ContentLength": ordered_dict["ContentLength"]}
+        if "value" in odata:
+            odata_list_value = odata["value"]
+            for ordered_dict in odata_list_value:
+                map_id_checksum[ordered_dict["Id"]] = {"Checksum": ordered_dict["Checksum"], "ContentLength": ordered_dict["ContentLength"],"odata": ordered_dict}
         for feature in self.features:
             if feature.get("id") in map_id_checksum.keys():
                 ordered_dict = map_id_checksum[feature.get("id")]
+                feature['odata'] = ordered_dict["odata"]
                 feature['Checksum'] = ordered_dict["Checksum"]
                 if feature.get('properties').get('services').get('download').get('size') == ordered_dict['ContentLength']:
                     feature['ContentLength'] = ordered_dict['ContentLength']
@@ -139,77 +125,12 @@ class FeatureQuery:
 
         if self.next_url:
             self.next_url = self.next_url.replace("exactCount=1", "exactCount=0")
-    
-    @staticmethod
-    def format_query(
-        start_date= None,
-        end_date= None,
-        data_collection= None,
-        aoi= None,
-        product_type = None,
-        mode = None,
-        direction = None,
-        orbit = None,
-        plevel = None,
-        tileid = None,
-        order_by= None,
-        ):
-        """Create a OpenSearch API query string. ODATA.
-        If passed data is None just ignore that filter"""
-        pieces = []
-        if data_collection != None:
-            data_collection_query = f"$filter=Collection/Name eq '{data_collection}'"
-            pieces.append(data_collection_query)
-        if start_date != None:
-            start_date_query = f"ContentDate/Start gt {start_date}"
-            pieces.append(start_date_query)
-        if end_date != None:
-            end_date_query = f"ContentDate/Start lt {end_date}"
-            pieces.append(end_date_query)
-        if aoi!= None:
-            aoi_query = f"OData.CSC.Intersects(area=geography'SRID=4326;{aoi}')"
-            pieces.append(aoi_query)
-        if product_type != None:
-            product_type_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'productType' and att/OData.CSC.StringAttribute/Value eq '{product_type}')"
-            pieces.append(product_type_query)
-        if mode != None:
-            mode_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'operationalMode' and att/OData.CSC.StringAttribute/Value eq '{mode}')"
-            pieces.append(mode_query)
-        if direction != None:
-            direction_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'orbitDirection' and att/OData.CSC.StringAttribute/Value eq '{direction}')"
-            pieces.append(direction_query)
-        if orbit != None:
-            orbit_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'relativeOrbitNumber' and att/OData.CSC.IntegerAttribute/Value eq {orbit})"
-            pieces.append(orbit_query)
-        if plevel != None:
-            plevel_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'processingLevel' and att/OData.CSC.StringAttribute/Value eq '{plevel}')"
-            pieces.append(plevel_query)
-        if tileid != None:
-            tileId_query = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'tileId' and att/OData.CSC.StringAttribute/Value eq '{tileid}'"
-            pieces.append(tileId_query)  
-        if order_by != None:
-            order_by_query = f"&$orderby=ContentDate/Start {order_by}"
-            pieces.append(order_by_query)
-        else:
-            # always order by ascending order if nothing provided
-            order_by_query = f"&$orderby=ContentDate/Start asc"
-            pieces.append(order_by_query)
-        full_query = "Products?"
-        for i in range(len(pieces)):
-            full_query+= pieces[i]
-            if i == len(pieces)-2:
-                #order by query doesn't need the "and"  
-                pass
-            elif i!= len(pieces)-1:
-                full_query+= " and "
-        return full_query
 
-
-def query_features(collection, search_terms):
+def query_features(collection, search_terms, fetch_odata = False):
     """
     Returns an iterator over the features matching the search terms
     """
-    return FeatureQuery(collection, {"maxRecords": 2000, **search_terms})
+    return FeatureQuery(collection, {"maxRecords": 2000, **search_terms}, fetch_odata)
 
 
 def shape_to_wkt(shape):
@@ -372,3 +293,13 @@ def _get_describe_doc(collection):
 
     _describe_docs[collection] = res.content
     return _describe_docs.get(collection)
+
+def get_odata_from_product_title(product_title):
+    """
+    Takes the name of a procuct title and returns it's odata.
+    """
+    body = {}
+    body['FilterProducts'] = [{'Name': product_title}]
+    url = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products/OData.CSC.FilterList"
+    res = requests.post(url,json=body, timeout=120).json()
+    return res

@@ -11,9 +11,11 @@ import hashlib
 import time
 import shutil
 from pathlib import Path
+from src.cdsetool.query import get_odata_from_product_title
 from src.cdsetool._processing import _concurrent_process
 from src.cdsetool.credentials import Credentials
 from src.cdsetool.monitor import NoopMonitor
+from blake3 import blake3
 
 class InvalidChecksumError(Exception):
     """MD5 checksum of a local file does not match the one from the server."""
@@ -36,16 +38,16 @@ def download_feature(feature, path, options=None,try_number = 0):
         return feature.get("id")
 
     overwrite = options.get("overwrite_existing", False)
-    continue_ = options.get("continue_existing", True)
+    continue_existing = options.get("continue_existing", True)
 
     if not os.path.exists(Path(path)):
         os.makedirs(path)
     result_path = os.path.join(path, filename.replace(".SAFE", ".zip"))
-    temp_path =  Path(path) / filename.replace(".SAFE", ".zip.incomplete")
+    temp_path =  os.path.join(path, filename.replace(".SAFE", ".zip.incomplete"))
     if not overwrite and os.path.exists(result_path):
         return feature.get("id")
     size_temp = 0
-    if not continue_ and os.path.exists(temp_path):
+    if not continue_existing and os.path.exists(temp_path):
         """
         if temp path exists take the size already downloaded and use it in the headers
         """
@@ -56,11 +58,11 @@ def download_feature(feature, path, options=None,try_number = 0):
         status.set_filename(filename)
         session = _get_credentials(options).get_session()
         session = _set_proxy(options,session) # here set the proxy
-        session = _set_partial_download(session=session,size=size_temp) #here sets the header for partial downloads
+        session = _set_partial_download(session=session,size=size_temp) # here sets the header for partial downloads
         url = _follow_redirect(url, session)
         response = _retry_backoff(url, session)
         content_length = int(response.headers["Content-Length"])
-
+        odata_response = get_odata_from_product_title(filename)
         status.set_filesize(content_length)
         with open(temp_path, "wb") as file:
             for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
@@ -68,68 +70,79 @@ def download_feature(feature, path, options=None,try_number = 0):
                     file.write(chunk)
                     status.add_progress(len(chunk))
                 
-    validity_check(Path(result_path),temp_path,feature,options,try_number)
-    return feature.get("id")
+    valid_checksum = validity_check(result_path,temp_path,feature,options)
+    if not valid_checksum:
+        """Partial dowload call back download feature"""
+        return download_feature(feature,path,options,try_number+1)
+    else:
+        return feature.get("id")
 
-def validity_check(path: Path,temp_path: Path,product_info, verify_checksum: bool = True,options={},try_number = 0):
-    size = temp_path.stat().st_size
+def validity_check(path,temp_path,product_info, verify_checksum: bool = True,options={}):
+    size = os.path.getsize(temp_path)
     content_length = product_info.get("properties").get("services").get("download").get("size")
     if size > content_length:
-            """Dowloaded more than the size of the file"""
-            temp_path.unlink()
-            raise(f"Content length mismatch for {path.name}")
+            #Dowloaded more than the size of the file. Delete the downloaded and download the file from the beginning
+            os.remove(temp_path)
+            return False
     elif size == content_length:
         # Check integrity with MD5 checksum
         if verify_checksum:
-            if _checksum_compare(temp_path, product_info):
+            checksum_comparison  = _checksum_compare(temp_path, product_info)
+            if checksum_comparison == None:
+                # No data available for the checksum, the download it's leaved in incomplete format
+                return True
+            elif checksum_comparison:
                 shutil.move(temp_path, path)
+                return True
             else:
-                temp_path.unlink()
-                raise(f"Checksum mismatch for file {path.name}")
+                # Checksum failed, download the file from the beginning
+                # TODO here we should decide if it't better to retry or not
+                os.remove(temp_path)
+                return False
     else:
         """Partial dowload call back download feature"""
-        download_feature(product_info,path,options,try_number+1)
+        return False
 
-def _checksum_compare(temp_path, product_info,block_size=2**13):
+def _checksum_compare(temp_path, product_info):
     """Compare a given MD5 checksum with one calculated from a file."""
     checksum = None
     algo = None
     filename = product_info.get("properties").get("title")
     if "Checksum" in product_info:
-        checksum_list = product_info.get("Checksum")
-        if len(checksum_list) >0:
-            for checksum_dict in checksum_list:
-                if "Algorithm" in checksum_dict:
-                    algo = checksum_dict['Algorithm']
-                    if algo == "sha3-256":
-                        checksum = checksum_dict['Value']
-                        algo = hashlib.sha3_256() 
-                    elif algo == "MD5":
-                        checksum = checksum_dict['Value']
-                        algo = hashlib.md5()
-                        break
-                    elif algo == "BLAKE3":
-                        checksum = checksum_dict['Value']
-                        algo = hashlib.blake2b() # TODO ?
-                else:
-                    raise InvalidChecksumError("No checksum information found in product information. No Algorithm provided provided")
-        else:
-                    raise InvalidChecksumError("No checksum information found in product information. The Checksum list is empty")
+        # The intial query was made with the checksum option.
+        checksum_list =product_info.get("Checksum")
+        algo, checksum =from_checksum_list_to_checksum(checksum_list)
+    else:
+        odata_response = get_odata_from_product_title(filename)
+        if 'value' in odata_response:
+            if len(odata_response['value']) ==1:
+                # odata['value'] is a list if there is more then one element for a single product
+                # there is a error on the odata I guess 
+                if 'Checksum' in odata_response['value'][0]:
+                    checksum_list = odata_response['value'][0]['Checksum']
+                    algo, checksum =from_checksum_list_to_checksum(checksum_list)
     if checksum == None:
-        raise InvalidChecksumError("No checksum algo provided is supported.")
+        return None # no checksum available, so we skip verifying
     file_path = temp_path
-    file_size = file_path.stat().st_size
-    # with _get_monitor({}).status() as status:
-    #     status.set_filename(f"{algo} - {filename}")
-    #     status.set_filesize(file_size)
     with open(file_path, "rb") as f:
         while True:
-            block_data = f.read(block_size)
+            block_data = f.read(8192)
             if not block_data:
                 break
             algo.update(block_data)
             # status.add_progress(block_data)
-    return algo.hexdigest().lower() == checksum.lower()
+    return algo.hexdigest().lower() == checksum.lower() # checksum available, so we give the verify checksum
+
+def from_checksum_list_to_checksum(checksum_list):
+    if len(checksum_list) == 0:
+        return None, None # no checksum available, so we skip verifying
+    algo, checksum = checksum_list[0].get("Algorithm"), checksum_list[0].get("Value")
+    algo = {
+        "sha3-256": hashlib.sha3_256(),
+        "MD5": hashlib.md5(),
+        "BLAKE3": blake3() # https://pypi.org/project/blake3/
+    }[algo]
+    return algo,checksum
 
 def download_features(features, path, options=None):
     """
@@ -177,8 +190,7 @@ def _retry_backoff(url, session):
 def _set_proxy(options,session):
     proxies = options.get("proxies", {})
     if proxies != {}:
-        if "http" in proxies or "https" in proxies:
-            session.proxies.update(proxies)
+        session.proxies.update(proxies)
     return session
 
 def _set_partial_download(session,size = 0):
