@@ -21,14 +21,14 @@ class InvalidChecksumError(Exception):
     """MD5 checksum of a local file does not match the one from the server."""
     pass
 
-def download_feature(feature, path, options=None,try_number = 0):
+def download_feature(feature, path, options = None,attempt = 0):
     """
     Download a single feature
 
     Returns the feature ID
     """
-    if try_number ==10:
-        """Tries 10 times to download a partial file """
+    if attempt  == options.get("retries", 3):
+        """Tries to download a partial file """
         return feature.get("id")
     options = options or {}
     url = _get_feature_url(feature)
@@ -65,14 +65,16 @@ def download_feature(feature, path, options=None,try_number = 0):
         status.set_filesize(content_length)
         with open(temp_path, "wb") as file:
             for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
-                if chunk:
-                    file.write(chunk)
-                    status.add_progress(len(chunk))
+                if not chunk:
+                    continue
+
+                file.write(chunk)
+                status.add_progress(len(chunk))
                 
     valid_checksum = validity_check(result_path,temp_path,feature,options)
     if not valid_checksum:
         """Partial dowload call back download feature"""
-        return download_feature(feature,path,options,try_number+1)
+        return download_feature(feature,path,options,attempt+1)
     else:
         return feature.get("id")
 
