@@ -62,7 +62,6 @@ def download_feature(feature, path, options=None,try_number = 0):
         url = _follow_redirect(url, session)
         response = _retry_backoff(url, session)
         content_length = int(response.headers["Content-Length"])
-        odata_response = get_odata_from_product_title(filename)
         status.set_filesize(content_length)
         with open(temp_path, "wb") as file:
             for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
