@@ -17,9 +17,6 @@ app = typer.Typer()
 query_app = typer.Typer()
 app.add_typer(query_app, name="query")
 
-query_app = typer.Typer()
-app.add_typer(query_app, name="query")
-
 
 @query_app.command("search-terms")
 def query_search_terms(collection: str):
