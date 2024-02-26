@@ -51,9 +51,6 @@ def download_feature(feature, path, options=None):
         fd, tmp = tempfile.mkstemp()  # pylint: disable=invalid-name
         with open(fd, "wb") as file:
             for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
-                if not chunk:
-                    continue
-
                 file.write(chunk)
                 status.add_progress(len(chunk))
 
