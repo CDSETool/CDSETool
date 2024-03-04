@@ -100,6 +100,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
     def __token_exchange(self, data):
         response = requests.post(self.__token_endpoint, data=data, timeout=120)
+        now = datetime.now()
 
         if response.status_code == 401:
             raise InvalidCredentialsException(
@@ -115,10 +116,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
         self.__access_token = response["access_token"]
         self.__refresh_token = response["refresh_token"]
-        self.__access_token_expires = datetime.now() + timedelta(
-            seconds=response["expires_in"]
-        )
-        self.__refresh_token_expires = datetime.now() + timedelta(
+        self.__access_token_expires = now + timedelta(seconds=response["expires_in"])
+        self.__refresh_token_expires = now + timedelta(
             seconds=response["refresh_expires_in"]
         )
 
