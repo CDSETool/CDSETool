@@ -127,11 +127,10 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                 self.__exchange_credentials()
 
             if self.__access_token_expires < datetime.now():
-                if self.__access_token_expires < datetime.now():
-                    if self.__refresh_token_expires < datetime.now():
-                        self.__exchange_credentials()
-                    else:
-                        self.__refresh_access_token()
+                if self.__refresh_token_expires < datetime.now():
+                    self.__exchange_credentials()
+                else:
+                    self.__refresh_access_token()
             self.__validate_tokens()
 
     # validate __access_token and __refresh_token using the jwks certs
