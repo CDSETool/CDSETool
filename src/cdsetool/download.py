@@ -25,13 +25,14 @@ def download_feature(feature, path, options=None):
     options = options or {}
     log = _get_logger(options)
     url = _get_feature_url(feature)
-    filename = feature.get("properties").get("title")
+    title = feature.get("properties").get("title")
 
-    if not url or not filename:
-        log.debug(f"Bad URL ('{url}') or filename ('{filename}')")
+    if not url or not title:
+        log.debug(f"Bad URL ('{url}') or title ('{title}')")
         return feature.get("id")
 
-    result_path = os.path.join(path, filename.replace(".SAFE", ".zip"))
+    filename = title.replace(".SAFE", ".zip")
+    result_path = os.path.join(path, filename)
 
     if not options.get("overwrite_existing", False) and os.path.exists(result_path):
         log.debug(f"File {result_path} already exists, skipping..")
