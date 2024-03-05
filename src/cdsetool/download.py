@@ -25,17 +25,18 @@ def download_feature(feature, path, options=None):
     options = options or {}
     log = _get_logger(options)
     url = _get_feature_url(feature)
-    filename = feature.get("properties").get("title")
+    title = feature.get("properties").get("title")
 
-    if not url or not filename:
-        log.debug(f"Bad URL ('{url}') or filename ('{filename}')")
-        return feature.get("id")
+    if not url or not title:
+        log.debug(f"Bad URL ('{url}') or title ('{title}')")
+        return None
 
-    result_path = os.path.join(path, filename.replace(".SAFE", ".zip"))
+    filename = title.replace(".SAFE", ".zip")
+    result_path = os.path.join(path, filename)
 
     if not options.get("overwrite_existing", False) and os.path.exists(result_path):
         log.debug(f"File {result_path} already exists, skipping..")
-        return feature.get("id")
+        return filename
 
     with _get_monitor(options).status() as status:
         status.set_filename(filename)
@@ -56,7 +57,7 @@ def download_feature(feature, path, options=None):
 
         shutil.move(tmp, result_path)
 
-    return feature.get("id")
+    return filename
 
 
 def download_features(features, path, options=None):

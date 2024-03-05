@@ -39,6 +39,9 @@ test = [
 [project.scripts]
 cdsetool = "cdsetool:cli.main"
 
+[tool.pylint.design]
+max-locals = 20
+
 [tool.pylint.format]
 max-line-length = "88"
 disable="fixme"
