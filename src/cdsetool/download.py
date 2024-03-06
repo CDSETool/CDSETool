@@ -90,7 +90,7 @@ def validity_check(path,temp_path,product_info, verify_checksum: bool = True,opt
         if verify_checksum:
             checksum_comparison  = _checksum_compare(temp_path, product_info)
             if checksum_comparison == None:
-                # No data available for the checksum, the download it's leaved in incomplete format
+                # No data available for the checksum, the download it's left in ".incomplete" format
                 return True
             elif checksum_comparison:
                 shutil.move(temp_path, path)

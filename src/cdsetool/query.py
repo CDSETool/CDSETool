@@ -126,7 +126,7 @@ class FeatureQuery:
         if self.next_url:
             self.next_url = self.next_url.replace("exactCount=1", "exactCount=0")
 
-def query_features(collection, search_terms, fetch_odata = False):
+def query_features(collection, search_terms, fetch_odata = True):
     """
     Returns an iterator over the features matching the search terms
     """
