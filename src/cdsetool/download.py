@@ -120,7 +120,7 @@ def _get_monitor(options):
 def _get_credentials(options):
     return options.get("credentials") or Credentials()
 
-def _set_proxy(options,session):
+def _set_proxy(options, session):
     proxies = options.get("proxies", {})
     if proxies != {}:
         session.proxies.update(proxies)
