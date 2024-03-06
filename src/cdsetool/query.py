@@ -42,10 +42,12 @@ class FeatureQuery:
 
     total_results = None
 
-    def __init__(self, collection, search_terms, proxies = {}):
+    def __init__(self, collection, search_terms, proxies={}):
         self.features = []
         self.proxies = proxies
-        self.next_url = _query_url(collection, {**search_terms, "exactCount": "1"}, proxies)
+        self.next_url = _query_url(
+            collection, {**search_terms, "exactCount": "1"}, proxies
+        )
 
     def __iter__(self):
         return _FeatureIterator(self)
@@ -228,14 +230,15 @@ def _assert_max_inclusive(search_term, max_inclusive):
 _describe_docs = {}
 
 
-def _get_describe_doc(collection, proxies = {}):
+def _get_describe_doc(collection, proxies={}):
     if _describe_docs.get(collection):
         return _describe_docs.get(collection)
 
     res = requests.get(
         "https://catalogue.dataspace.copernicus.eu"
         + f"/resto/api/collections/{collection}/describe.xml",
-        timeout=120, proxies=proxies
+        timeout=120,
+        proxies=proxies,
     )
     assert res.status_code == 200, (
         f"Unable to find collection with name {collection}. Please see "
