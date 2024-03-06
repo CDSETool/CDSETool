@@ -155,7 +155,7 @@ def describe_collection(collection, proxies):
     return parameters
 
 
-def _query_url(collection, search_terms ,proxies):
+def _query_url(collection, search_terms, proxies):
     description = describe_collection(collection, proxies)
 
     query_list = []
