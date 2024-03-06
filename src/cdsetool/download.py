@@ -42,6 +42,7 @@ def download_feature(feature, path, options=None):
         status.set_filename(filename)
 
         session = _get_credentials(options).get_session()
+        session = _set_proxy(options,session) # here set the proxy
         url = _follow_redirect(url, session)
         response = _retry_backoff(url, session, options)
 
@@ -118,3 +119,9 @@ def _get_monitor(options):
 
 def _get_credentials(options):
     return options.get("credentials") or Credentials()
+
+def _set_proxy(options,session):
+    proxies = options.get("proxies", {})
+    if proxies != {}:
+        session.proxies.update(proxies)
+    return session
