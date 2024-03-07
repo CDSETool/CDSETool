@@ -85,11 +85,11 @@ class FeatureQuery:
             self.next_url = self.next_url.replace("exactCount=1", "exactCount=0")
 
 
-def query_features(collection, search_terms):
+def query_features(collection, search_terms, proxies=None):
     """
     Returns an iterator over the features matching the search terms
     """
-    return FeatureQuery(collection, {"maxRecords": 2000, **search_terms})
+    return FeatureQuery(collection, {"maxRecords": 2000, **search_terms}, proxies)
 
 
 def shape_to_wkt(shape):
