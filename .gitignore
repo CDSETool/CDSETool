@@ -1,6 +1,7 @@
 .DS_Store
 .coverage
-
+environment
+main.py
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

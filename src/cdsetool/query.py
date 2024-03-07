@@ -42,9 +42,12 @@ class FeatureQuery:
 
     total_results = None
 
-    def __init__(self, collection, search_terms):
+    def __init__(self, collection, search_terms, proxies=None):
         self.features = []
-        self.next_url = _query_url(collection, {**search_terms, "exactCount": "1"})
+        self.proxies = proxies
+        self.next_url = _query_url(
+            collection, {**search_terms, "exactCount": "1"}, proxies=proxies
+        )
 
     def __iter__(self):
         return _FeatureIterator(self)
@@ -63,7 +66,7 @@ class FeatureQuery:
 
     def __fetch_features(self):
         if self.next_url is not None:
-            res = requests.get(self.next_url, timeout=120).json()
+            res = requests.get(self.next_url, timeout=120, proxies=self.proxies).json()
             self.features += res.get("features") or []
 
             total_results = res.get("properties", {}).get("totalResults")
@@ -82,11 +85,11 @@ class FeatureQuery:
             self.next_url = self.next_url.replace("exactCount=1", "exactCount=0")
 
 
-def query_features(collection, search_terms):
+def query_features(collection, search_terms, proxies=None):
     """
     Returns an iterator over the features matching the search terms
     """
-    return FeatureQuery(collection, {"maxRecords": 2000, **search_terms})
+    return FeatureQuery(collection, {"maxRecords": 2000, **search_terms}, proxies)
 
 
 def shape_to_wkt(shape):
@@ -125,11 +128,11 @@ def geojson_to_wkt(geojson):
     return f"POLYGON({paired_coord})"
 
 
-def describe_collection(collection):
+def describe_collection(collection, proxies=None):
     """
     Get a list of valid options for a given collection in key value pairs
     """
-    content = _get_describe_doc(collection)
+    content = _get_describe_doc(collection, proxies=proxies)
     tree = ElementTree.fromstring(content)
     parameter_node_parent = tree.find(
         "{http://a9.com/-/spec/opensearch/1.1/}Url[@type='application/json']"
@@ -154,8 +157,8 @@ def describe_collection(collection):
     return parameters
 
 
-def _query_url(collection, search_terms):
-    description = describe_collection(collection)
+def _query_url(collection, search_terms, proxies=None):
+    description = describe_collection(collection, proxies=proxies)
 
     query_list = []
     for key, value in search_terms.items():
@@ -227,14 +230,14 @@ def _assert_max_inclusive(search_term, max_inclusive):
 _describe_docs = {}
 
 
-def _get_describe_doc(collection):
+def _get_describe_doc(collection, proxies=None):
     if _describe_docs.get(collection):
         return _describe_docs.get(collection)
-
     res = requests.get(
         "https://catalogue.dataspace.copernicus.eu"
         + f"/resto/api/collections/{collection}/describe.xml",
         timeout=120,
+        proxies=proxies,
     )
     assert res.status_code == 200, (
         f"Unable to find collection with name {collection}. Please see "
