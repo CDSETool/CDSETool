@@ -46,7 +46,7 @@ class FeatureQuery:
         self.features = []
         self.proxies = proxies
         self.next_url = _query_url(
-            collection, {**search_terms, "exactCount": "1"}, proxies
+            collection, {**search_terms, "exactCount": "1"}, proxies=proxies
         )
 
     def __iter__(self):
@@ -128,11 +128,11 @@ def geojson_to_wkt(geojson):
     return f"POLYGON({paired_coord})"
 
 
-def describe_collection(collection, proxies):
+def describe_collection(collection, proxies=None):
     """
     Get a list of valid options for a given collection in key value pairs
     """
-    content = _get_describe_doc(collection, proxies)
+    content = _get_describe_doc(collection, proxies=proxies)
     tree = ElementTree.fromstring(content)
     parameter_node_parent = tree.find(
         "{http://a9.com/-/spec/opensearch/1.1/}Url[@type='application/json']"
@@ -157,8 +157,8 @@ def describe_collection(collection, proxies):
     return parameters
 
 
-def _query_url(collection, search_terms, proxies):
-    description = describe_collection(collection, proxies)
+def _query_url(collection, search_terms, proxies=None):
+    description = describe_collection(collection, proxies=proxies)
 
     query_list = []
     for key, value in search_terms.items():
