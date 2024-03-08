@@ -163,9 +163,8 @@ def validity_check(temp_path, product_info):
             return Validity.VALID
         # Checksum failed
         return Validity.INVALID
-    else:
-        # here it's a partial download logic to implement is TODO
-        return Validity.CONTINUE
+    # here it's a partial download logic to implement is TODO
+    return Validity.CONTINUE
 
 
 def _checksum_compare(temp_path, product_info):
