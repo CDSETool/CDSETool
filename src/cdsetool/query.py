@@ -131,7 +131,7 @@ class FeatureQuery:
             for feature in self.features:
                 if feature.get("id") in map_id_checksum:
                     product_odata = map_id_checksum[feature.get("id")]
-                    # we take the odata and checksums even if they are wrong 
+                    # we take the odata and checksums even if they are wrong
                     # then they are handled by the downloader
                     feature["odata"] = product_odata["odata"]
                     feature["Checksum"] = product_odata["Checksum"]
