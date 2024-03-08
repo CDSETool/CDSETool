@@ -72,6 +72,7 @@ def download_feature(feature, path, options=None):
         if validity_check(tmp, feature) not in (Validity.VALID, Validity.IGNORE):
             log.error(f"Faulty checksum for {filename}")
             os.remove(tmp)
+            return None
         shutil.move(tmp, result_path)
     return filename
 
