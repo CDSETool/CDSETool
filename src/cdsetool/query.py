@@ -97,7 +97,9 @@ class FeatureQuery:
                 if "title" in product["properties"]:
                     list_products.append({"Name": product["properties"]["title"]})
         body["FilterProducts"] = list_products
-        odata_url = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products/OData.CSC.FilterList"
+        url_esa = "https://catalogue.dataspace.copernicus.eu"
+        odata_path = "/odata/v1/Products/OData.CSC.FilterList"
+        odata_url = url_esa + odata_path
         res = self.__get_odata(odata_url, body)
         return res
 
@@ -124,7 +126,7 @@ class FeatureQuery:
                 "odata": product_odata,
             }
         for feature in self.features:
-            if feature.get("id") in map_id_checksum.keys():
+            if feature.get("id") in map_id_checksum:
                 product_odata = map_id_checksum[feature.get("id")]
                 feature["odata"] = product_odata["odata"]
                 feature["Checksum"] = product_odata["Checksum"]
@@ -137,9 +139,7 @@ class FeatureQuery:
                 ):
                     feature["ContentLength"] = product_odata["ContentLength"]
                 else:
-                    print(
-                        f"Warning: content length of {feature.get('id')} does not match the ContentLength in odata"
-                    )
+                    print(f"Warning: {feature.get('id')} no match in sizes")
             else:
                 print(f"Warning: {feature.get('id')} not in odata")
 

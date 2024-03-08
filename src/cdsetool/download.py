@@ -161,9 +161,8 @@ def validity_check(temp_path, product_info):
             return Validity.IGNORE
         if checksum_comparison:
             return Validity.VALID
-        else:
-            # Checksum failed
-            return Validity.INVALID
+        # Checksum failed
+        return Validity.INVALID
     else:
         # here it's a partial download logic to implement is TODO
         return Validity.CONTINUE
