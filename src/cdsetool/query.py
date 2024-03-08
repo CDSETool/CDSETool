@@ -112,7 +112,8 @@ class FeatureQuery:
 
     def __add_odata_to_features(self, odata):
         """
-        Given the odatadict, add the correct checksum,(by matching the Ids), the features
+        Given the odatadict, add the correct checksum,
+        (by matching the Ids), the features
         """
         map_id_checksum = {}
         odata_list_value = odata.get("value", [])

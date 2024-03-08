@@ -10,16 +10,20 @@ import random
 import tempfile
 import time
 import shutil
+import hashlib
+from enum import Enum
+from blake3 import blake3
 from cdsetool._processing import _concurrent_process
 from cdsetool.credentials import Credentials
 from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor
-from enum import Enum
-from blake3 import blake3
-import hashlib
 
 
 class Validity(Enum):
+    """
+    Validity enum for the checksum
+    """
+
     VALID = 1
     INVALID = 2
     IGNORE = 3
@@ -66,7 +70,7 @@ def download_feature(feature, path, options=None):
                 file.write(chunk)
                 status.add_progress(len(chunk))
         valid_checksum = validity_check(tmp, feature)
-        if valid_checksum == Validity.VALID or valid_checksum == Validity.IGNORE:
+        if valid_checksum in (Validity.VALID, Validity.IGNORE):
             shutil.move(tmp, result_path)
         else:
             # TODO here to implement the logic what if the checksum is invalid?
@@ -150,12 +154,12 @@ def validity_check(temp_path, product_info):
     if size > content_length:
         # Dowloaded more than the size of the file.
         return Validity.INVALID
-    elif size == content_length:
+    if size == content_length:
         checksum_comparison = _checksum_compare(temp_path, product_info)
-        if checksum_comparison == None:
+        if checksum_comparison is None:
             # No data available for the checksum
             return Validity.IGNORE
-        elif checksum_comparison:
+        if checksum_comparison:
             return Validity.VALID
         else:
             # Checksum failed
@@ -171,7 +175,7 @@ def _checksum_compare(temp_path, product_info):
     algo = None
     checksum_list = product_info.get("Checksum", [])
     algo, checksum = from_checksum_list_to_checksum(checksum_list)
-    if checksum == None:
+    if checksum is None:
         # no checksum available
         return None
     with open(temp_path, "rb") as f:
@@ -184,7 +188,10 @@ def _checksum_compare(temp_path, product_info):
 
 
 def from_checksum_list_to_checksum(checksum_list):
-    """From a list of checksum (provided by ESA if provided) return the checksum and algo"""
+    """
+    From a list of checksum (provided by ESA if provided)
+    return the checksum and algo
+    """
     if not checksum_list or len(checksum_list) == 0:
         # checksum odata is not provided in the metadata
         return None, None
