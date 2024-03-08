@@ -72,7 +72,9 @@ class FeatureQuery:
             total_results = res.get("properties", {}).get("totalResults")
             if total_results is not None:
                 self.total_results = total_results
-
+            odata = self.__fetch_odata_from_product_list(self.features)
+            if odata:
+                self.__add_odata_to_features(odata)
             self.__set_next_url(res)
 
     def __set_next_url(self, res):
@@ -83,6 +85,62 @@ class FeatureQuery:
 
         if self.next_url:
             self.next_url = self.next_url.replace("exactCount=1", "exactCount=0")
+
+    def __fetch_odata_from_product_list(self, product_list):
+        """
+        Given a product list, return the odata response
+        """
+        body = {}
+        list_products = []
+        for product in product_list:
+            if "properties" in product:
+                if "title" in product["properties"]:
+                    list_products.append({"Name": product["properties"]["title"]})
+        body["FilterProducts"] = list_products
+        odata_url = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products/OData.CSC.FilterList"
+        res = self.__get_odata(odata_url, body)
+        return res
+
+    def __get_odata(self, url, data_json):
+        """
+        From the odata url and request body, get the odata response
+        """
+        res = requests.post(
+            url, json=data_json, timeout=120, proxies=self.proxies
+        ).json()
+        return res
+
+    def __add_odata_to_features(self, odata):
+        """
+        Given the odatadict, add the correct checksum,(by matching the Ids), the features
+        """
+        map_id_checksum = {}
+        odata_list_value = odata.get("value", [])
+        for product_odata in odata_list_value:
+            map_id_checksum[product_odata["Id"]] = {
+                "Checksum": product_odata.get("Checksum", []),
+                "ContentLength": product_odata.get("ContentLength", -1),
+                "odata": product_odata,
+            }
+        for feature in self.features:
+            if feature.get("id") in map_id_checksum.keys():
+                product_odata = map_id_checksum[feature.get("id")]
+                feature["odata"] = product_odata["odata"]
+                feature["Checksum"] = product_odata["Checksum"]
+                if (
+                    feature.get("properties")
+                    .get("services")
+                    .get("download")
+                    .get("size")
+                    == product_odata["ContentLength"]
+                ):
+                    feature["ContentLength"] = product_odata["ContentLength"]
+                else:
+                    print(
+                        f"Warning: content length of {feature.get('id')} does not match the ContentLength in odata"
+                    )
+            else:
+                print(f"Warning: {feature.get('id')} not in odata")
 
 
 def query_features(collection, search_terms, proxies=None):
