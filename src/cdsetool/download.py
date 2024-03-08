@@ -152,10 +152,10 @@ def validity_check(temp_path, product_info):
     )
     if size > content_length:
         return Validity.INVALID
-    if size == content_length:
-        return _checksum_compare(temp_path, product_info)
-    # here it's a partial download logic to implement is TODO
-    return Validity.CONTINUE
+    if size != content_length:
+        # here it's a partial download logic to implement is TODO
+        return Validity.CONTINUE
+    return _checksum_compare(temp_path, product_info)
 
 
 def _checksum_compare(temp_path, product_info):
