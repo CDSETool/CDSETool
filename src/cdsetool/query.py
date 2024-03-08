@@ -142,10 +142,14 @@ class FeatureQuery:
                         .get("size")
                         != product_odata["ContentLength"]
                     ):
-                        # There is problems with the metadata provided by esa as far as
-                        # we know in https://github.com/SDFIdk/CDSETool/issues/40#issuecomment-1931868462
-                        # the sizes could differ but we will still add the odata and checksum to the features
-                        # if the Checksum provided is wrong it's handled by the downloader
+                        # There is problems with the metadata 
+                        # provided by esa as far as
+                        # we know in
+                        # https://github.com/SDFIdk/CDSETool/issues/40#issuecomment-1931868462
+                        # the sizes could differ but we will 
+                        # still add the odata and checksum to the features
+                        # if the Checksum provided is
+                        # wrong it's handled by the downloader
                         self.logger.warning(
                             f"Warning: {feature.get('id')} no match in sizes"
                         )
