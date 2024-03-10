@@ -11,7 +11,6 @@ private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 from cdsetool.credentials import (
     Credentials,
     NoCredentialsException,
-    NoTokenException,
     InvalidCredentialsException,
     TokenExchangeException,
 )
@@ -162,22 +161,6 @@ def test_ensure_tokens(requests_mock, mocker):
     spy = mocker.spy(credentials, "_Credentials__exchange_credentials")
     credentials._Credentials__ensure_tokens()
     spy.assert_called_once()
-
-
-def test_validate_tokens(requests_mock, mocker):
-    _mock_openid(requests_mock)
-    _mock_token(requests_mock)
-    _mock_jwks(mocker)
-
-    credentials = Credentials("username", "password")
-    credentials._Credentials__access_token = None
-    with pytest.raises(NoTokenException, match="No access token found"):
-        credentials._Credentials__validate_tokens()
-
-    credentials = Credentials("username", "password")
-    credentials._Credentials__refresh_token = None
-    with pytest.raises(NoTokenException, match="No refresh token found"):
-        credentials._Credentials__validate_tokens()
 
 
 def test_read_credentials(requests_mock, mocker):
