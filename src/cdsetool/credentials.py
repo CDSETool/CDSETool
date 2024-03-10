@@ -93,25 +93,6 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         session.headers.update({"Authorization": f"Bearer {self.__access_token}"})
         return session
 
-    def __exchange_credentials(self):
-        data = {
-            "grant_type": "password",
-            "username": self.__username,
-            "password": self.__password,
-            "client_id": "cdse-public",
-        }
-
-        self.__token_exchange(data)
-
-    def __refresh_access_token(self):
-        data = {
-            "grant_type": "refresh_token",
-            "refresh_token": self.__refresh_token,
-            "client_id": "cdse-public",
-        }
-
-        self.__token_exchange(data)
-
     def __token_exchange(self, data):
         now = datetime.now()
         response = requests.post(self.__token_endpoint, data=data, timeout=120)
@@ -139,9 +120,19 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         with self.__lock:
             if self.__access_token_expires < datetime.now():
                 if self.__refresh_token_expires < datetime.now():
-                    self.__exchange_credentials()
+                    data = {
+                        "grant_type": "password",
+                        "username": self.__username,
+                        "password": self.__password,
+                        "client_id": "cdse-public",
+                    }
                 else:
-                    self.__refresh_access_token()
+                    data = {
+                        "grant_type": "refresh_token",
+                        "refresh_token": self.__refresh_token,
+                        "client_id": "cdse-public",
+                    }
+                self.__token_exchange(data)
             key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
             jwt.decode(
                 self.__access_token,
