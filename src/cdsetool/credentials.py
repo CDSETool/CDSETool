@@ -73,8 +73,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
         self.__access_token = None
         self.__refresh_token = None
-        self.__access_token_expires = None
-        self.__refresh_token_expires = None
+        self.__access_token_expires = datetime.now()
+        self.__refresh_token_expires = datetime.now()
 
         self.__lock = threading.Lock()
 
@@ -137,9 +137,6 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
     def __ensure_tokens(self):
         with self.__lock:
-            if self.__access_token is None:
-                self.__exchange_credentials()
-
             if self.__access_token_expires < datetime.now():
                 if self.__refresh_token_expires < datetime.now():
                     self.__exchange_credentials()
