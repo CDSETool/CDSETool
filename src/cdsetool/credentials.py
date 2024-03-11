@@ -22,10 +22,24 @@ class InvalidCredentialsException(Exception):
     """
 
 
-class NoTokenException(Exception):
+class DeprecatedNoTokenException(Exception):
+    """
+    Deprecated
+    """
+
+
+def NoTokenException(*args, **kwargs):  # pylint: disable=invalid-name
     """
     Raised when no token is available
     """
+    from warnings import warn  # pylint: disable=import-outside-toplevel
+
+    error_msg = [
+        "Warning! NoTokenException is deprecated, and will be removed in"
+        "the next major release."
+    ]
+    warn(" ".join(error_msg))
+    return DeprecatedNoTokenException(*args, **kwargs)
 
 
 class TokenExchangeException(Exception):
@@ -59,8 +73,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
         self.__access_token = None
         self.__refresh_token = None
-        self.__access_token_expires = None
-        self.__refresh_token_expires = None
+        self.__access_token_expires = datetime.now()
+        self.__refresh_token_expires = datetime.now()
 
         self.__lock = threading.Lock()
 
@@ -78,25 +92,6 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         session = requests.Session()
         session.headers.update({"Authorization": f"Bearer {self.__access_token}"})
         return session
-
-    def __exchange_credentials(self):
-        data = {
-            "grant_type": "password",
-            "username": self.__username,
-            "password": self.__password,
-            "client_id": "cdse-public",
-        }
-
-        self.__token_exchange(data)
-
-    def __refresh_access_token(self):
-        data = {
-            "grant_type": "refresh_token",
-            "refresh_token": self.__refresh_token,
-            "client_id": "cdse-public",
-        }
-
-        self.__token_exchange(data)
 
     def __token_exchange(self, data):
         now = datetime.now()
@@ -123,31 +118,28 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
     def __ensure_tokens(self):
         with self.__lock:
-            if self.__access_token is None:
-                self.__exchange_credentials()
-
             if self.__access_token_expires < datetime.now():
                 if self.__refresh_token_expires < datetime.now():
-                    self.__exchange_credentials()
+                    data = {
+                        "grant_type": "password",
+                        "username": self.__username,
+                        "password": self.__password,
+                        "client_id": "cdse-public",
+                    }
                 else:
-                    self.__refresh_access_token()
-            self.__validate_tokens()
-
-    # validate __access_token and __refresh_token using the jwks certs
-    def __validate_tokens(self):
-        if self.__access_token is None:
-            raise NoTokenException("No access token found")
-
-        if self.__refresh_token is None:
-            raise NoTokenException("No refresh token found")
-
-        key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
-        jwt.decode(
-            self.__access_token,
-            key=key.key,
-            algorithms=key._algorithms,  # pylint: disable=protected-access
-            options={"verify_aud": False},
-        )
+                    data = {
+                        "grant_type": "refresh_token",
+                        "refresh_token": self.__refresh_token,
+                        "client_id": "cdse-public",
+                    }
+                self.__token_exchange(data)
+            key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
+            jwt.decode(
+                self.__access_token,
+                key=key.key,
+                algorithms=key._algorithms,  # pylint: disable=protected-access
+                options={"verify_aud": False},
+            )
 
     def __read_credentials(self):
         try:
@@ -196,8 +188,6 @@ def validate_credentials(username=None, password=None):
     except NoCredentialsException:
         return False
     except InvalidCredentialsException:
-        return False
-    except NoTokenException:
         return False
     except TokenExchangeException:
         return False

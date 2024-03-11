@@ -11,7 +11,6 @@ private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 from cdsetool.credentials import (
     Credentials,
     NoCredentialsException,
-    NoTokenException,
     InvalidCredentialsException,
     TokenExchangeException,
 )
@@ -149,7 +148,7 @@ def test_ensure_tokens(requests_mock, mocker):
     credentials._Credentials__access_token_expires = (
         datetime.datetime.now() - datetime.timedelta(hours=100)
     )
-    spy = mocker.spy(credentials, "_Credentials__refresh_access_token")
+    spy = mocker.spy(credentials, "_Credentials__token_exchange")
     credentials._Credentials__ensure_tokens()
     spy.assert_called_once()
 
@@ -159,25 +158,8 @@ def test_ensure_tokens(requests_mock, mocker):
     credentials._Credentials__refresh_token_expires = (
         datetime.datetime.now() - datetime.timedelta(hours=100)
     )
-    spy = mocker.spy(credentials, "_Credentials__exchange_credentials")
     credentials._Credentials__ensure_tokens()
-    spy.assert_called_once()
-
-
-def test_validate_tokens(requests_mock, mocker):
-    _mock_openid(requests_mock)
-    _mock_token(requests_mock)
-    _mock_jwks(mocker)
-
-    credentials = Credentials("username", "password")
-    credentials._Credentials__access_token = None
-    with pytest.raises(NoTokenException, match="No access token found"):
-        credentials._Credentials__validate_tokens()
-
-    credentials = Credentials("username", "password")
-    credentials._Credentials__refresh_token = None
-    with pytest.raises(NoTokenException, match="No refresh token found"):
-        credentials._Credentials__validate_tokens()
+    assert spy.call_count == 2
 
 
 def test_read_credentials(requests_mock, mocker):
@@ -214,8 +196,9 @@ def test_refresh_token(requests_mock, mocker):
     _mock_token(requests_mock)  # mock again to return a new token
 
     prev_access_token = credentials._Credentials__access_token
-    credentials._Credentials__access_token = None
-    credentials._Credentials__refresh_access_token()
+    credentials._Credentials__access_token_expires = datetime.datetime.now()
+    credentials._Credentials__refresh_token_expires = datetime.datetime.now()
+    credentials._Credentials__ensure_tokens()
 
     assert credentials._Credentials__access_token is not None
     assert credentials._Credentials__refresh_token is not None
