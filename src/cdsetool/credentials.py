@@ -8,6 +8,8 @@ import netrc
 import threading
 import requests
 import jwt
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 
 class NoCredentialsException(Exception):
@@ -63,6 +65,12 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         self.__username = username
         self.__password = password
 
+        self.__retries = Retry(
+            total=5,
+            backoff_factor=0.5,
+            raise_on_status=False,
+            status_forcelist=Retry.RETRY_AFTER_STATUS_CODES,
+        )
         self.__openid_conf = None
         self.__jwks = None
         self.__openid_configuration_endpoint = (
@@ -87,15 +95,34 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         """
         Returns a session with the credentials set as the Authorization header
         """
-        self.__ensure_tokens()
+        return self.__make_session(True, self.__retries)
+
+    def __make_session(self, authorization, max_retries):
+        if authorization:
+            self.__ensure_tokens()
 
         session = requests.Session()
-        session.headers.update({"Authorization": f"Bearer {self.__access_token}"})
+        session.mount("http://", HTTPAdapter(max_retries=max_retries))
+        session.mount("https://", HTTPAdapter(max_retries=max_retries))
+        if authorization:
+            session.headers.update({"Authorization": f"Bearer {self.__access_token}"})
         return session
 
     def __token_exchange(self, data):
+        # Make a session that will retry post, respecting the retry-after
+        # header when we get a 503 and a few other temporary failures.
+        session = self.__make_session(
+            authorization=False,
+            max_retries=Retry(
+                total=2,
+                backoff_factor=0.5,
+                allowed_methods=None,
+                raise_on_status=False,
+                status_forcelist=Retry.RETRY_AFTER_STATUS_CODES,
+            ),
+        )
         now = datetime.now()
-        response = requests.post(self.__token_endpoint, data=data, timeout=120)
+        response = session.post(self.__token_endpoint, data=data, timeout=120)
 
         if response.status_code == 401:
             raise InvalidCredentialsException(
@@ -154,7 +181,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         if self.__openid_conf:
             return self.__openid_conf
 
-        response = requests.get(self.__openid_configuration_endpoint, timeout=120)
+        session = self.__make_session(authorization=False, max_retries=self.__retries)
+        response = session.get(self.__openid_configuration_endpoint, timeout=120)
         response.raise_for_status()
         self.__openid_conf = response.json()
         return self.__openid_conf
