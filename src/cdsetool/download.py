@@ -21,6 +21,7 @@ from cdsetool.monitor import NoopMonitor
 
 @dataclass
 class DownloadResult:
+    feature: dict
     """
     Abstract base class for download results
     """
@@ -32,9 +33,7 @@ class DownloadSuccess(DownloadResult):
     Result class for successful downloads
     """
 
-    def __init__(self, feature, filename):
-        self.feature = feature
-        self.filename = filename
+    filename: str
 
     def __str__(self):
         return f"Downloaded {self.feature.get('id')} to {self.filename}"
@@ -46,9 +45,7 @@ class DownloadFailure(DownloadResult):
     Result class for failed downloads
     """
 
-    def __init__(self, feature, message):
-        self.feature = feature
-        self.message = message
+    message: str
 
     def __str__(self):
         return f"Failed to download {self.feature.get('id')}: {self.message}"
