@@ -10,33 +10,76 @@ import random
 import tempfile
 import time
 import shutil
+
+from dataclasses import dataclass
+
 from cdsetool._processing import _concurrent_process
 from cdsetool.credentials import Credentials
 from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor
 
 
+@dataclass
+class DownloadResult:
+    """
+    Abstract base class for download results
+    """
+
+
+@dataclass
+class DownloadSuccess(DownloadResult):
+    """
+    Result class for successful downloads
+    """
+
+    def __init__(self, feature, filename):
+        self.feature = feature
+        self.filename = filename
+
+    def __str__(self):
+        return f"Downloaded {self.feature.get('id')} to {self.filename}"
+
+
+@dataclass
+class DownloadFailure(DownloadResult):
+    """
+    Result class for failed downloads
+    """
+
+    def __init__(self, feature, message):
+        self.feature = feature
+        self.message = message
+
+    def __str__(self):
+        return f"Failed to download {self.feature.get('id')}: {self.message}"
+
+
 def download_feature(feature, path, options=None):
     """
     Download a single feature
 
-    Returns the feature ID
+    Returns a DownloadSuccess object if the download was successful, or a
+    DownloadFailure object if the download failed.
     """
     options = options or {}
     log = _get_logger(options)
     url = _get_feature_url(feature)
     title = feature.get("properties").get("title")
 
-    if not url or not title:
-        log.debug(f"Bad URL ('{url}') or title ('{title}')")
-        return None
+    if not url:
+        log.debug(f"Bad URL ('{url}')")
+        return DownloadFailure(feature, "Feature has no download URL")
+
+    if not title:
+        log.debug(f"Bad title ('{title}')")
+        return DownloadFailure(feature, "Feature has no title")
 
     filename = title.replace(".SAFE", ".zip")
     result_path = os.path.join(path, filename)
 
     if not options.get("overwrite_existing", False) and os.path.exists(result_path):
         log.debug(f"File {result_path} already exists, skipping..")
-        return filename
+        return DownloadSuccess(feature, result_path)
 
     with _get_monitor(options).status() as status:
         (fd, tmp) = tempfile.mkstemp()  # pylint: disable=invalid-name
@@ -61,11 +104,11 @@ def download_feature(feature, path, options=None):
                         status.add_progress(len(chunk))
 
                 shutil.move(tmp, result_path)
-                return filename
+                return DownloadSuccess(feature, result_path)
     log.error(f"Failed to download {filename}")
     os.close(fd)
     os.remove(tmp)
-    return None
+    return DownloadFailure(feature, "Failed to download after 5 attempts")
 
 
 def download_features(features, path, options=None):
