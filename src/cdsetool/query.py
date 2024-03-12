@@ -74,8 +74,8 @@ class FeatureQuery:
             total_results = res.get("properties", {}).get("totalResults")
             if total_results is not None:
                 self.total_results = total_results
-            self.__fetch_odata_from_product_list(
-                self.__add_odata_to_features(self.features)
+            self.__add_odata_to_features(
+                self.__fetch_odata_from_product_list(self.features)
             )
             self.__set_next_url(res)
 
@@ -231,7 +231,6 @@ def describe_collection(collection, proxies=None):
 
 def _query_url(collection, search_terms, proxies=None):
     description = describe_collection(collection, proxies=proxies)
-
     query_list = []
     for key, value in search_terms.items():
         val = _serialize_search_term(value)
