@@ -39,26 +39,35 @@ def download_feature(feature, path, options=None):
         return filename
 
     with _get_monitor(options).status() as status:
+        (fd, tmp) = tempfile.mkstemp()  # pylint: disable=invalid-name
         status.set_filename(filename)
+        attempts = 0
+        while attempts < 5:
+            # Always get a new session, credentials might have expired.
+            session = _set_proxy(options, _get_credentials(options).get_session())
+            url = _follow_redirect(url, session)
+            with session.get(url, stream=True) as response:
+                if response.status_code != 200:
+                    log.warning(f"Status code {response.status_code}, retrying..")
+                    attempts += 1
+                    time.sleep(60 * (1 + (random.random() / 4)))
+                    continue
 
-        session = _get_credentials(options).get_session()
-        session = _set_proxy(options, session)  # here set the proxy
-        url = _follow_redirect(url, session)
-        response = _retry_backoff(url, session, options)
+                content_length = int(response.headers["Content-Length"])
 
-        content_length = int(response.headers["Content-Length"])
+                status.set_filesize(content_length)
 
-        status.set_filesize(content_length)
+                with open(fd, "wb") as file:
+                    for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
+                        file.write(chunk)
+                        status.add_progress(len(chunk))
 
-        fd, tmp = tempfile.mkstemp()  # pylint: disable=invalid-name
-        with open(fd, "wb") as file:
-            for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
-                file.write(chunk)
-                status.add_progress(len(chunk))
-
-        shutil.move(tmp, result_path)
-
-    return filename
+                shutil.move(tmp, result_path)
+                return filename
+    log.error(f"Failed to download {filename}")
+    os.close(fd)
+    os.remove(tmp)
+    return None
 
 
 def download_features(features, path, options=None):
@@ -97,16 +106,6 @@ def _follow_redirect(url, session):
         response = session.head(url, allow_redirects=False)
 
     return url
-
-
-def _retry_backoff(url, session, options):
-    response = session.get(url, stream=True)
-    while response.status_code != 200:
-        options["logger"].warning(f"Status code {response.status_code}, retrying..")
-        time.sleep(60 * (1 + (random.random() / 4)))
-        response = session.get(url, stream=True)
-
-    return response
 
 
 def _get_logger(options):
