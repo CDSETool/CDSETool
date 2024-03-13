@@ -33,6 +33,10 @@ def _mock_sentinel_1(requests_mock):
             "tests/query/mock/sentinel_1/page_5.json",
             "https://catalogue.dataspace.copernicus.eu/resto/api/collections/Sentinel1/search.json?maxRecords=10&exactCount=0&page=5",
         ),
+        (
+            "tests/query/mock/sentinel_1/page_6.json",
+            "https://catalogue.dataspace.copernicus.eu/odata/v1/Products/OData.CSC.FilterList",
+        ),
     ]
 
     for file, url in urls:
