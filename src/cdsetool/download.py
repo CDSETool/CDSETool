@@ -44,7 +44,7 @@ def download_feature(feature, path, options=None):
         attempts = 0
         while attempts < 5:
             # Always get a new session, credentials might have expired.
-            session = _set_proxy(options, _get_credentials(options).get_session())
+            session = _get_credentials(options).get_session()
             url = _follow_redirect(url, session)
             with session.get(url, stream=True) as response:
                 if response.status_code != 200:
@@ -117,11 +117,6 @@ def _get_monitor(options):
 
 
 def _get_credentials(options):
-    return options.get("credentials") or Credentials()
-
-
-def _set_proxy(options, session):
-    proxies = options.get("proxies", {})
-    if proxies != {}:
-        session.proxies.update(proxies)
-    return session
+    return options.get("credentials") or Credentials(
+        proxies=options.get("proxies", None)
+    )
