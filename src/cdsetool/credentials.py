@@ -61,10 +61,12 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         username=None,
         password=None,
         openid_configuration_endpoint=None,
+        proxies=None,
     ):
         self.__username = username
         self.__password = password
 
+        self.__proxies = proxies
         self.__retries = Retry(
             total=5,
             backoff_factor=0.5,
@@ -95,15 +97,17 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         """
         Returns a session with the credentials set as the Authorization header
         """
-        return self.__make_session(True, self.__retries)
+        return self.__make_session(True, self.__retries, self.__proxies)
 
-    def __make_session(self, authorization, max_retries):
+    def __make_session(self, authorization, max_retries, proxies):
         if authorization:
             self.__ensure_tokens()
 
         session = requests.Session()
         session.mount("http://", HTTPAdapter(max_retries=max_retries))
         session.mount("https://", HTTPAdapter(max_retries=max_retries))
+        if proxies is not None:
+            session.proxies.update(proxies)
         if authorization:
             session.headers.update({"Authorization": f"Bearer {self.__access_token}"})
         return session
@@ -120,6 +124,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                 raise_on_status=False,
                 status_forcelist=Retry.RETRY_AFTER_STATUS_CODES,
             ),
+            proxies=self.__proxies,
         )
         now = datetime.now()
         response = session.post(self.__token_endpoint, data=data, timeout=120)
@@ -181,7 +186,9 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         if self.__openid_conf:
             return self.__openid_conf
 
-        session = self.__make_session(authorization=False, max_retries=self.__retries)
+        session = self.__make_session(
+            authorization=False, max_retries=self.__retries, proxies=self.__proxies
+        )
         response = session.get(self.__openid_configuration_endpoint, timeout=120)
         response.raise_for_status()
         self.__openid_conf = response.json()
