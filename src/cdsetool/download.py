@@ -53,9 +53,7 @@ def download_feature(feature, path, options=None):
                     time.sleep(60 * (1 + (random.random() / 4)))
                     continue
 
-                content_length = int(response.headers["Content-Length"])
-
-                status.set_filesize(content_length)
+                status.set_filesize(int(response.headers["Content-Length"]))
 
                 with open(fd, "wb") as file:
                     for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
