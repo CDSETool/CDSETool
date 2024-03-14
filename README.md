@@ -71,7 +71,7 @@ cdsetool download Sentinel2 PATH/TO/DIR --concurrency 4 --search-term startDate=
 Install `cdsetool` using pip:
 
 ```bash
-pip install cdsetool==0.2.6
+pip install cdsetool==0.2.7
 ```
 
 ## Usage
