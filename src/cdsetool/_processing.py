@@ -50,7 +50,6 @@ def _concurrent_process(fun, iterable, workers=4):
             done, futures = wait(futures, return_when=FIRST_COMPLETED)
             futures = list(futures)
 
-            # Yield the results of the completed futures
             for future in done:
                 yield future.result()
 
