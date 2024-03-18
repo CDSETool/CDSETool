@@ -10,7 +10,7 @@ import random
 import tempfile
 import time
 import shutil
-from typing import Optional
+from typing import Optional, Dict
 from dataclasses import dataclass
 
 from cdsetool._processing import _concurrent_process
@@ -27,7 +27,7 @@ class DownloadResult:
     """
 
     success: bool
-    feature: dict[str, any]
+    feature: Dict[str, any]
     filename: Optional[str]
     message: Optional[str]
 
