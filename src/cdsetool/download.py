@@ -33,8 +33,10 @@ class DownloadResult:
 
     def __str__(self):
         if self.success:
-            return (f"Downloaded {self.feature.get('id')}"
-                    "to {self.filename}: {self.message}")
+            return (
+                f"Downloaded {self.feature.get('id')}"
+                "to {self.filename}: {self.message}"
+            )
 
         return f"Failed to download {self.feature.get('id')}: {self.message}"
 
