@@ -67,14 +67,16 @@ class FeatureQuery:
     def __fetch_features(self):
         if self.next_url is None:
             return
-        res = requests.get(self.next_url, timeout=120, proxies=self.proxies).json()
-        self.features += res.get("features") or []
+        with requests.get(self.next_url, timeout=120, proxies=self.proxies) as response:
+            response.raise_for_status()
+            res = response.json()
+            self.features += res.get("features") or []
 
-        total_results = res.get("properties", {}).get("totalResults")
-        if total_results is not None:
-            self.total_results = total_results
+            total_results = res.get("properties", {}).get("totalResults")
+            if total_results is not None:
+                self.total_results = total_results
 
-        self.__set_next_url(res)
+            self.__set_next_url(res)
 
     def __set_next_url(self, res):
         links = res.get("properties", {}).get("links") or []
