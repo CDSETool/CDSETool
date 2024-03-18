@@ -33,10 +33,16 @@ class DownloadResult:
 
     @staticmethod
     def ok(feature, filename):
+        """
+        Create a successful DownloadResult
+        """
         return DownloadResult(True, feature, filename, None)
 
     @staticmethod
     def fail(feature, message):
+        """
+        Create a failed DownloadResult
+        """
         return DownloadResult(False, feature, None, message)
 
     def __str__(self):

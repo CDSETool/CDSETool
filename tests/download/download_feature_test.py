@@ -38,10 +38,7 @@ def test_skip_existing_file(tmpdir, feature):
     assert res.success is True
     assert res.filename == filename
     assert res.message is None
-    assert (
-        str(res)
-        == f"Downloaded {feature.get('id')} to {filename}"
-    )
+    assert str(res) == f"Downloaded {feature.get('id')} to {filename}"
 
 
 @pytest.fixture()

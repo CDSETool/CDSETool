@@ -9,10 +9,7 @@ def test_download_success(feature):
     assert res.success is True
     assert res.filename == "filename.zip"
     assert res.message is None
-    assert (
-        str(res)
-        == f"Downloaded {feature.get('id')} to filename.zip"
-    )
+    assert str(res) == f"Downloaded {feature.get('id')} to filename.zip"
 
 
 def test_download_failure(feature):
