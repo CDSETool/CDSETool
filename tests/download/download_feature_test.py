@@ -3,14 +3,15 @@ import json
 import tempfile
 import os
 
-from cdsetool.download import DownloadSuccess, DownloadFailure, download_feature
+from cdsetool.download import DownloadResult, download_feature
 
 
 def test_feature_missing_url(tmpdir, feature):
     del feature["properties"]["services"]["download"]["url"]
 
     res = download_feature(feature, tmpdir)
-    assert isinstance(res, DownloadFailure)
+    assert res.success is False
+    assert res.filename is not None
     assert (
         str(res)
         == f"Failed to download {feature.get('id')}: Feature has no download URL"
@@ -21,21 +22,24 @@ def test_feature_missing_title(tmpdir, feature):
     del feature["properties"]["title"]
 
     res = download_feature(feature, tmpdir)
-    assert isinstance(res, DownloadFailure)
+    assert res.success is False
+    assert res.filename is None
     assert str(res) == f"Failed to download {feature.get('id')}: Feature has no title"
 
 
 def test_skip_existing_file(tmpdir, feature):
-    tmpfile = os.path.join(
-        tmpdir, feature["properties"]["title"].replace(".SAFE", ".zip")
-    )
+    filename = feature["properties"]["title"].replace(".SAFE", ".zip")
+    tmpfile = os.path.join(tmpdir, filename)
     with open(tmpfile, "w") as f:
         f.write("somebytes")
 
     res = download_feature(feature, tmpdir)
-    assert isinstance(res, DownloadSuccess)
-    assert res.filename == tmpfile
-    assert str(res) == f"Downloaded {feature.get('id')} to {tmpfile}"
+    assert res.success is True
+    assert res.filename == filename
+    assert (
+        str(res)
+        == f"Downloaded {feature.get('id')} to {filename}: File already exists in destination path (skipped)"
+    )
 
 
 @pytest.fixture()

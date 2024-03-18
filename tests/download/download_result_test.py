@@ -1,23 +1,29 @@
 import pytest
 import json
 
-from cdsetool.download import DownloadSuccess, DownloadFailure
+from cdsetool.download import DownloadResult
 
 
-def test_download_success():
+def test_download_success(feature):
+    res = DownloadResult(True, feature, "filename.zip", "Downloaded successfully")
+    assert res.success is True
+    assert res.filename == "filename.zip"
+    assert res.message == "Downloaded successfully"
     assert (
-        str(DownloadSuccess(_feature(), "myfilepath"))
-        == "Downloaded 171fd093-b1bc-4528-910b-73156cd0b5d3 to myfilepath"
+        str(res)
+        == f"Downloaded {feature.get('id')} to filename.zip: Downloaded successfully"
     )
 
 
-def test_download_failure():
-    assert (
-        str(DownloadFailure(_feature(), "something happened"))
-        == "Failed to download 171fd093-b1bc-4528-910b-73156cd0b5d3: something happened"
-    )
+def test_download_failure(feature):
+    res = DownloadResult(False, feature, "filename.tar.gz", "something happened")
+    assert res.success is False
+    assert res.filename == "filename.tar.gz"
+    assert res.message == "something happened"
+    assert str(res) == f"Failed to download {feature.get('id')}: something happened"
 
 
-def _feature():
+@pytest.fixture
+def feature():
     with open("tests/download/mock/feature.json") as f:
         return json.load(f)
