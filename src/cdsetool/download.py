@@ -10,7 +10,7 @@ import random
 import tempfile
 import time
 import shutil
-
+from typing import Optional
 from dataclasses import dataclass
 
 from cdsetool._processing import _concurrent_process
@@ -27,16 +27,21 @@ class DownloadResult:
     """
 
     success: bool
-    feature: dict
-    filename: str
-    message: str
+    feature: dict[str, any]
+    filename: Optional[str]
+    message: Optional[str]
+
+    @staticmethod
+    def ok(feature, filename):
+        return DownloadResult(True, feature, filename, None)
+
+    @staticmethod
+    def fail(feature, message):
+        return DownloadResult(False, feature, None, message)
 
     def __str__(self):
         if self.success:
-            return (
-                f"Downloaded {self.feature.get('id')}"
-                "to {self.filename}: {self.message}"
-            )
+            return f"Downloaded {self.feature.get('id')} to {self.filename}"
 
         return f"Failed to download {self.feature.get('id')}: {self.message}"
 
@@ -52,22 +57,20 @@ def download_feature(feature, path, options=None):
     url = _get_feature_url(feature)
     title = feature.get("properties").get("title")
 
+    if not url:
+        log.debug(f"Bad URL ('{url}')")
+        return DownloadResult.fail(feature, "Feature has no download URL")
+
     if not title:
         log.debug(f"Bad title ('{title}')")
-        return DownloadResult(False, feature, None, "Feature has no title")
+        return DownloadResult.fail(feature, "Feature has no title")
 
     filename = title.replace(".SAFE", ".zip")
     result_path = os.path.join(path, filename)
 
-    if not url:
-        log.debug(f"Bad URL ('{url}')")
-        return DownloadResult(False, feature, filename, "Feature has no download URL")
-
     if not options.get("overwrite_existing", False) and os.path.exists(result_path):
         log.debug(f"File {result_path} already exists, skipping..")
-        return DownloadResult(
-            True, feature, filename, "File already exists in destination path (skipped)"
-        )
+        return DownloadResult.ok(feature, filename)
 
     with _get_monitor(options).status() as status:
         (fd, tmp) = tempfile.mkstemp()  # pylint: disable=invalid-name
@@ -92,15 +95,11 @@ def download_feature(feature, path, options=None):
                         status.add_progress(len(chunk))
 
                 shutil.move(tmp, result_path)
-                return DownloadResult(
-                    True, feature, filename, "Downloaded successfully"
-                )
+                return DownloadResult.ok(feature, filename)
     log.error(f"Failed to download {filename}")
     os.close(fd)
     os.remove(tmp)
-    return DownloadResult(
-        False, feature, filename, "Failed to download after 5 attempts"
-    )
+    return DownloadResult.fail(feature, "Failed to download after 5 attempts")
 
 
 def download_features(features, path, options=None):

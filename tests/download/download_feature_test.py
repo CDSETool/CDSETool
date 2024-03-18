@@ -11,7 +11,8 @@ def test_feature_missing_url(tmpdir, feature):
 
     res = download_feature(feature, tmpdir)
     assert res.success is False
-    assert res.filename is not None
+    assert res.filename is None
+    assert res.message == "Feature has no download URL"
     assert (
         str(res)
         == f"Failed to download {feature.get('id')}: Feature has no download URL"
@@ -36,9 +37,10 @@ def test_skip_existing_file(tmpdir, feature):
     res = download_feature(feature, tmpdir)
     assert res.success is True
     assert res.filename == filename
+    assert res.message is None
     assert (
         str(res)
-        == f"Downloaded {feature.get('id')} to {filename}: File already exists in destination path (skipped)"
+        == f"Downloaded {feature.get('id')} to {filename}"
     )
 
 
