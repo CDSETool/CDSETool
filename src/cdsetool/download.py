@@ -11,7 +11,7 @@ import tempfile
 import time
 import shutil
 from cdsetool._processing import _concurrent_process
-from cdsetool.credentials import Credentials
+from cdsetool.credentials import Credentials, TokenClientConnectionError
 from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor
 
@@ -44,7 +44,11 @@ def download_feature(feature, path, options=None):
         attempts = 0
         while attempts < 5:
             # Always get a new session, credentials might have expired.
-            session = _get_credentials(options).get_session()
+            try:
+                session = _get_credentials(options).get_session()
+            except TokenClientConnectionError as e:
+                log.warning(e)
+                continue
             url = _follow_redirect(url, session)
             with session.get(url, stream=True) as response:
                 if response.status_code != 200:
