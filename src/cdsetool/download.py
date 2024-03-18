@@ -85,10 +85,9 @@ def download_features(features, path, options=None):
     def _download_feature(feature):
         return download_feature(feature, path, options)
 
-    for feature in _concurrent_process(
+    yield from _concurrent_process(
         _download_feature, features, options.get("concurrency", 1)
-    ):
-        yield feature
+    )
 
     options["monitor"].stop()
 
