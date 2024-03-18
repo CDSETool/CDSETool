@@ -50,6 +50,12 @@ class TokenExchangeException(Exception):
     """
 
 
+class TokenClientConnectionError(Exception):
+    """
+    Raised when token connection fails.
+    """
+
+
 class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-instance-attributes
     """
     A class for handling credentials for the Copernicus Identity
@@ -165,7 +171,10 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                         "client_id": "cdse-public",
                     }
                 self.__token_exchange(data)
-            key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
+            try:
+                key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
+            except jwt.PyJWKClientConnectionError as e:
+                raise TokenClientConnectionError from e
             jwt.decode(
                 self.__access_token,
                 key=key.key,
