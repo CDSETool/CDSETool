@@ -65,8 +65,11 @@ class FeatureQuery:
         return self.features[index]
 
     def __fetch_features(self):
-        if self.next_url is not None:
-            res = requests.get(self.next_url, timeout=120, proxies=self.proxies).json()
+        if self.next_url is None:
+            return
+        with requests.get(self.next_url, timeout=120, proxies=self.proxies) as response:
+            response.raise_for_status()
+            res = response.json()
             self.features += res.get("features") or []
 
             total_results = res.get("properties", {}).get("totalResults")
