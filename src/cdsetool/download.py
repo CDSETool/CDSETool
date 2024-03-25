@@ -77,7 +77,10 @@ def download_feature(feature, path, options=None):
                     for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
                         file.write(chunk)
                         status.add_progress(len(chunk))
-                if validity_check(tmp, feature) not in (Validity.VALID, Validity.IGNORE):
+                if validity_check(tmp, feature) not in (
+                    Validity.VALID,
+                    Validity.IGNORE,
+                ):
                     log.error(f"Faulty checksum for {filename}")
                     os.remove(tmp)
                     return None
@@ -135,7 +138,10 @@ def _get_monitor(options):
 
 
 def _get_credentials(options):
-    return options.get("credentials") or Credentials(proxies=options.get("proxies", None))
+    return options.get("credentials") or Credentials(
+        proxies=options.get("proxies", None)
+    )
+
 
 def validity_check(temp_path, product_info):
     """Given it's temp_path and metadata info checks if the data downloaded is valid"""
@@ -182,4 +188,3 @@ def from_checksum_list_to_checksum(checksum_list):
         "BLAKE3": blake3(),
     }.get(algo)
     return algo, checksum
-
