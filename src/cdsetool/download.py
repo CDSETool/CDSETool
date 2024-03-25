@@ -14,7 +14,7 @@ import hashlib
 from enum import Enum
 from blake3 import blake3
 from cdsetool._processing import _concurrent_process
-from cdsetool.credentials import Credentials
+from cdsetool.credentials import Credentials, TokenClientConnectionError
 from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor
 
@@ -53,28 +53,40 @@ def download_feature(feature, path, options=None):
         return filename
 
     with _get_monitor(options).status() as status:
+        (fd, tmp) = tempfile.mkstemp()  # pylint: disable=invalid-name
         status.set_filename(filename)
+        attempts = 0
+        while attempts < 5:
+            # Always get a new session, credentials might have expired.
+            try:
+                session = _get_credentials(options).get_session()
+            except TokenClientConnectionError as e:
+                log.warning(e)
+                continue
+            url = _follow_redirect(url, session)
+            with session.get(url, stream=True) as response:
+                if response.status_code != 200:
+                    log.warning(f"Status code {response.status_code}, retrying..")
+                    attempts += 1
+                    time.sleep(60 * (1 + (random.random() / 4)))
+                    continue
 
-        session = _get_credentials(options).get_session()
-        session = _set_proxy(options, session)  # here set the proxy
-        url = _follow_redirect(url, session)
-        response = _retry_backoff(url, session, options)
+                status.set_filesize(int(response.headers["Content-Length"]))
 
-        content_length = int(response.headers["Content-Length"])
-
-        status.set_filesize(content_length)
-
-        fd, tmp = tempfile.mkstemp()  # pylint: disable=invalid-name
-        with open(fd, "wb") as file:
-            for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
-                file.write(chunk)
-                status.add_progress(len(chunk))
-        if validity_check(tmp, feature) not in (Validity.VALID, Validity.IGNORE):
-            log.error(f"Faulty checksum for {filename}")
-            os.remove(tmp)
-            return None
-        shutil.move(tmp, result_path)
-    return filename
+                with open(fd, "wb") as file:
+                    for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
+                        file.write(chunk)
+                        status.add_progress(len(chunk))
+                if validity_check(tmp, feature) not in (Validity.VALID, Validity.IGNORE):
+                    log.error(f"Faulty checksum for {filename}")
+                    os.remove(tmp)
+                    return None
+                shutil.move(tmp, result_path)
+                return filename
+    log.error(f"Failed to download {filename}")
+    os.close(fd)
+    os.remove(tmp)
+    return None
 
 
 def download_features(features, path, options=None):
@@ -94,10 +106,9 @@ def download_features(features, path, options=None):
     def _download_feature(feature):
         return download_feature(feature, path, options)
 
-    for feature in _concurrent_process(
+    yield from _concurrent_process(
         _download_feature, features, options.get("concurrency", 1)
-    ):
-        yield feature
+    )
 
     options["monitor"].stop()
 
@@ -115,16 +126,6 @@ def _follow_redirect(url, session):
     return url
 
 
-def _retry_backoff(url, session, options):
-    response = session.get(url, stream=True)
-    while response.status_code != 200:
-        options["logger"].warning(f"Status code {response.status_code}, retrying..")
-        time.sleep(60 * (1 + (random.random() / 4)))
-        response = session.get(url, stream=True)
-
-    return response
-
-
 def _get_logger(options):
     return options.get("logger") or NoopLogger()
 
@@ -134,15 +135,7 @@ def _get_monitor(options):
 
 
 def _get_credentials(options):
-    return options.get("credentials") or Credentials()
-
-
-def _set_proxy(options, session):
-    proxies = options.get("proxies", {})
-    if proxies != {}:
-        session.proxies.update(proxies)
-    return session
-
+    return options.get("credentials") or Credentials(proxies=options.get("proxies", None))
 
 def validity_check(temp_path, product_info):
     """Given it's temp_path and metadata info checks if the data downloaded is valid"""
@@ -189,3 +182,4 @@ def from_checksum_list_to_checksum(checksum_list):
         "BLAKE3": blake3(),
     }.get(algo)
     return algo, checksum
+

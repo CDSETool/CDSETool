@@ -8,6 +8,8 @@ import netrc
 import threading
 import requests
 import jwt
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 
 class NoCredentialsException(Exception):
@@ -22,15 +24,35 @@ class InvalidCredentialsException(Exception):
     """
 
 
-class NoTokenException(Exception):
+class DeprecatedNoTokenException(Exception):
+    """
+    Deprecated
+    """
+
+
+def NoTokenException(*args, **kwargs):  # pylint: disable=invalid-name
     """
     Raised when no token is available
     """
+    from warnings import warn  # pylint: disable=import-outside-toplevel
+
+    error_msg = [
+        "Warning! NoTokenException is deprecated, and will be removed in"
+        "the next major release."
+    ]
+    warn(" ".join(error_msg))
+    return DeprecatedNoTokenException(*args, **kwargs)
 
 
 class TokenExchangeException(Exception):
     """
     Raised when token exchange fails
+    """
+
+
+class TokenClientConnectionError(Exception):
+    """
+    Raised when token connection fails.
     """
 
 
@@ -45,10 +67,18 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         username=None,
         password=None,
         openid_configuration_endpoint=None,
+        proxies=None,
     ):
         self.__username = username
         self.__password = password
 
+        self.__proxies = proxies
+        self.__retries = Retry(
+            total=5,
+            backoff_factor=0.5,
+            raise_on_status=False,
+            status_forcelist=Retry.RETRY_AFTER_STATUS_CODES,
+        )
         self.__openid_conf = None
         self.__jwks = None
         self.__openid_configuration_endpoint = (
@@ -59,8 +89,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
         self.__access_token = None
         self.__refresh_token = None
-        self.__access_token_expires = None
-        self.__refresh_token_expires = None
+        self.__access_token_expires = datetime.now()
+        self.__refresh_token_expires = datetime.now()
 
         self.__lock = threading.Lock()
 
@@ -73,34 +103,37 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         """
         Returns a session with the credentials set as the Authorization header
         """
-        self.__ensure_tokens()
+        return self.__make_session(True, self.__retries, self.__proxies)
+
+    def __make_session(self, authorization, max_retries, proxies):
+        if authorization:
+            self.__ensure_tokens()
 
         session = requests.Session()
-        session.headers.update({"Authorization": f"Bearer {self.__access_token}"})
+        session.mount("http://", HTTPAdapter(max_retries=max_retries))
+        session.mount("https://", HTTPAdapter(max_retries=max_retries))
+        if proxies is not None:
+            session.proxies.update(proxies)
+        if authorization:
+            session.headers.update({"Authorization": f"Bearer {self.__access_token}"})
         return session
 
-    def __exchange_credentials(self):
-        data = {
-            "grant_type": "password",
-            "username": self.__username,
-            "password": self.__password,
-            "client_id": "cdse-public",
-        }
-
-        self.__token_exchange(data)
-
-    def __refresh_access_token(self):
-        data = {
-            "grant_type": "refresh_token",
-            "refresh_token": self.__refresh_token,
-            "client_id": "cdse-public",
-        }
-
-        self.__token_exchange(data)
-
     def __token_exchange(self, data):
-        response = requests.post(self.__token_endpoint, data=data, timeout=120)
+        # Make a session that will retry post, respecting the retry-after
+        # header when we get a 503 and a few other temporary failures.
+        session = self.__make_session(
+            authorization=False,
+            max_retries=Retry(
+                total=2,
+                backoff_factor=0.5,
+                allowed_methods=None,
+                raise_on_status=False,
+                status_forcelist=Retry.RETRY_AFTER_STATUS_CODES,
+            ),
+            proxies=self.__proxies,
+        )
         now = datetime.now()
+        response = session.post(self.__token_endpoint, data=data, timeout=120)
 
         if response.status_code == 401:
             raise InvalidCredentialsException(
@@ -123,31 +156,31 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
     def __ensure_tokens(self):
         with self.__lock:
-            if self.__access_token is None:
-                self.__exchange_credentials()
-
             if self.__access_token_expires < datetime.now():
                 if self.__refresh_token_expires < datetime.now():
-                    self.__exchange_credentials()
+                    data = {
+                        "grant_type": "password",
+                        "username": self.__username,
+                        "password": self.__password,
+                        "client_id": "cdse-public",
+                    }
                 else:
-                    self.__refresh_access_token()
-            self.__validate_tokens()
-
-    # validate __access_token and __refresh_token using the jwks certs
-    def __validate_tokens(self):
-        if self.__access_token is None:
-            raise NoTokenException("No access token found")
-
-        if self.__refresh_token is None:
-            raise NoTokenException("No refresh token found")
-
-        key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
-        jwt.decode(
-            self.__access_token,
-            key=key.key,
-            algorithms=key._algorithms,  # pylint: disable=protected-access
-            options={"verify_aud": False},
-        )
+                    data = {
+                        "grant_type": "refresh_token",
+                        "refresh_token": self.__refresh_token,
+                        "client_id": "cdse-public",
+                    }
+                self.__token_exchange(data)
+            try:
+                key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
+            except jwt.PyJWKClientConnectionError as e:
+                raise TokenClientConnectionError from e
+            jwt.decode(
+                self.__access_token,
+                key=key.key,
+                algorithms=key._algorithms,  # pylint: disable=protected-access
+                options={"verify_aud": False},
+            )
 
     def __read_credentials(self):
         try:
@@ -162,7 +195,10 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         if self.__openid_conf:
             return self.__openid_conf
 
-        response = requests.get(self.__openid_configuration_endpoint, timeout=120)
+        session = self.__make_session(
+            authorization=False, max_retries=self.__retries, proxies=self.__proxies
+        )
+        response = session.get(self.__openid_configuration_endpoint, timeout=120)
         response.raise_for_status()
         self.__openid_conf = response.json()
         return self.__openid_conf
@@ -196,8 +232,6 @@ def validate_credentials(username=None, password=None):
     except NoCredentialsException:
         return False
     except InvalidCredentialsException:
-        return False
-    except NoTokenException:
         return False
     except TokenExchangeException:
         return False
