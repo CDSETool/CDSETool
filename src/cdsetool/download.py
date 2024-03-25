@@ -185,6 +185,6 @@ def from_checksum_list_to_checksum(checksum_list):
     algo = {
         "sha3-256": hashlib.sha3_256(),
         "MD5": hashlib.md5(),
-        "BLAKE3": blake3(),
+        "BLAKE3": blake3,
     }.get(algo)
     return algo, checksum
