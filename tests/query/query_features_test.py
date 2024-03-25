@@ -85,6 +85,7 @@ def test_query_features_reusable(requests_mock):
 
 def test_query_features_random_access(requests_mock):
     _mock_describe(requests_mock)
+    _mock_metadata(requests_mock)
     _mock_sentinel_1(requests_mock)
 
     query = query_features("Sentinel1", {"maxRecords": 10})
