@@ -67,6 +67,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
     A class for handling credentials for the Copernicus Identity
     and Access Management (IAM) system
     """
+
     RETRY_CODES = frozenset([413, 429, 500, 502, 503])
 
     RETRIES = Retry(
@@ -213,8 +214,11 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         if self.__openid_conf:
             return self.__openid_conf
 
-        session = self.__make_session(
-            authorization=False, max_retries=self.__retries, proxies=self.__proxies
+        session = self.make_session(
+            caller=self,
+            authorization=False,
+            max_retries=self.RETRIES,
+            proxies=self.__proxies,
         )
         response = session.get(self.__openid_configuration_endpoint, timeout=120)
         response.raise_for_status()
