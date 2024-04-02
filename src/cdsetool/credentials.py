@@ -67,8 +67,14 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
     A class for handling credentials for the Copernicus Identity
     and Access Management (IAM) system
     """
-
     RETRY_CODES = frozenset([413, 429, 500, 502, 503])
+
+    RETRIES = Retry(
+        total=5,
+        backoff_factor=0.5,
+        raise_on_status=False,
+        status_forcelist=RETRY_CODES,
+    )
 
     def __init__(
         self,
@@ -81,12 +87,6 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         self.__password = password
 
         self.__proxies = proxies
-        self.__retries = Retry(
-            total=5,
-            backoff_factor=0.5,
-            raise_on_status=False,
-            status_forcelist=self.RETRY_CODES,
-        )
         self.__openid_conf = None
         self.__jwks = None
         self.__openid_configuration_endpoint = (
@@ -111,11 +111,16 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         """
         Returns a session with the credentials set as the Authorization header
         """
-        return self.__make_session(True, self.__retries, self.__proxies)
+        return self.make_session(self, True, self.RETRIES, self.__proxies)
 
-    def __make_session(self, authorization, max_retries, proxies):
+    @staticmethod
+    def make_session(caller, authorization, max_retries, proxies):
+        """
+        Creates a new session. Authorization is only available from callers
+        that are subclasses of Credentials.
+        """
         if authorization:
-            self.__ensure_tokens()
+            caller.__ensure_tokens()  # pylint: disable=protected-access
 
         session = requests.Session()
         session.mount("http://", HTTPAdapter(max_retries=max_retries))
@@ -123,13 +128,15 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         if proxies is not None:
             session.proxies.update(proxies)
         if authorization:
-            session.headers.update({"Authorization": f"Bearer {self.__access_token}"})
+            token = caller.__access_token  # pylint: disable=protected-access
+            session.headers.update({"Authorization": f"Bearer {token}"})
         return session
 
     def __token_exchange(self, data):
         # Make a session that will retry post, respecting the retry-after
         # header when we get a 503 and a few other temporary failures.
-        session = self.__make_session(
+        session = self.make_session(
+            caller=self,
             authorization=False,
             max_retries=Retry(
                 total=2,
