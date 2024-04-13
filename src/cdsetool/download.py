@@ -10,6 +10,7 @@ import random
 import tempfile
 import time
 import shutil
+from requests.exceptions import ChunkedEncodingError
 from cdsetool._processing import _concurrent_process
 from cdsetool.credentials import Credentials, TokenClientConnectionError
 from cdsetool.logger import NoopLogger
@@ -41,7 +42,8 @@ def download_feature(feature, path, options=None):
     with _get_monitor(options).status() as status:
         status.set_filename(filename)
         attempts = 0
-        while attempts < 5:
+        while attempts < 10:
+            attempts += 1
             # Always get a new session, credentials might have expired.
             try:
                 session = _get_credentials(options).get_session()
@@ -52,16 +54,22 @@ def download_feature(feature, path, options=None):
             with session.get(url, stream=True) as response:
                 if response.status_code != 200:
                     log.warning(f"Status code {response.status_code}, retrying..")
-                    attempts += 1
                     time.sleep(60 * (1 + (random.random() / 4)))
                     continue
 
                 status.set_filesize(int(response.headers["Content-Length"]))
 
                 with tempfile.NamedTemporaryFile() as file:
-                    for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
-                        file.write(chunk)
-                        status.add_progress(len(chunk))
+                    # Server might not send all bytes specified by the
+                    # Content-Length header before closing connection.
+                    # Log as a warning and try again.
+                    try:
+                        for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
+                            file.write(chunk)
+                            status.add_progress(len(chunk))
+                    except (ChunkedEncodingError, ConnectionResetError) as e:
+                        log.warning(e)
+                        continue
                     shutil.copy(file.name, result_path)
 
                 return filename
