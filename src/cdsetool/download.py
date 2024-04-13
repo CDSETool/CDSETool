@@ -39,7 +39,6 @@ def download_feature(feature, path, options=None):
         return filename
 
     with _get_monitor(options).status() as status:
-        (fd, tmp) = tempfile.mkstemp()  # pylint: disable=invalid-name
         status.set_filename(filename)
         attempts = 0
         while attempts < 5:
@@ -59,16 +58,14 @@ def download_feature(feature, path, options=None):
 
                 status.set_filesize(int(response.headers["Content-Length"]))
 
-                with open(fd, "wb") as file:
+                with tempfile.NamedTemporaryFile() as file:
                     for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
                         file.write(chunk)
                         status.add_progress(len(chunk))
+                    shutil.copy(file.name, result_path)
 
-                shutil.move(tmp, result_path)
                 return filename
     log.error(f"Failed to download {filename}")
-    os.close(fd)
-    os.remove(tmp)
     return None
 
 
