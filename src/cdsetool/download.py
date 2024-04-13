@@ -11,6 +11,7 @@ import tempfile
 import time
 import shutil
 from requests.exceptions import ChunkedEncodingError
+from urllib3.exceptions import ProtocolError
 from cdsetool._processing import _concurrent_process
 from cdsetool.credentials import Credentials, TokenClientConnectionError
 from cdsetool.logger import NoopLogger
@@ -67,7 +68,11 @@ def download_feature(feature, path, options=None):
                         for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
                             file.write(chunk)
                             status.add_progress(len(chunk))
-                    except (ChunkedEncodingError, ConnectionResetError) as e:
+                    except (
+                        ChunkedEncodingError,
+                        ConnectionResetError,
+                        ProtocolError,
+                    ) as e:
                         log.warning(e)
                         continue
                     shutil.copy(file.name, result_path)
