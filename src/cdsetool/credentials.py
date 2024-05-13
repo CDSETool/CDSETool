@@ -56,11 +56,19 @@ class TokenClientConnectionError(Exception):
     """
 
 
+class TokenExpiredSignatureError(Exception):
+    """
+    Raised when token signature has expired.
+    """
+
+
 class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-instance-attributes
     """
     A class for handling credentials for the Copernicus Identity
     and Access Management (IAM) system
     """
+
+    RETRY_CODES = frozenset([413, 429, 500, 502, 503])
 
     def __init__(
         self,
@@ -77,7 +85,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
             total=5,
             backoff_factor=0.5,
             raise_on_status=False,
-            status_forcelist=Retry.RETRY_AFTER_STATUS_CODES,
+            status_forcelist=self.RETRY_CODES,
         )
         self.__openid_conf = None
         self.__jwks = None
@@ -89,8 +97,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
         self.__access_token = None
         self.__refresh_token = None
-        self.__access_token_expires = datetime.now()
-        self.__refresh_token_expires = datetime.now()
+        self.__access_token_expires = datetime.now() - timedelta(hours=8)
+        self.__refresh_token_expires = self.__access_token_expires
 
         self.__lock = threading.Lock()
 
@@ -128,7 +136,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                 backoff_factor=0.5,
                 allowed_methods=None,
                 raise_on_status=False,
-                status_forcelist=Retry.RETRY_AFTER_STATUS_CODES,
+                status_forcelist=self.RETRY_CODES,
             ),
             proxies=self.__proxies,
         )
@@ -175,12 +183,15 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                 key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
             except jwt.PyJWKClientConnectionError as e:
                 raise TokenClientConnectionError from e
-            jwt.decode(
-                self.__access_token,
-                key=key.key,
-                algorithms=self.__id_token_signing_algos,
-                options={"verify_aud": False},
-            )
+            try:
+                jwt.decode(
+                    self.__access_token,
+                    key=key.key,
+                    algorithms=self.__id_token_signing_algos,  # pylint: disable=protected-access
+                    options={"verify_aud": False},
+                )
+            except jwt.ExpiredSignatureError as e:
+                raise TokenExpiredSignatureError from e
 
     def __read_credentials(self):
         try:
