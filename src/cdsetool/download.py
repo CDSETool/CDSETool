@@ -13,7 +13,11 @@ import shutil
 from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import ProtocolError
 from cdsetool._processing import _concurrent_process
-from cdsetool.credentials import Credentials, TokenClientConnectionError
+from cdsetool.credentials import (
+    Credentials,
+    TokenClientConnectionError,
+    TokenExpiredSignatureError,
+)
 from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor
 
@@ -48,7 +52,7 @@ def download_feature(feature, path, options=None):
             # Always get a new session, credentials might have expired.
             try:
                 session = _get_credentials(options).get_session()
-            except TokenClientConnectionError as e:
+            except (TokenClientConnectionError, TokenExpiredSignatureError) as e:
                 log.warning(e)
                 continue
             url = _follow_redirect(url, session)

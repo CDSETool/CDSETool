@@ -56,6 +56,12 @@ class TokenClientConnectionError(Exception):
     """
 
 
+class TokenExpiredSignatureError(Exception):
+    """
+    Raised when token signature has expired.
+    """
+
+
 class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-instance-attributes
     """
     A class for handling credentials for the Copernicus Identity
@@ -175,12 +181,15 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                 key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
             except jwt.PyJWKClientConnectionError as e:
                 raise TokenClientConnectionError from e
-            jwt.decode(
-                self.__access_token,
-                key=key.key,
-                algorithms=key._algorithms,  # pylint: disable=protected-access
-                options={"verify_aud": False},
-            )
+            try:
+                jwt.decode(
+                    self.__access_token,
+                    key=key.key,
+                    algorithms=key._algorithms,  # pylint: disable=protected-access
+                    options={"verify_aud": False},
+                )
+            except jwt.ExpiredSignatureError as e:
+                raise TokenExpiredSignatureError from e
 
     def __read_credentials(self):
         try:
