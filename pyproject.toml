@@ -27,7 +27,7 @@ test = [
     "black==24.4.2",
     "pylint==3.1.0",
     "pytest==8.2.0",
-    "pytest-cov==4.1.0",
+    "pytest-cov==5.0.0",
     "requests-mock==1.12.1",
     "pytest-mock==3.14.0",
 ]
