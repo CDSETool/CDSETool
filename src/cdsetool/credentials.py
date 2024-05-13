@@ -187,7 +187,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                 jwt.decode(
                     self.__access_token,
                     key=key.key,
-                    algorithms=key._algorithms,  # pylint: disable=protected-access
+                    algorithms=self.__id_token_signing_algos,  # pylint: disable=protected-access
                     options={"verify_aud": False},
                 )
             except jwt.ExpiredSignatureError as e:
@@ -221,6 +221,10 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
     @property
     def __jwks_uri(self):
         return self.__openid_configuration["jwks_uri"]
+
+    @property
+    def __id_token_signing_algos(self):
+        return self.__openid_configuration["id_token_signing_alg_values_supported"]
 
     @property
     def __jwk_client(self):
