@@ -140,7 +140,6 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
             ),
             proxies=self.__proxies,
         )
-        now = datetime.now()
         response = session.post(self.__token_endpoint, data=data, timeout=120)
 
         if response.status_code == 401:
@@ -157,13 +156,11 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
         self.__access_token = response["access_token"]
         self.__refresh_token = response["refresh_token"]
-        self.__access_token_expires = now + timedelta(seconds=response["expires_in"])
-        self.__refresh_token_expires = now + timedelta(
-            seconds=response["refresh_expires_in"]
-        )
+        return timedelta(seconds=response["refresh_expires_in"])
 
     def __ensure_tokens(self):
         with self.__lock:
+            refresh_expire_delta = None
             if self.__access_token_expires < datetime.now():
                 if self.__refresh_token_expires < datetime.now():
                     data = {
@@ -178,13 +175,13 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                         "refresh_token": self.__refresh_token,
                         "client_id": "cdse-public",
                     }
-                self.__token_exchange(data)
+                refresh_expire_delta = self.__token_exchange(data)
             try:
                 key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
             except jwt.PyJWKClientConnectionError as e:
                 raise TokenClientConnectionError from e
             try:
-                jwt.decode(
+                data = jwt.decode(
                     self.__access_token,
                     key=key.key,
                     algorithms=self.__id_token_signing_algos,  # pylint: disable=protected-access
@@ -192,6 +189,11 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                 )
             except jwt.ExpiredSignatureError as e:
                 raise TokenExpiredSignatureError from e
+            if refresh_expire_delta is not None:
+                self.__access_token_expires = datetime.fromtimestamp(data["exp"])
+                self.__refresh_token_expires = (
+                    datetime.fromtimestamp(data["iat"]) + refresh_expire_delta
+                )
 
     def __read_credentials(self):
         try:
