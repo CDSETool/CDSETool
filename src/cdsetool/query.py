@@ -8,8 +8,8 @@ from xml.etree import ElementTree
 from datetime import datetime, date
 import re
 import json
-import requests
 import geopandas as gpd
+from cdsetool.credentials import Credentials
 
 
 class _FeatureIterator:
@@ -67,7 +67,10 @@ class FeatureQuery:
     def __fetch_features(self):
         if self.next_url is None:
             return
-        with requests.get(self.next_url, timeout=120, proxies=self.proxies) as response:
+        session = Credentials.make_session(
+            None, False, Credentials.RETRIES, self.proxies
+        )
+        with session.get(self.next_url) as response:
             response.raise_for_status()
             res = response.json()
             self.features += res.get("features") or []
@@ -236,18 +239,17 @@ _describe_docs = {}
 def _get_describe_doc(collection, proxies=None):
     if _describe_docs.get(collection):
         return _describe_docs.get(collection)
-    res = requests.get(
+    session = Credentials.make_session(None, False, Credentials.RETRIES, proxies)
+    with session.get(
         "https://catalogue.dataspace.copernicus.eu"
         + f"/resto/api/collections/{collection}/describe.xml",
-        timeout=120,
-        proxies=proxies,
-    )
-    assert res.status_code == 200, (
-        f"Unable to find collection with name {collection}. Please see "
-        + "https://documentation.dataspace.copernicus.eu"
-        + "/APIs/OpenSearch.html#collections "
-        + "for a list of available collections"
-    )
+    ) as res:
+        assert res.status_code == 200, (
+            f"Unable to find collection with name {collection}. Please see "
+            + "https://documentation.dataspace.copernicus.eu"
+            + "/APIs/OpenSearch.html#collections "
+            + "for a list of available collections"
+        )
 
-    _describe_docs[collection] = res.content
+        _describe_docs[collection] = res.content
     return _describe_docs.get(collection)
