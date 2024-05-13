@@ -95,8 +95,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
         self.__access_token = None
         self.__refresh_token = None
-        self.__access_token_expires = datetime.now()
-        self.__refresh_token_expires = datetime.now()
+        self.__access_token_expires = datetime.now() - timedelta(hours=8)
+        self.__refresh_token_expires = self.__access_token_expires
 
         self.__lock = threading.Lock()
 
