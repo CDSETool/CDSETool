@@ -15,6 +15,11 @@ class NoopLogger:
         Log a debug message.
         """
 
+    def error(self, *kwargs):
+        """
+        Log an error message.
+        """
+
     def info(self, *kwargs):
         """
         Log an info message.
