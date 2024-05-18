@@ -5,7 +5,7 @@ Command line interface
 import os
 import sys
 import json as JSON
-from typing import List, Optional
+from typing import Dict, List, Optional
 from typing_extensions import Annotated
 import typer
 from cdsetool.query import describe_collection, query_features
@@ -19,7 +19,7 @@ app.add_typer(query_app, name="query")
 
 
 @query_app.command("search-terms")
-def query_search_terms(collection: str):
+def query_search_terms(collection: str) -> None:
     """
     List the available search terms for a collection
     """
@@ -51,13 +51,12 @@ def query_search(
         ),
     ] = None,
     json: Annotated[bool, typer.Option(help="Output JSON")] = False,
-):
+) -> None:
     """
     Search for features matching the search terms
     """
     search_term = search_term or []
-    search_term = _to_dict(search_term)
-    features = query_features(collection, search_term)
+    features = query_features(collection, _to_dict(search_term))
 
     for feature in features:
         if json:
@@ -84,7 +83,7 @@ def download(
             + "Pass multiple times for multiple search terms"
         ),
     ] = None,
-):
+) -> None:
     """
     Download all features matching the search terms
     """
@@ -93,8 +92,7 @@ def download(
         sys.exit(1)
 
     search_term = search_term or []
-    search_term = _to_dict(search_term)
-    features = query_features(collection, search_term)
+    features = query_features(collection, _to_dict(search_term))
 
     list(
         download_features(
@@ -116,7 +114,7 @@ def main():
     app()
 
 
-def _to_dict(term_list: List[str]):
+def _to_dict(term_list: List[str]) -> Dict[str, str]:
     search_terms = {}
     for item in term_list:
         key, value = item.split("=")

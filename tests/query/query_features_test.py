@@ -40,13 +40,13 @@ def _mock_sentinel_1(requests_mock):
             requests_mock.get(url, text=file.read())
 
 
-def test_query_features(requests_mock):
+def test_query_features(requests_mock) -> None:
     _mock_describe(requests_mock)
 
     assert type(query_features("Sentinel1", {"maxRecords": 10})) is FeatureQuery
 
 
-def test_query_features_length(requests_mock):
+def test_query_features_length(requests_mock) -> None:
     _mock_describe(requests_mock)
     _mock_sentinel_1(requests_mock)
 
@@ -61,7 +61,7 @@ def test_query_features_length(requests_mock):
     assert manual_count == 48
 
 
-def test_query_features_reusable(requests_mock):
+def test_query_features_reusable(requests_mock) -> None:
     _mock_describe(requests_mock)
     _mock_sentinel_1(requests_mock)
 
@@ -73,7 +73,7 @@ def test_query_features_reusable(requests_mock):
     assert list(query) == list(query)  # query is not exhausted after first iteration
 
 
-def test_query_features_random_access(requests_mock):
+def test_query_features_random_access(requests_mock) -> None:
     _mock_describe(requests_mock)
     _mock_sentinel_1(requests_mock)
 

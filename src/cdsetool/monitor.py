@@ -14,12 +14,13 @@ import sys
 import os
 import signal
 import shutil
+from typing import List, Tuple, Union
 
 IS_IPYTHON = True
 
 try:
-    from IPython import get_ipython
-    from IPython.display import clear_output
+    from IPython import get_ipython  # type:ignore[reportMissingImports]
+    from IPython.display import clear_output  # type:ignore[reportMissingImports]
 
     if "IPKernelApp" not in get_ipython().config:
         IS_IPYTHON = False
@@ -46,16 +47,16 @@ class StatusMonitor(threading.Thread):
             status.add_progress(512)
     """
 
-    line_length = 80
+    line_length: int = 80
 
-    __is_running = True
-    __progress_lines = 0
+    __is_running: bool = True
+    __progress_lines: int = 0
 
-    __download_speed_deltas = []
+    __download_speed_deltas: List[int] = []
     __done = []
     __status = []
 
-    def start(self):
+    def start(self) -> None:
         """
         Start the monitor
         """
@@ -70,13 +71,13 @@ class StatusMonitor(threading.Thread):
 
         super().start()
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stop the monitor
         """
         self.__is_running = False
 
-    def status(self):
+    def status(self) -> "Status":
         """
         Returns a status bar for a single download
         """
@@ -84,14 +85,14 @@ class StatusMonitor(threading.Thread):
         self.__status.append(status)
         return status
 
-    def remove_status(self, status):
+    def remove_status(self, status: "Status") -> None:
         """
         Remove a status from the monitor, marking it as done
         """
         self.__done.append(status)
         self.__status.remove(status)
 
-    def run(self):
+    def run(self) -> None:
         """
         Main loop for the monitor, printing the status bars every second until stopped
         """
@@ -107,12 +108,12 @@ class StatusMonitor(threading.Thread):
         print("")
 
     @property
-    def __download_speed(self):
+    def __download_speed(self) -> float:
         if len(self.__download_speed_deltas) < 2:
             return 0
         return sum(self.__download_speed_deltas) / len(self.__download_speed_deltas)
 
-    def __track_download_speed(self):
+    def __track_download_speed(self) -> None:
         speed_t0 = self.__total_downloaded
         time.sleep(1)
         speed_t1 = self.__total_downloaded
@@ -120,13 +121,13 @@ class StatusMonitor(threading.Thread):
         if len(self.__download_speed_deltas) > 10:
             self.__download_speed_deltas.pop(0)
 
-    def __print_done_lines(self):
+    def __print_done_lines(self) -> None:
         for status in self.__done:
             print(status.done_line())
 
-    def __clear_progress_lines(self):
+    def __clear_progress_lines(self) -> None:
         if IS_IPYTHON:
-            clear_output(wait=True)
+            clear_output(wait=True)  # type:ignore[reportPossiblyUnboundVariable]
             return
 
         sys.stdout.write("\033[K")
@@ -139,7 +140,7 @@ class StatusMonitor(threading.Thread):
         print("")
         print("")
 
-    def __draw(self):
+    def __draw(self) -> None:
         self.__progress_lines = 1
 
         print(
@@ -149,7 +150,7 @@ class StatusMonitor(threading.Thread):
                     f"{len(self.__status)} files in progress",
                     f"{len(self.__done)} files done",
                     f"{bytes_to_human(self.__total_downloaded)} total downloaded",
-                    f"{bytes_to_human(self.__download_speed)}/s ]]",
+                    f"{bytes_to_human(int(self.__download_speed))}/s ]]",
                 ]
             )
         )
@@ -161,7 +162,7 @@ class StatusMonitor(threading.Thread):
             self.__progress_lines += 2
 
     @property
-    def __total_downloaded(self):
+    def __total_downloaded(self) -> int:
         return sum(status.downloaded for status in self.__status) + sum(
             status.size for status in self.__done
         )
@@ -179,23 +180,23 @@ class NoopMonitor:
     A monitor that does nothing
     """
 
-    def status(self):
+    def status(self) -> "Status":
         """
         Returns a status bar for a single download
         """
         return Status(self)
 
-    def remove_status(self, status):
+    def remove_status(self, status) -> None:
         """
         Remove a status from the monitor
         """
 
-    def start(self):
+    def start(self) -> None:
         """
         Start the monitor
         """
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stop the monitor
         """
@@ -212,12 +213,12 @@ class Status:
     A status bar for a single download
     """
 
-    __monitor = None
-    filename = None
-    size = 0
-    downloaded = 0
+    __monitor: Union[NoopMonitor, StatusMonitor, None] = None
+    filename: Union[str, None] = None
+    size: int = 0
+    downloaded: int = 0
 
-    def done_line(self):
+    def done_line(self) -> str:
         """
         Returns a line to print when the download is complete
         """
@@ -225,10 +226,16 @@ class Status:
             return f"{self.filename} skipped"
         return f"{self.filename} ({bytes_to_human(self.size)})"
 
-    def status_lines(self):
+    def status_lines(self) -> Tuple[str, str]:
         """
         Returns a tuple of lines to print for the status bar
         """
+        if (
+            not self.__monitor
+            or isinstance(self.__monitor, NoopMonitor)
+            or not self.filename
+        ):
+            return ("", "")
         line_length = self.__monitor.line_length
         if self.downloaded == 0:
             return (
@@ -250,35 +257,36 @@ class Status:
 
         return filename_line, progress_line
 
-    def add_progress(self, chunk_bytes):
+    def add_progress(self, chunk_bytes) -> None:
         """
         Add to the number of bytes downloaded
         """
         self.downloaded += chunk_bytes
 
-    def set_filename(self, filename):
+    def set_filename(self, filename: str) -> None:
         """
         Set the name of the file being downloaded
         """
         self.filename = filename
 
-    def set_filesize(self, size):
+    def set_filesize(self, size: int) -> None:
         """
         Set the size of the file being downloaded
         """
         self.size = size
 
-    def __init__(self, monitor):
+    def __init__(self, monitor) -> None:
         self.__monitor = monitor
 
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.__monitor.remove_status(self)
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        if self.__monitor:
+            self.__monitor.remove_status(self)
 
 
-def bytes_to_human(num_bytes):
+def bytes_to_human(num_bytes: int) -> str:
     """
     Convert a number of bytes to a human-readable string
     """
