@@ -145,6 +145,8 @@ def describe_collection(collection, proxies=None):
     )
 
     parameters = {}
+    if not parameter_node_parent:
+        return parameters
     for parameter_node in parameter_node_parent:
         name = parameter_node.attrib.get("name")
         pattern = parameter_node.attrib.get("pattern")
