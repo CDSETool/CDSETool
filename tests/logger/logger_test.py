@@ -36,6 +36,6 @@ def test_noop_does_not_error() -> None:
             },
             "somewhere",
         )
-        NoopLogger.debug("NoopLogger did not raise an exception")
+        NoopLogger().debug("NoopLogger did not raise an exception")
     except Exception as e:
         pytest.fail(f"Unexpected exception: {e}")
