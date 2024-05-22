@@ -10,6 +10,9 @@ import random
 import tempfile
 import time
 import shutil
+from typing import Any, Dict, Generator, Union
+
+from requests import Session
 from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import ProtocolError
 from cdsetool._processing import _concurrent_process
@@ -19,10 +22,13 @@ from cdsetool.credentials import (
     TokenExpiredSignatureError,
 )
 from cdsetool.logger import NoopLogger
-from cdsetool.monitor import NoopMonitor
+from cdsetool.monitor import NoopMonitor, StatusMonitor
+from cdsetool.query import FeatureQuery
 
 
-def download_feature(feature, path, options=None):
+def download_feature(
+    feature, path: str, options: Union[Dict[str, Any], None] = None
+) -> Union[str, None]:
     """
     Download a single feature
 
@@ -86,7 +92,9 @@ def download_feature(feature, path, options=None):
     return None
 
 
-def download_features(features, path, options=None):
+def download_features(
+    features: FeatureQuery, path: str, options: Union[Dict[str, Any], None] = None
+) -> Generator[Union[str, None], None, None]:
     """
     Generator function that downloads all features in a result set
 
@@ -100,7 +108,7 @@ def download_features(features, path, options=None):
     options["monitor"] = _get_monitor(options)
     options["monitor"].start()
 
-    def _download_feature(feature):
+    def _download_feature(feature) -> Union[str, None]:
         return download_feature(feature, path, options)
 
     yield from _concurrent_process(
@@ -110,11 +118,11 @@ def download_features(features, path, options=None):
     options["monitor"].stop()
 
 
-def _get_feature_url(feature):
+def _get_feature_url(feature) -> str:
     return feature.get("properties").get("services").get("download").get("url")
 
 
-def _follow_redirect(url, session):
+def _follow_redirect(url: str, session: Session) -> str:
     response = session.head(url, allow_redirects=False)
     while response.status_code in range(300, 400):
         url = response.headers["Location"]
@@ -123,15 +131,15 @@ def _follow_redirect(url, session):
     return url
 
 
-def _get_logger(options):
+def _get_logger(options: Dict) -> NoopLogger:
     return options.get("logger") or NoopLogger()
 
 
-def _get_monitor(options):
+def _get_monitor(options: Dict) -> Union[StatusMonitor, NoopMonitor]:
     return options.get("monitor") or NoopMonitor()
 
 
-def _get_credentials(options):
+def _get_credentials(options: Dict) -> Credentials:
     return options.get("credentials") or Credentials(
         proxies=options.get("proxies", None)
     )

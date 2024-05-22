@@ -6,6 +6,8 @@ the Copernicus Identity and Access Management (IAM) system.
 from datetime import datetime, timedelta
 import netrc
 import threading
+from typing import Any, Dict, List, Union
+
 import requests
 import jwt
 from requests.adapters import HTTPAdapter
@@ -79,27 +81,27 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
     def __init__(
         self,
-        username=None,
-        password=None,
-        openid_configuration_endpoint=None,
-        proxies=None,
-    ):
-        self.__username = username
-        self.__password = password
+        username: Union[str, None] = None,
+        password: Union[str, None] = None,
+        openid_configuration_endpoint: Union[str, None] = None,
+        proxies: Union[Dict[str, str], None] = None,
+    ) -> None:
+        self.__username: Union[str, None] = username
+        self.__password: Union[str, None] = password
 
-        self.__proxies = proxies
+        self.__proxies: Union[Dict[str, str], None] = proxies
         self.__openid_conf = None
         self.__jwks = None
-        self.__openid_configuration_endpoint = (
+        self.__openid_configuration_endpoint: str = (
             openid_configuration_endpoint
             or "https://identity.dataspace.copernicus.eu"
             + "/auth/realms/CDSE/.well-known/openid-configuration"
         )
 
-        self.__access_token = None
-        self.__refresh_token = None
-        self.__access_token_expires = datetime.now() - timedelta(hours=8)
-        self.__refresh_token_expires = self.__access_token_expires
+        self.__access_token: Union[str, None] = None
+        self.__refresh_token: Union[str, None] = None
+        self.__access_token_expires: datetime = datetime.now() - timedelta(hours=8)
+        self.__refresh_token_expires: datetime = self.__access_token_expires
 
         self.__lock = threading.Lock()
 
@@ -108,14 +110,19 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
 
         self.__ensure_tokens()
 
-    def get_session(self):
+    def get_session(self) -> requests.Session:
         """
         Returns a session with the credentials set as the Authorization header
         """
         return self.make_session(self, True, self.RETRIES, self.__proxies)
 
     @staticmethod
-    def make_session(caller, authorization, max_retries, proxies):
+    def make_session(
+        caller,
+        authorization: bool,
+        max_retries: Retry,
+        proxies: Union[Dict[str, str], None],
+    ) -> requests.Session:
         """
         Creates a new session. Authorization is only available from callers
         that are subclasses of Credentials.
@@ -133,7 +140,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
             session.headers.update({"Authorization": f"Bearer {token}"})
         return session
 
-    def __token_exchange(self, data):
+    def __token_exchange(self, data: Dict[str, str]) -> timedelta:
         # Make a session that will retry post, respecting the retry-after
         # header when we get a 503 and a few other temporary failures.
         session = self.make_session(
@@ -154,7 +161,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
             raise InvalidCredentialsException(
                 "Unable to exchange token with "
                 + f"username: {self.__username} and "
-                + f"password: {len(self.__password) * '*'}"
+                + f"password: {len(self.__password or '') * '*'}"
             )
 
         if response.status_code != 200:
@@ -166,7 +173,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         self.__refresh_token = response["refresh_token"]
         return timedelta(seconds=response["refresh_expires_in"])
 
-    def __ensure_tokens(self):
+    def __ensure_tokens(self) -> None:
         with self.__lock:
             refresh_expire_delta = None
             if self.__access_token_expires < datetime.now():
@@ -184,6 +191,10 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                         "client_id": "cdse-public",
                     }
                 refresh_expire_delta = self.__token_exchange(data)
+            if not self.__access_token:
+                raise InvalidCredentialsException(
+                    "Internal error: access token not available"
+                )
             try:
                 key = self.__jwk_client.get_signing_key_from_jwt(self.__access_token)
             except jwt.PyJWKClientConnectionError as e:
@@ -203,16 +214,15 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                     datetime.fromtimestamp(data["iat"]) + refresh_expire_delta
                 )
 
-    def __read_credentials(self):
-        try:
-            self.__username, _, self.__password = netrc.netrc().authenticators(
-                self.__token_endpoint
-            )
-        except Exception as exc:
-            raise NoCredentialsException("No credentials found") from exc
+    def __read_credentials(self) -> None:
+        rv = netrc.netrc().authenticators(self.__token_endpoint)
+        if isinstance(rv, tuple):
+            self.__username, _, self.__password = rv
+        else:
+            raise NoCredentialsException("No credentials found")
 
     @property
-    def __openid_configuration(self):
+    def __openid_configuration(self) -> Dict[str, Any]:
         if self.__openid_conf:
             return self.__openid_conf
 
@@ -228,19 +238,19 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         return self.__openid_conf
 
     @property
-    def __token_endpoint(self):
+    def __token_endpoint(self) -> str:
         return self.__openid_configuration["token_endpoint"]
 
     @property
-    def __jwks_uri(self):
+    def __jwks_uri(self) -> str:
         return self.__openid_configuration["jwks_uri"]
 
     @property
-    def __id_token_signing_algos(self):
+    def __id_token_signing_algos(self) -> List[str]:
         return self.__openid_configuration["id_token_signing_alg_values_supported"]
 
     @property
-    def __jwk_client(self):
+    def __jwk_client(self) -> jwt.PyJWKClient:
         if self.__jwks:
             return self.__jwks
 
@@ -249,7 +259,9 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         return self.__jwks
 
 
-def validate_credentials(username=None, password=None):
+def validate_credentials(
+    username: Union[str, None] = None, password: Union[str, None] = None
+) -> bool:
     """
     This function validates CDSE credentials and returns a bool.
     If credentials are none, .netrc will be validated
