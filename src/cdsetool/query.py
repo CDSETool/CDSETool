@@ -4,20 +4,21 @@ Query the Copernicus Data Space Ecosystem OpenSearch API
 https://documentation.dataspace.copernicus.eu/APIs/OpenSearch.html
 """
 
+from typing import Any, Dict, Union
 from xml.etree import ElementTree
 from datetime import datetime, date
 import re
 import json
-import requests
 import geopandas as gpd
+from cdsetool.credentials import Credentials
 
 
 class _FeatureIterator:
-    def __init__(self, feature_query):
+    def __init__(self, feature_query) -> None:
         self.index = 0
         self.feature_query = feature_query
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.feature_query)
 
     def __iter__(self):
@@ -40,9 +41,14 @@ class FeatureQuery:
     Queries the next batch when the current batch is exhausted.
     """
 
-    total_results = None
+    total_results: int = -1
 
-    def __init__(self, collection, search_terms, proxies=None):
+    def __init__(
+        self,
+        collection: str,
+        search_terms: Dict[str, Any],
+        proxies: Union[Dict[str, str], None] = None,
+    ) -> None:
         self.features = []
         self.proxies = proxies
         self.next_url = _query_url(
@@ -52,8 +58,8 @@ class FeatureQuery:
     def __iter__(self):
         return _FeatureIterator(self)
 
-    def __len__(self):
-        if self.total_results is None:
+    def __len__(self) -> int:
+        if self.total_results < 0:
             self.__fetch_features()
 
         return self.total_results
@@ -64,9 +70,15 @@ class FeatureQuery:
 
         return self.features[index]
 
-    def __fetch_features(self):
-        if self.next_url is not None:
-            res = requests.get(self.next_url, timeout=120, proxies=self.proxies).json()
+    def __fetch_features(self) -> None:
+        if self.next_url is None:
+            return
+        session = Credentials.make_session(
+            None, False, Credentials.RETRIES, self.proxies
+        )
+        with session.get(self.next_url) as response:
+            response.raise_for_status()
+            res = response.json()
             self.features += res.get("features") or []
 
             total_results = res.get("properties", {}).get("totalResults")
@@ -75,7 +87,7 @@ class FeatureQuery:
 
             self.__set_next_url(res)
 
-    def __set_next_url(self, res):
+    def __set_next_url(self, res) -> None:
         links = res.get("properties", {}).get("links") or []
         self.next_url = next(
             (link for link in links if link.get("rel") == "next"), {}
@@ -85,14 +97,18 @@ class FeatureQuery:
             self.next_url = self.next_url.replace("exactCount=1", "exactCount=0")
 
 
-def query_features(collection, search_terms, proxies=None):
+def query_features(
+    collection: str,
+    search_terms: Dict[str, Any],
+    proxies: Union[Dict[str, str], None] = None,
+) -> FeatureQuery:
     """
     Returns an iterator over the features matching the search terms
     """
     return FeatureQuery(collection, {"maxRecords": 2000, **search_terms}, proxies)
 
 
-def shape_to_wkt(shape):
+def shape_to_wkt(shape: str) -> str:
     """
     Convert a shapefile to a WKT string
     """
@@ -104,12 +120,11 @@ def shape_to_wkt(shape):
     )
 
 
-def geojson_to_wkt(geojson):
+def geojson_to_wkt(geojson_in: Union[str, Dict]) -> str:
     """
     Convert a geojson geometry to a WKT string
     """
-    if isinstance(geojson, str):
-        geojson = json.loads(geojson)
+    geojson = json.loads(geojson_in) if isinstance(geojson_in, str) else geojson_in
 
     if geojson.get("type") == "Feature":
         geojson = geojson["geometry"]
@@ -128,7 +143,9 @@ def geojson_to_wkt(geojson):
     return f"POLYGON({paired_coord})"
 
 
-def describe_collection(collection, proxies=None):
+def describe_collection(
+    collection: str, proxies: Union[Dict[str, str], None] = None
+) -> Dict[str, Any]:
     """
     Get a list of valid options for a given collection in key value pairs
     """
@@ -139,6 +156,8 @@ def describe_collection(collection, proxies=None):
     )
 
     parameters = {}
+    if not parameter_node_parent:
+        return parameters
     for parameter_node in parameter_node_parent:
         name = parameter_node.attrib.get("name")
         pattern = parameter_node.attrib.get("pattern")
@@ -157,7 +176,11 @@ def describe_collection(collection, proxies=None):
     return parameters
 
 
-def _query_url(collection, search_terms, proxies=None):
+def _query_url(
+    collection: str,
+    search_terms: Dict[str, Any],
+    proxies: Union[Dict[str, str], None] = None,
+) -> str:
     description = describe_collection(collection, proxies=proxies)
 
     query_list = []
@@ -172,7 +195,7 @@ def _query_url(collection, search_terms, proxies=None):
     )
 
 
-def _serialize_search_term(search_term):
+def _serialize_search_term(search_term: Any) -> str:
     if isinstance(search_term, list):
         return ",".join(search_term)
 
@@ -185,14 +208,14 @@ def _serialize_search_term(search_term):
     return str(search_term)
 
 
-def _validate_search_term(key, search_term, description):
+def _validate_search_term(key: str, search_term: str, description) -> None:
     _assert_valid_key(key, description)
     _assert_match_pattern(search_term, description.get(key).get("pattern"))
     _assert_min_inclusive(search_term, description.get(key).get("minInclusive"))
     _assert_max_inclusive(search_term, description.get(key).get("maxInclusive"))
 
 
-def _assert_valid_key(key, description):
+def _assert_valid_key(key: str, description: Dict[str, Any]) -> None:
     assert key in description.keys(), (
         f'search_term with name "{key}" '
         + "was not found for collection."
@@ -200,7 +223,7 @@ def _assert_valid_key(key, description):
     )
 
 
-def _assert_match_pattern(search_term, pattern):
+def _assert_match_pattern(search_term: str, pattern: Union[str, None]) -> None:
     if not pattern:
         return
 
@@ -209,7 +232,7 @@ def _assert_match_pattern(search_term, pattern):
     ), f"search_term {search_term} does not match pattern {pattern}"
 
 
-def _assert_min_inclusive(search_term, min_inclusive):
+def _assert_min_inclusive(search_term: str, min_inclusive: Union[str, None]) -> None:
     if not min_inclusive:
         return
 
@@ -218,7 +241,7 @@ def _assert_min_inclusive(search_term, min_inclusive):
     ), f"search_term {search_term} is less than min_inclusive {min_inclusive}"
 
 
-def _assert_max_inclusive(search_term, max_inclusive):
+def _assert_max_inclusive(search_term: str, max_inclusive: Union[str, None]) -> None:
     if not max_inclusive:
         return
 
@@ -227,24 +250,26 @@ def _assert_max_inclusive(search_term, max_inclusive):
     ), f"search_term {search_term} is greater than max_inclusive {max_inclusive}"
 
 
-_describe_docs = {}
+_describe_docs: Dict[str, bytes] = {}
 
 
-def _get_describe_doc(collection, proxies=None):
-    if _describe_docs.get(collection):
-        return _describe_docs.get(collection)
-    res = requests.get(
+def _get_describe_doc(
+    collection: str, proxies: Union[Dict[str, str], None] = None
+) -> bytes:
+    docs = _describe_docs.get(collection)
+    if docs:
+        return docs
+    session = Credentials.make_session(None, False, Credentials.RETRIES, proxies)
+    with session.get(
         "https://catalogue.dataspace.copernicus.eu"
         + f"/resto/api/collections/{collection}/describe.xml",
-        timeout=120,
-        proxies=proxies,
-    )
-    assert res.status_code == 200, (
-        f"Unable to find collection with name {collection}. Please see "
-        + "https://documentation.dataspace.copernicus.eu"
-        + "/APIs/OpenSearch.html#collections "
-        + "for a list of available collections"
-    )
+    ) as res:
+        assert res.status_code == 200, (
+            f"Unable to find collection with name {collection}. Please see "
+            + "https://documentation.dataspace.copernicus.eu"
+            + "/APIs/OpenSearch.html#collections "
+            + "for a list of available collections"
+        )
 
-    _describe_docs[collection] = res.content
-    return _describe_docs.get(collection)
+        _describe_docs[collection] = res.content
+        return res.content

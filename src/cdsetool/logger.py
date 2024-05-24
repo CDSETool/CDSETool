@@ -10,17 +10,22 @@ class NoopLogger:
     A logger that does nothing.
     """
 
-    def debug(self, *kwargs):
+    def debug(self, msg, *args, **kwargs):
         """
         Log a debug message.
         """
 
-    def info(self, *kwargs):
+    def error(self, msg, *args, **kwargs):
+        """
+        Log an error message.
+        """
+
+    def info(self, msg, *args, **kwargs):
         """
         Log an info message.
         """
 
-    def warning(self, *kwargs):
+    def warning(self, msg, *args, **kwargs):
         """
         Log a warning message.
         """

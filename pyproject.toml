@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cdsetool"
-version = "0.2.7"
+version = "0.2.11"
 authors = [
   { name="Jacob Vejby", email="javej@sdfi.dk" },
 ]
@@ -16,20 +16,20 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 dependencies = [
-  "typer ~= 0.9.0",
-  "rich >= 13.6,< 13.8",
-  "requests >= 2.28.1,< 2.32.0",
+  "typer >= 0.9,< 1",
+  "rich >= 13.6,< 14",
+  "requests >= 2.28.1,< 3",
   "pyjwt[crypto] ~= 2.8.0",
   "geopandas >= 0.13.2",
 ]
 [project.optional-dependencies]
 test = [
-    "black==24.3.0",
-    "pylint==3.0.3",
-    "pytest==8.1.1",
-    "pytest-cov==4.1.0",
-    "requests-mock==1.11.0",
-    "pytest-mock==3.12.0",
+    "black==24.4.2",
+    "pylint==3.2.2",
+    "pytest==8.2.1",
+    "pytest-cov==5.0.0",
+    "requests-mock==1.12.1",
+    "pytest-mock==3.14.0",
 ]
 
 [project.urls]
@@ -45,6 +45,17 @@ max-locals = 20
 [tool.pylint.format]
 max-line-length = "88"
 disable="fixme"
+
+[tool.pyright]
+exclude = ["**/__pycache__", ".venv"]
+
+# Can be strict too, see more fine-grained settings at:
+# https://github.com/microsoft/pyright/blob/main/docs/configuration.md#diagnostic-settings-defaults
+typeCheckingMode = "standard"
+
+executionEnvironments = [
+  { root = "./" }
+]
 
 [tool.pytest.ini_options]
 addopts = [

@@ -5,7 +5,7 @@ from cdsetool.logger import NoopLogger
 from cdsetool.download import download_feature
 
 
-def test_noop_logger_is_default():
+def test_noop_logger_is_default() -> None:
     NoopLogger.debug = MagicMock()
 
     assert NoopLogger.debug.call_count == 0
@@ -24,7 +24,7 @@ def test_noop_logger_is_default():
     assert NoopLogger.debug.call_count == 1
 
 
-def test_noop_does_not_error():
+def test_noop_does_not_error() -> None:
     try:
         download_feature(
             {
@@ -36,6 +36,6 @@ def test_noop_does_not_error():
             },
             "somewhere",
         )
-        NoopLogger.debug("NoopLogger did not raise an exception")
+        NoopLogger().debug("NoopLogger did not raise an exception")
     except Exception as e:
         pytest.fail(f"Unexpected exception: {e}")

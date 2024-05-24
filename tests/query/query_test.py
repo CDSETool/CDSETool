@@ -13,7 +13,7 @@ from cdsetool.query import (
 from datetime import date, datetime
 
 
-def test_serialize_search_term():
+def test_serialize_search_term() -> None:
     assert _serialize_search_term("foo") == "foo"
     assert _serialize_search_term(["foo", "bar"]) == "foo,bar"
     assert _serialize_search_term(date(2020, 1, 1)) == "2020-01-01"
@@ -22,7 +22,7 @@ def test_serialize_search_term():
     )
 
 
-def test_validate_search_term():
+def test_validate_search_term() -> None:
     description = {
         "productType": {"pattern": "^(S2MSI1C|S2MSI2A)$"},
         "orbitNumber": {
@@ -47,14 +47,14 @@ def test_validate_search_term():
         _validate_search_term("orbitNumber", "foobar", description)
 
 
-def test_assert_valid_key():
+def test_assert_valid_key() -> None:
     _assert_valid_key("someKey", {"someKey": True})
 
     with pytest.raises(AssertionError):
         _assert_valid_key("otherKey", {"someKey": True})
 
 
-def test_assert_match_pattern():
+def test_assert_match_pattern() -> None:
     pattern = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(|Z|[\\+\\-][0-9]{2}:[0-9]{2}))?$"
 
     with pytest.raises(AssertionError):
@@ -79,28 +79,28 @@ def test_assert_match_pattern():
     _assert_match_pattern("descending", pattern)
 
 
-def test_assert_min_inclusive():
-    _assert_min_inclusive(1, 1)
-    _assert_min_inclusive(2, 1)
+def test_assert_min_inclusive() -> None:
+    _assert_min_inclusive("1", "1")
+    _assert_min_inclusive("2", "1")
 
     with pytest.raises(AssertionError):
-        _assert_min_inclusive(0, 1)
+        _assert_min_inclusive("0", "1")
 
 
-def test_assert_max_inclusive():
-    _assert_max_inclusive(1, 1)
-    _assert_max_inclusive(0, 1)
+def test_assert_max_inclusive() -> None:
+    _assert_max_inclusive("1", "1")
+    _assert_max_inclusive("0", "1")
 
     with pytest.raises(AssertionError):
-        _assert_max_inclusive(2, 1)
+        _assert_max_inclusive("2", "1")
 
 
-def test_shape_to_wkt():
+def test_shape_to_wkt() -> None:
     wkt = "POLYGON((10.172406299744779 55.48259118004532, 10.172406299744779 55.38234270718456, 10.42371976928382 55.38234270718456, 10.42371976928382 55.48259118004532, 10.172406299744779 55.48259118004532))"
     assert shape_to_wkt("tests/shape/POLYGON.shp") == wkt
 
 
-def test_geojson_to_wkt():
+def test_geojson_to_wkt() -> None:
     wkt = "POLYGON((10.172406299744779 55.48259118004532, 10.172406299744779 55.38234270718456, 10.42371976928382 55.38234270718456, 10.42371976928382 55.48259118004532, 10.172406299744779 55.48259118004532))"
     geojson = '{ "type": "Feature", "properties": { }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 10.172406299744779, 55.482591180045318 ], [ 10.172406299744779, 55.382342707184563 ], [ 10.423719769283821, 55.382342707184563 ], [ 10.423719769283821, 55.482591180045318 ], [ 10.172406299744779, 55.482591180045318 ] ] ] } }'
 

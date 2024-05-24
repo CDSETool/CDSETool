@@ -10,13 +10,22 @@ import random
 import tempfile
 import time
 import shutil
-from typing import Optional, Dict
 from dataclasses import dataclass
 
+from typing import Any, Dict, Generator, Union, Optional
+
+from requests import Session
+from requests.exceptions import ChunkedEncodingError
+from urllib3.exceptions import ProtocolError
 from cdsetool._processing import _concurrent_process
-from cdsetool.credentials import Credentials
+from cdsetool.credentials import (
+    Credentials,
+    TokenClientConnectionError,
+    TokenExpiredSignatureError,
+)
 from cdsetool.logger import NoopLogger
-from cdsetool.monitor import NoopMonitor
+from cdsetool.monitor import NoopMonitor, StatusMonitor
+from cdsetool.query import FeatureQuery
 
 
 @dataclass
@@ -52,7 +61,9 @@ class DownloadResult:
         return f"Failed to download {self.feature.get('id')}: {self.message}"
 
 
-def download_feature(feature, path, options=None):
+def download_feature(
+    feature, path: str, options: Union[Dict[str, Any], None] = None
+) -> Union[str, None]:
     """
     Download a single feature
 
@@ -79,36 +90,50 @@ def download_feature(feature, path, options=None):
         return DownloadResult.ok(feature, filename)
 
     with _get_monitor(options).status() as status:
-        (fd, tmp) = tempfile.mkstemp()  # pylint: disable=invalid-name
         status.set_filename(filename)
         attempts = 0
-        while attempts < 5:
+        while attempts < 10:
+            attempts += 1
             # Always get a new session, credentials might have expired.
-            session = _get_credentials(options).get_session()
+            try:
+                session = _get_credentials(options).get_session()
+            except (TokenClientConnectionError, TokenExpiredSignatureError) as e:
+                log.warning(e)
+                continue
             url = _follow_redirect(url, session)
             with session.get(url, stream=True) as response:
                 if response.status_code != 200:
                     log.warning(f"Status code {response.status_code}, retrying..")
-                    attempts += 1
                     time.sleep(60 * (1 + (random.random() / 4)))
                     continue
 
                 status.set_filesize(int(response.headers["Content-Length"]))
 
-                with open(fd, "wb") as file:
-                    for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
-                        file.write(chunk)
-                        status.add_progress(len(chunk))
+                with tempfile.NamedTemporaryFile() as file:
+                    # Server might not send all bytes specified by the
+                    # Content-Length header before closing connection.
+                    # Log as a warning and try again.
+                    try:
+                        for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
+                            file.write(chunk)
+                            status.add_progress(len(chunk))
+                    except (
+                        ChunkedEncodingError,
+                        ConnectionResetError,
+                        ProtocolError,
+                    ) as e:
+                        log.warning(e)
+                        continue
+                    shutil.copy(file.name, result_path)
 
-                shutil.move(tmp, result_path)
                 return DownloadResult.ok(feature, filename)
     log.error(f"Failed to download {filename}")
-    os.close(fd)
-    os.remove(tmp)
     return DownloadResult.fail(feature, "Failed to download after 5 attempts")
 
 
-def download_features(features, path, options=None):
+def download_features(
+    features: FeatureQuery, path: str, options: Union[Dict[str, Any], None] = None
+) -> Generator[Union[str, None], None, None]:
     """
     Generator function that downloads all features in a result set
 
@@ -122,22 +147,21 @@ def download_features(features, path, options=None):
     options["monitor"] = _get_monitor(options)
     options["monitor"].start()
 
-    def _download_feature(feature):
+    def _download_feature(feature) -> Union[str, None]:
         return download_feature(feature, path, options)
 
-    for feature in _concurrent_process(
+    yield from _concurrent_process(
         _download_feature, features, options.get("concurrency", 1)
-    ):
-        yield feature
+    )
 
     options["monitor"].stop()
 
 
-def _get_feature_url(feature):
+def _get_feature_url(feature) -> str:
     return feature.get("properties").get("services").get("download").get("url")
 
 
-def _follow_redirect(url, session):
+def _follow_redirect(url: str, session: Session) -> str:
     response = session.head(url, allow_redirects=False)
     while response.status_code in range(300, 400):
         url = response.headers["Location"]
@@ -146,15 +170,15 @@ def _follow_redirect(url, session):
     return url
 
 
-def _get_logger(options):
+def _get_logger(options: Dict) -> NoopLogger:
     return options.get("logger") or NoopLogger()
 
 
-def _get_monitor(options):
+def _get_monitor(options: Dict) -> Union[StatusMonitor, NoopMonitor]:
     return options.get("monitor") or NoopMonitor()
 
 
-def _get_credentials(options):
+def _get_credentials(options: Dict) -> Credentials:
     return options.get("credentials") or Credentials(
         proxies=options.get("proxies", None)
     )

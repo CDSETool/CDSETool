@@ -2,11 +2,18 @@
 This module provides functions for processing data concurrently
 """
 
-from concurrent.futures import wait, FIRST_COMPLETED
+from concurrent.futures import Future, wait, FIRST_COMPLETED
 from concurrent.futures import ThreadPoolExecutor
+from typing import Callable, Generator, Iterable, List, Union
+
+from cdsetool.query import FeatureQuery
 
 
-def _concurrent_process(fun, iterable, workers=4):
+def _concurrent_process(
+    fun: Callable[[FeatureQuery], Union[str, None]],
+    iterable: Iterable,
+    workers: int = 4,
+) -> Generator[Union[str, None], None, None]:
     """
     Process items in an iterable concurrently
 
@@ -26,17 +33,17 @@ def _concurrent_process(fun, iterable, workers=4):
     iterator = iter(iterable)
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
-        futures = []
+        futures: List[Future[Union[str, None]]] = []  # pylint: disable=E1136
 
         # Pluck an item from the iterable and submit it to the executor.
         # If the iterable is exhausted, this function is a no-op.
-        def submit_item():
+        def submit_item() -> None:
             item = next(iterator, None)
             if item is not None:
                 futures.append(executor.submit(fun, item))
 
         # Fill the futures list up to the low water mark
-        def fill_futures():
+        def fill_futures() -> None:
             for _ in range(low_water_mark - len(futures)):
                 submit_item()
 
@@ -47,8 +54,8 @@ def _concurrent_process(fun, iterable, workers=4):
         while futures:
 
             # Wait for the first future(s) to complete
-            done, futures = wait(futures, return_when=FIRST_COMPLETED)
-            futures = list(futures)
+            done, not_done = wait(futures, return_when=FIRST_COMPLETED)
+            futures = list(not_done)
 
             for future in done:
                 yield future.result()

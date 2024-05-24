@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 import json
 import pytest
 import requests
@@ -16,7 +18,7 @@ from cdsetool.credentials import (
 )
 
 
-def _mock_openid(requests_mock):
+def _mock_openid(requests_mock) -> None:
     with open("tests/credentials/mock/openid-configuration.json") as f:
         requests_mock.get(
             "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/.well-known/openid-configuration",
@@ -24,7 +26,7 @@ def _mock_openid(requests_mock):
         )
 
 
-def _mock_token(requests_mock):
+def _mock_token(requests_mock) -> None:
     headers = {"alg": "RS256", "typ": "JWT", "kid": "key-9000"}
     now = datetime.datetime.now()
     payload = {
@@ -98,7 +100,7 @@ def _mock_token(requests_mock):
     )
 
 
-def _mock_jwks(mocker):
+def _mock_jwks(mocker) -> None:
     class MockResponse:
         def __init__(self, json_data):
             self.json_data = json_data
@@ -136,7 +138,7 @@ def _mock_jwks(mocker):
     mocker.patch("urllib.request.urlopen", return_value=MockResponse(jwks))
 
 
-def test_ensure_tokens(requests_mock, mocker):
+def test_ensure_tokens(requests_mock, mocker) -> None:
     _mock_openid(requests_mock)
     _mock_token(requests_mock)
     _mock_jwks(mocker)
@@ -162,7 +164,7 @@ def test_ensure_tokens(requests_mock, mocker):
     assert spy.call_count == 2
 
 
-def test_read_credentials(requests_mock, mocker):
+def test_read_credentials(requests_mock, mocker) -> None:
     _mock_openid(requests_mock)
     _mock_token(requests_mock)
     _mock_jwks(mocker)
@@ -184,7 +186,7 @@ def test_read_credentials(requests_mock, mocker):
         credentials = Credentials()
 
 
-def test_refresh_token(requests_mock, mocker):
+def test_refresh_token(requests_mock, mocker) -> None:
     _mock_openid(requests_mock)
     _mock_token(requests_mock)
     _mock_jwks(mocker)
@@ -205,7 +207,7 @@ def test_refresh_token(requests_mock, mocker):
     assert prev_access_token != credentials._Credentials__access_token
 
 
-def test_get_session(requests_mock, mocker):
+def test_get_session(requests_mock, mocker) -> None:
     _mock_openid(requests_mock)
     _mock_token(requests_mock)
     _mock_jwks(mocker)
@@ -220,7 +222,7 @@ def test_get_session(requests_mock, mocker):
     )
 
 
-def test_token_exchange(requests_mock, mocker):
+def test_token_exchange(requests_mock, mocker) -> None:
     _mock_openid(requests_mock)
     _mock_token(requests_mock)
     _mock_jwks(mocker)
