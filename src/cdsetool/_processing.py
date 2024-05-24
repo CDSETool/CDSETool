@@ -4,16 +4,18 @@ This module provides functions for processing data concurrently
 
 from concurrent.futures import Future, wait, FIRST_COMPLETED
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, Generator, Iterable, List, Union
+from typing import Callable, Generator, Iterable, List
 
 from cdsetool.query import FeatureQuery
+from cdsetool._download_result import DownloadResult
 
 
+# TODO: change to use generics when Python 3.11 is EOL
 def _concurrent_process(
-    fun: Callable[[FeatureQuery], Union[str, None]],
+    fun: Callable[[FeatureQuery], DownloadResult],
     iterable: Iterable,
     workers: int = 4,
-) -> Generator[Union[str, None], None, None]:
+) -> Generator[DownloadResult, None, None]:
     """
     Process items in an iterable concurrently
 
@@ -33,7 +35,7 @@ def _concurrent_process(
     iterator = iter(iterable)
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
-        futures: List[Future[Union[str, None]]] = []  # pylint: disable=E1136
+        futures: List[Future[DownloadResult]] = []  # pylint: disable=E1136
 
         # Pluck an item from the iterable and submit it to the executor.
         # If the iterable is exhausted, this function is a no-op.

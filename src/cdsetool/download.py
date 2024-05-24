@@ -10,9 +10,8 @@ import random
 import tempfile
 import time
 import shutil
-from dataclasses import dataclass
 
-from typing import Any, Dict, Generator, Union, Optional
+from typing import Any, Dict, Generator, Union
 
 from requests import Session
 from requests.exceptions import ChunkedEncodingError
@@ -26,44 +25,12 @@ from cdsetool.credentials import (
 from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor, StatusMonitor
 from cdsetool.query import FeatureQuery
-
-
-@dataclass
-class DownloadResult:
-    """
-    Describes the result of a download operation, whether it was successful or not.
-    Contains relevant information about the feature and the download operation.
-    """
-
-    success: bool
-    feature: Dict[str, any]
-    filename: Optional[str]
-    message: Optional[str]
-
-    @staticmethod
-    def ok(feature, filename):
-        """
-        Create a successful DownloadResult
-        """
-        return DownloadResult(True, feature, filename, None)
-
-    @staticmethod
-    def fail(feature, message):
-        """
-        Create a failed DownloadResult
-        """
-        return DownloadResult(False, feature, None, message)
-
-    def __str__(self):
-        if self.success:
-            return f"Downloaded {self.feature.get('id')} to {self.filename}"
-
-        return f"Failed to download {self.feature.get('id')}: {self.message}"
+from cdsetool._download_result import DownloadResult
 
 
 def download_feature(
     feature, path: str, options: Union[Dict[str, Any], None] = None
-) -> Union[str, None]:
+) -> DownloadResult:
     """
     Download a single feature
 
@@ -133,7 +100,7 @@ def download_feature(
 
 def download_features(
     features: FeatureQuery, path: str, options: Union[Dict[str, Any], None] = None
-) -> Generator[Union[str, None], None, None]:
+) -> Generator[DownloadResult, None, None]:
     """
     Generator function that downloads all features in a result set
 
@@ -147,7 +114,7 @@ def download_features(
     options["monitor"] = _get_monitor(options)
     options["monitor"].start()
 
-    def _download_feature(feature) -> Union[str, None]:
+    def _download_feature(feature) -> DownloadResult:
         return download_feature(feature, path, options)
 
     yield from _concurrent_process(
