@@ -10,6 +10,7 @@ import random
 import tempfile
 import time
 import shutil
+
 from typing import Any, Dict, Generator, Union
 
 from requests import Session
@@ -24,31 +25,36 @@ from cdsetool.credentials import (
 from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor, StatusMonitor
 from cdsetool.query import FeatureQuery
+from cdsetool._download_result import DownloadResult
 
 
 def download_feature(
     feature, path: str, options: Union[Dict[str, Any], None] = None
-) -> Union[str, None]:
+) -> DownloadResult:
     """
     Download a single feature
 
-    Returns the feature ID
+    Returns a DownloadResult object
     """
     options = options or {}
     log = _get_logger(options)
     url = _get_feature_url(feature)
     title = feature.get("properties").get("title")
 
-    if not url or not title:
-        log.debug(f"Bad URL ('{url}') or title ('{title}')")
-        return None
+    if not url:
+        log.debug(f"Bad URL ('{url}')")
+        return DownloadResult.fail(feature, "Feature has no download URL")
+
+    if not title:
+        log.debug(f"Bad title ('{title}')")
+        return DownloadResult.fail(feature, "Feature has no title")
 
     filename = title.replace(".SAFE", ".zip")
     result_path = os.path.join(path, filename)
 
     if not options.get("overwrite_existing", False) and os.path.exists(result_path):
         log.debug(f"File {result_path} already exists, skipping..")
-        return filename
+        return DownloadResult.ok(feature, filename)
 
     with _get_monitor(options).status() as status:
         status.set_filename(filename)
@@ -87,14 +93,14 @@ def download_feature(
                         continue
                     shutil.copy(file.name, result_path)
 
-                return filename
+                return DownloadResult.ok(feature, filename)
     log.error(f"Failed to download {filename}")
-    return None
+    return DownloadResult.fail(feature, "Failed to download after 5 attempts")
 
 
 def download_features(
     features: FeatureQuery, path: str, options: Union[Dict[str, Any], None] = None
-) -> Generator[Union[str, None], None, None]:
+) -> Generator[DownloadResult, None, None]:
     """
     Generator function that downloads all features in a result set
 
@@ -108,7 +114,7 @@ def download_features(
     options["monitor"] = _get_monitor(options)
     options["monitor"].start()
 
-    def _download_feature(feature) -> Union[str, None]:
+    def _download_feature(feature) -> DownloadResult:
         return download_feature(feature, path, options)
 
     yield from _concurrent_process(
