@@ -33,8 +33,8 @@ test = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/SDFIdk/CDSETool"
-"Bug Tracker" = "https://github.com/SDFIdk/CDSETool/issues"
+"Homepage" = "https://github.com/CDSETool/CDSETool"
+"Bug Tracker" = "https://github.com/CDSETool/CDSETool/issues"
 
 [project.scripts]
 cdsetool = "cdsetool:cli.main"
