@@ -147,7 +147,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
             caller=self,
             authorization=False,
             max_retries=Retry(
-                total=2,
+                total=15,
                 backoff_factor=0.5,
                 allowed_methods=None,
                 raise_on_status=False,
