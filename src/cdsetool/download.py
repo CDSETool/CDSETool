@@ -65,15 +65,17 @@ def download_feature(
                 log.warning("Token signature expired, retrying..")
                 continue
             url = _follow_redirect(url, session)
-            with session.get(url, stream=True) as response:
+            with session.get(
+                url, stream=True
+            ) as response, tempfile.TemporaryDirectory() as temp_dir:
                 if response.status_code != 200:
                     log.warning(f"Status code {response.status_code}, retrying..")
                     time.sleep(60 * (1 + (random.random() / 4)))
                     continue
 
                 status.set_filesize(int(response.headers["Content-Length"]))
-
-                with tempfile.NamedTemporaryFile() as file:
+                tmp_file = os.path.join(temp_dir, "download.zip")
+                with open(tmp_file, "wb") as file:
                     # Server might not send all bytes specified by the
                     # Content-Length header before closing connection.
                     # Log as a warning and try again.
@@ -88,8 +90,8 @@ def download_feature(
                     ) as e:
                         log.warning(e)
                         continue
-                    shutil.copy(file.name, result_path)
-
+                # Close file before copy so all buffers are flushed.
+                shutil.copy(tmp_file, result_path)
                 return filename
     log.error(f"Failed to download {filename}")
     return None
