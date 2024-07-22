@@ -58,8 +58,8 @@ def download_feature(
             # Always get a new session, credentials might have expired.
             try:
                 session = _get_credentials(options).get_session()
-            except TokenClientConnectionError as e:
-                log.warning(e)
+            except TokenClientConnectionError:
+                log.warning("Token client connection failed, retrying..")
                 continue
             except TokenExpiredSignatureError:
                 log.warning("Token signature expired, retrying..")
