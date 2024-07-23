@@ -74,7 +74,7 @@ def download_feature(
 
                 status.set_filesize(int(response.headers["Content-Length"]))
                 filename_temp_created = None
-                with tempfile.NamedTemporaryFile(dir=temp_dir,delete=False) as file:
+                with tempfile.NamedTemporaryFile(dir=temp_dir, delete=False) as file:
                     # Server might not send all bytes specified by the
                     # Content-Length header before closing connection.
                     # Log as a warning and try again.
@@ -95,7 +95,7 @@ def download_feature(
                         continue
                     file.close()
                 if filename_temp_created is not None:
-                    #copying here allows windows to work
+                    # copying here allows windows to work
                     shutil.copyfile(filename_temp_created, result_path)
                     os.unlink(filename_temp_created)
 
@@ -156,8 +156,9 @@ def _get_credentials(options: Dict) -> Credentials:
         proxies=options.get("proxies", None)
     )
 
-def _get_temp_dir(options: Dict) -> Union[str,None]:
+
+def _get_temp_dir(options: Dict) -> Union[str, None]:
     temp = options.get("tmpdir") or None
     if temp is not None:
-        return os.path.join(temp,"")
+        return os.path.join(temp, "")
     return None
