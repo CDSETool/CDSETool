@@ -38,7 +38,7 @@ def download_feature(
     log = _get_logger(options)
     url = _get_feature_url(feature)
     title = feature.get("properties").get("title")
-    temp_dir = _get_temp_dir(options) 
+    temp_dir = _get_temp_dir(options)
 
     if not url or not title:
         log.debug(f"Bad URL ('{url}') or title ('{title}')")
@@ -94,7 +94,7 @@ def download_feature(
                         filename_temp_created = None
                         continue
                     file.close()
-                if filename_temp_created != None:
+                if filename_temp_created is not None:
                     #copying here allows windows to work
                     shutil.copyfile(filename_temp_created, result_path)
                     os.unlink(filename_temp_created)
@@ -158,6 +158,6 @@ def _get_credentials(options: Dict) -> Credentials:
 
 def _get_temp_dir(options: Dict) -> Union[str,None]:
     temp = options.get("tmpdir") or None
-    if temp != None:
+    if temp is not None:
         return os.path.join(temp,"")
-    return None 
+    return None
