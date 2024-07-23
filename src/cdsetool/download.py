@@ -74,7 +74,10 @@ def download_feature(
 
                 status.set_filesize(int(response.headers["Content-Length"]))
                 filename_temp_created = None
-                with tempfile.NamedTemporaryFile(dir=temp_dir, delete=False) as file:
+                filename_prefix = filename.replace(".zip", "")
+                with tempfile.NamedTemporaryFile(
+                    dir=temp_dir, prefix=filename_prefix, delete=False
+                ) as file:
                     # Server might not send all bytes specified by the
                     # Content-Length header before closing connection.
                     # Log as a warning and try again.
