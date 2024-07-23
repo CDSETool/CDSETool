@@ -38,6 +38,7 @@ def download_feature(
     log = _get_logger(options)
     url = _get_feature_url(feature)
     title = feature.get("properties").get("title")
+    temp_dir = _get_temp_dir(options) 
 
     if not url or not title:
         log.debug(f"Bad URL ('{url}') or title ('{title}')")
@@ -58,8 +59,8 @@ def download_feature(
             # Always get a new session, credentials might have expired.
             try:
                 session = _get_credentials(options).get_session()
-            except TokenClientConnectionError:
-                log.warning("Token client connection failed, retrying..")
+            except TokenClientConnectionError as e:
+                log.warning(e)
                 continue
             except TokenExpiredSignatureError:
                 log.warning("Token signature expired, retrying..")
@@ -72,11 +73,12 @@ def download_feature(
                     continue
 
                 status.set_filesize(int(response.headers["Content-Length"]))
-
-                with tempfile.NamedTemporaryFile() as file:
+                filename_temp_created = None
+                with tempfile.NamedTemporaryFile(dir=temp_dir,delete=False) as file:
                     # Server might not send all bytes specified by the
                     # Content-Length header before closing connection.
                     # Log as a warning and try again.
+                    filename_temp_created = file.name
                     try:
                         for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
                             file.write(chunk)
@@ -87,8 +89,15 @@ def download_feature(
                         ProtocolError,
                     ) as e:
                         log.warning(e)
+                        file.close()
+                        os.unlink(filename_temp_created)
+                        filename_temp_created = None
                         continue
-                    shutil.copy(file.name, result_path)
+                    file.close()
+                if filename_temp_created != None:
+                    #copying here allows windows to work
+                    shutil.copyfile(filename_temp_created, result_path)
+                    os.unlink(filename_temp_created)
 
                 return filename
     log.error(f"Failed to download {filename}")
@@ -146,3 +155,9 @@ def _get_credentials(options: Dict) -> Credentials:
     return options.get("credentials") or Credentials(
         proxies=options.get("proxies", None)
     )
+
+def _get_temp_dir(options: Dict) -> Union[str,None]:
+    temp = options.get("tmpdir") or None
+    if temp != None:
+        return os.path.join(temp,"")
+    return None 
