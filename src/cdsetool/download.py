@@ -66,9 +66,9 @@ def download_feature(
                 log.warning("Token signature expired, retrying..")
                 continue
             url = _follow_redirect(url, session)
-            with session.get(
-                url, stream=True
-            ) as response, tempfile.TemporaryDirectory(dir=temp_dir_usr) as temp_dir:
+            with session.get(url, stream=True) as response, tempfile.TemporaryDirectory(
+                dir=temp_dir_usr
+            ) as temp_dir:
                 if response.status_code != 200:
                     log.warning(f"Status code {response.status_code}, retrying..")
                     time.sleep(60 * (1 + (random.random() / 4)))
@@ -149,6 +149,7 @@ def _get_credentials(options: Dict) -> Credentials:
     return options.get("credentials") or Credentials(
         proxies=options.get("proxies", None)
     )
+
 
 def _get_temp_dir(options: Dict) -> Union[str, None]:
     return options.get("tmpdir") or None
