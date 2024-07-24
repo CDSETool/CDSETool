@@ -66,8 +66,9 @@ def download_feature(
                 log.warning("Token signature expired, retrying..")
                 continue
             url = _follow_redirect(url, session)
+            name_dir_prefix = filename.replace(".zip", "")
             with session.get(url, stream=True) as response, tempfile.TemporaryDirectory(
-                dir=temp_dir_usr
+                prefix=name_dir_prefix, dir=temp_dir_usr
             ) as temp_dir:
                 if response.status_code != 200:
                     log.warning(f"Status code {response.status_code}, retrying..")
