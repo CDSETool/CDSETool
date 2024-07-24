@@ -66,7 +66,7 @@ def download_feature(
                 log.warning("Token signature expired, retrying..")
                 continue
             url = _follow_redirect(url, session)
-            name_dir_prefix = filename.replace(".zip", "")
+            name_dir_prefix = filename.replace(".zip", "____")
             with session.get(url, stream=True) as response, tempfile.TemporaryDirectory(
                 prefix=name_dir_prefix, dir=temp_dir_usr
             ) as temp_dir:
