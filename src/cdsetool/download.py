@@ -38,6 +38,7 @@ def download_feature(
     log = _get_logger(options)
     url = _get_feature_url(feature)
     title = feature.get("properties").get("title")
+    temp_dir_usr = _get_temp_dir(options)
 
     if not url or not title:
         log.debug(f"Bad URL ('{url}') or title ('{title}')")
@@ -65,9 +66,10 @@ def download_feature(
                 log.warning("Token signature expired, retrying..")
                 continue
             url = _follow_redirect(url, session)
-            with session.get(
-                url, stream=True
-            ) as response, tempfile.TemporaryDirectory() as temp_dir:
+            name_dir_prefix = filename.replace(".zip", "____")
+            with session.get(url, stream=True) as response, tempfile.TemporaryDirectory(
+                prefix=name_dir_prefix, dir=temp_dir_usr
+            ) as temp_dir:
                 if response.status_code != 200:
                     log.warning(f"Status code {response.status_code}, retrying..")
                     time.sleep(60 * (1 + (random.random() / 4)))
@@ -148,3 +150,7 @@ def _get_credentials(options: Dict) -> Credentials:
     return options.get("credentials") or Credentials(
         proxies=options.get("proxies", None)
     )
+
+
+def _get_temp_dir(options: Dict) -> Union[str, None]:
+    return options.get("tmpdir") or None
