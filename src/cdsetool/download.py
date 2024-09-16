@@ -67,9 +67,12 @@ def download_feature(
                 continue
             url = _follow_redirect(url, session)
             name_dir_prefix = filename.replace(".zip", "____")
-            with session.get(url, stream=True) as response, tempfile.TemporaryDirectory(
-                prefix=name_dir_prefix, dir=temp_dir_usr
-            ) as temp_dir:
+            with (
+                session.get(url, stream=True) as response,
+                tempfile.TemporaryDirectory(
+                    prefix=name_dir_prefix, dir=temp_dir_usr
+                ) as temp_dir,
+            ):
                 if response.status_code != 200:
                     log.warning(f"Status code {response.status_code}, retrying..")
                     time.sleep(60 * (1 + (random.random() / 4)))
