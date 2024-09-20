@@ -10,6 +10,8 @@ from datetime import datetime, date
 import re
 import json
 import geopandas as gpd
+from requests.exceptions import ChunkedEncodingError
+from urllib3.exceptions import ProtocolError
 from cdsetool.credentials import Credentials
 from cdsetool.logger import NoopLogger
 
@@ -79,16 +81,24 @@ class FeatureQuery:
         session = Credentials.make_session(
             None, False, Credentials.RETRIES, self.proxies
         )
-        with session.get(self.next_url) as response:
-            response.raise_for_status()
-            res = response.json()
-            self.features += res.get("features") or []
+        attempts = 0
+        while attempts < 10:
+            attempts += 1
+            try:
+                with session.get(self.next_url) as response:
+                    response.raise_for_status()
+                    res = response.json()
+                    self.features += res.get("features") or []
 
-            total_results = res.get("properties", {}).get("totalResults")
-            if total_results is not None:
-                self.total_results = total_results
+                    total_results = res.get("properties", {}).get("totalResults")
+                    if total_results is not None:
+                        self.total_results = total_results
 
-            self.__set_next_url(res)
+                    self.__set_next_url(res)
+                    return
+            except (ChunkedEncodingError, ConnectionResetError, ProtocolError) as e:
+                self.log.warning(e)
+                continue
 
     def __set_next_url(self, res) -> None:
         links = res.get("properties", {}).get("links") or []
