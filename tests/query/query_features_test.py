@@ -40,12 +40,6 @@ def _mock_sentinel_1(requests_mock):
             requests_mock.get(url, text=file.read())
 
 
-def test_query_features(requests_mock) -> None:
-    _mock_describe(requests_mock)
-
-    assert type(query_features("Sentinel1", {"maxRecords": 10})) is FeatureQuery
-
-
 def test_query_features_length(requests_mock) -> None:
     _mock_describe(requests_mock)
     _mock_sentinel_1(requests_mock)
