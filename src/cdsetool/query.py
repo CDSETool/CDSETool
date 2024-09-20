@@ -11,6 +11,7 @@ import re
 import json
 import geopandas as gpd
 from cdsetool.credentials import Credentials
+from cdsetool.logger import NoopLogger
 
 
 class _FeatureIterator:
@@ -48,9 +49,11 @@ class FeatureQuery:
         collection: str,
         search_terms: Dict[str, Any],
         proxies: Union[Dict[str, str], None] = None,
+        options: Union[Dict[str, Any], None] = None,
     ) -> None:
         self.features = []
         self.proxies = proxies
+        self.log = (options or {}).get("logger") or NoopLogger()
         self.next_url = _query_url(
             collection, {**search_terms, "exactCount": "1"}, proxies=proxies
         )
@@ -101,11 +104,14 @@ def query_features(
     collection: str,
     search_terms: Dict[str, Any],
     proxies: Union[Dict[str, str], None] = None,
+    options: Union[Dict[str, Any], None] = None,
 ) -> FeatureQuery:
     """
     Returns an iterator over the features matching the search terms
     """
-    return FeatureQuery(collection, {"maxRecords": 2000, **search_terms}, proxies)
+    return FeatureQuery(
+        collection, {"maxRecords": 2000, **search_terms}, proxies, options
+    )
 
 
 def shape_to_wkt(shape: str) -> str:
