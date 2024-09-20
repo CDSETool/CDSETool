@@ -1,6 +1,4 @@
 from cdsetool.query import query_features, FeatureQuery
-import pytest
-import requests
 
 
 def _mock_describe(requests_mock):
