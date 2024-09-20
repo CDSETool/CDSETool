@@ -24,11 +24,11 @@ dependencies = [
 ]
 [project.optional-dependencies]
 test = [
-    "black==24.8.0",
     "pylint==3.2.7",
     "pytest==8.3.2",
     "pytest-cov==5.0.0",
     "requests-mock==1.12.1",
+    "ruff==0.6.6",
     "pytest-mock==3.14.0",
 ]
 

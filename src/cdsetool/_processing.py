@@ -52,7 +52,6 @@ def _concurrent_process(
 
         # Continue until no more futures are queued
         while futures:
-
             # Wait for the first future(s) to complete
             done, not_done = wait(futures, return_when=FIRST_COMPLETED)
             futures = list(not_done)
