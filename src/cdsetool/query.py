@@ -9,6 +9,8 @@ from xml.etree import ElementTree
 from datetime import datetime, date
 import re
 import json
+from random import random
+from time import sleep
 import geopandas as gpd
 from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import ProtocolError
@@ -86,7 +88,12 @@ class FeatureQuery:
             attempts += 1
             try:
                 with session.get(self.next_url) as response:
-                    response.raise_for_status()
+                    if response.status_code != 200:
+                        self.log.warning(
+                            f"Status code {response.status_code}, retrying.."
+                        )
+                        sleep(60 * (1 + (random() / 4)))
+                        continue
                     res = response.json()
                     self.features += res.get("features") or []
 
