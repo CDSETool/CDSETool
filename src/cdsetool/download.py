@@ -44,7 +44,7 @@ def download_feature(
         log.debug(f"Bad URL ('{url}') or title ('{title}')")
         return None
 
-    filename = title.replace(".SAFE", ".zip")
+    filename = title + ".zip"
     result_path = os.path.join(path, filename)
 
     if not options.get("overwrite_existing", False) and os.path.exists(result_path):

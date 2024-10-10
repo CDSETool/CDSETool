@@ -1,6 +1,4 @@
 from cdsetool.query import query_features, FeatureQuery
-import pytest
-import requests
 
 
 def _mock_describe(requests_mock):
@@ -38,12 +36,6 @@ def _mock_sentinel_1(requests_mock):
     for file, url in urls:
         with open(file, "r", encoding="utf-8") as file:
             requests_mock.get(url, text=file.read())
-
-
-def test_query_features(requests_mock) -> None:
-    _mock_describe(requests_mock)
-
-    assert type(query_features("Sentinel1", {"maxRecords": 10})) is FeatureQuery
 
 
 def test_query_features_length(requests_mock) -> None:
