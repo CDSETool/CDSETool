@@ -9,8 +9,13 @@ from xml.etree import ElementTree
 from datetime import datetime, date
 import re
 import json
+from random import random
+from time import sleep
 import geopandas as gpd
+from requests.exceptions import ChunkedEncodingError
+from urllib3.exceptions import ProtocolError
 from cdsetool.credentials import Credentials
+from cdsetool.logger import NoopLogger
 
 
 class _FeatureIterator:
@@ -48,9 +53,11 @@ class FeatureQuery:
         collection: str,
         search_terms: Dict[str, Any],
         proxies: Union[Dict[str, str], None] = None,
+        options: Union[Dict[str, Any], None] = None,
     ) -> None:
         self.features = []
         self.proxies = proxies
+        self.log = (options or {}).get("logger") or NoopLogger()
         self.next_url = _query_url(
             collection, {**search_terms, "exactCount": "1"}, proxies=proxies
         )
@@ -76,16 +83,29 @@ class FeatureQuery:
         session = Credentials.make_session(
             None, False, Credentials.RETRIES, self.proxies
         )
-        with session.get(self.next_url) as response:
-            response.raise_for_status()
-            res = response.json()
-            self.features += res.get("features") or []
+        attempts = 0
+        while attempts < 10:
+            attempts += 1
+            try:
+                with session.get(self.next_url) as response:
+                    if response.status_code != 200:
+                        self.log.warning(
+                            f"Status code {response.status_code}, retrying.."
+                        )
+                        sleep(60 * (1 + (random() / 4)))
+                        continue
+                    res = response.json()
+                    self.features += res.get("features") or []
 
-            total_results = res.get("properties", {}).get("totalResults")
-            if total_results is not None:
-                self.total_results = total_results
+                    total_results = res.get("properties", {}).get("totalResults")
+                    if total_results is not None:
+                        self.total_results = total_results
 
-            self.__set_next_url(res)
+                    self.__set_next_url(res)
+                    return
+            except (ChunkedEncodingError, ConnectionResetError, ProtocolError) as e:
+                self.log.warning(e)
+                continue
 
     def __set_next_url(self, res) -> None:
         links = res.get("properties", {}).get("links") or []
@@ -101,11 +121,14 @@ def query_features(
     collection: str,
     search_terms: Dict[str, Any],
     proxies: Union[Dict[str, str], None] = None,
+    options: Union[Dict[str, Any], None] = None,
 ) -> FeatureQuery:
     """
     Returns an iterator over the features matching the search terms
     """
-    return FeatureQuery(collection, {"maxRecords": 2000, **search_terms}, proxies)
+    return FeatureQuery(
+        collection, {"maxRecords": 2000, **search_terms}, proxies, options
+    )
 
 
 def shape_to_wkt(shape: str) -> str:
