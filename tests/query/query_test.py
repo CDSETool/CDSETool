@@ -4,7 +4,6 @@ from cdsetool.query import (
     _serialize_search_term,
     _validate_search_term,
     _assert_match_pattern,
-    _assert_valid_key,
     _assert_min_inclusive,
     _assert_max_inclusive,
     shape_to_wkt,
@@ -45,13 +44,6 @@ def test_validate_search_term() -> None:
 
     with pytest.raises(AssertionError):
         _validate_search_term("orbitNumber", "foobar", description)
-
-
-def test_assert_valid_key() -> None:
-    _assert_valid_key("someKey", {"someKey": True})
-
-    with pytest.raises(AssertionError):
-        _assert_valid_key("otherKey", {"someKey": True})
 
 
 def test_assert_match_pattern() -> None:
