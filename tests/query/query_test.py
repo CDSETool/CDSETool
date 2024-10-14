@@ -48,13 +48,6 @@ def test_validate_search_term() -> None:
         _validate_search_term("orbitNumber", "foobar", description)
 
 
-def test_assert_valid_key() -> None:
-    _assert_valid_key("someKey", {"someKey": True})
-
-    with pytest.raises(AssertionError):
-        _assert_valid_key("otherKey", {"someKey": True})
-
-
 def test_assert_match_pattern() -> None:
     pattern = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(|Z|[\\+\\-][0-9]{2}:[0-9]{2}))?$"
 

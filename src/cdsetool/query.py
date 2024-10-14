@@ -211,6 +211,12 @@ def _query_url(
     query_list = []
     for key, value in search_terms.items():
         val = _serialize_search_term(value)
+        if key not in description:
+            assert False, (
+                f'search_term with name "{key}" was not found for collection.'
+                + f" Available terms are: {', '.join(description.keys())}"
+            )
+            continue
         _validate_search_term(key, val, description)
         query_list.append(f"{key}={val}")
 
@@ -234,18 +240,9 @@ def _serialize_search_term(search_term: Any) -> str:
 
 
 def _validate_search_term(key: str, search_term: str, description) -> None:
-    _assert_valid_key(key, description)
     _assert_match_pattern(search_term, description.get(key).get("pattern"))
     _assert_min_inclusive(search_term, description.get(key).get("minInclusive"))
     _assert_max_inclusive(search_term, description.get(key).get("maxInclusive"))
-
-
-def _assert_valid_key(key: str, description: Dict[str, Any]) -> None:
-    assert key in description.keys(), (
-        f'search_term with name "{key}" '
-        + "was not found for collection."
-        + f" Available terms are: {', '.join(description.keys())}"
-    )
 
 
 def _assert_match_pattern(search_term: str, pattern: Union[str, None]) -> None:
