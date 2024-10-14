@@ -8,12 +8,12 @@ For non-interactive programs the NoopMonitor class can be used to disable
 status monitoring.
 """
 
-import time
-import threading
-import sys
 import os
-import signal
 import shutil
+import signal
+import sys
+import threading
+import time
 from typing import List, Tuple, Union
 
 IS_IPYTHON = True

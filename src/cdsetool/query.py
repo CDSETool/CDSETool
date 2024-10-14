@@ -4,16 +4,18 @@ Query the Copernicus Data Space Ecosystem OpenSearch API
 https://documentation.dataspace.copernicus.eu/APIs/OpenSearch.html
 """
 
-from typing import Any, Dict, Union
-from xml.etree import ElementTree
-from datetime import datetime, date
-import re
 import json
+import re
+from datetime import date, datetime
 from random import random
 from time import sleep
+from typing import Any, Dict, Union
+from xml.etree import ElementTree
+
 import geopandas as gpd
 from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import ProtocolError
+
 from cdsetool.credentials import Credentials
 from cdsetool.logger import NoopLogger
 

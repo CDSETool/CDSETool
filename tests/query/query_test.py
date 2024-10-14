@@ -1,16 +1,17 @@
+from datetime import date, datetime
+
 import pytest
 
 from cdsetool.query import (
+    _assert_match_pattern,
+    _assert_max_inclusive,
+    _assert_min_inclusive,
+    _assert_valid_key,
     _serialize_search_term,
     _validate_search_term,
-    _assert_match_pattern,
-    _assert_valid_key,
-    _assert_min_inclusive,
-    _assert_max_inclusive,
-    shape_to_wkt,
     geojson_to_wkt,
+    shape_to_wkt,
 )
-from datetime import date, datetime
 
 
 def test_serialize_search_term() -> None:

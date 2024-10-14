@@ -46,6 +46,9 @@ max-locals = 20
 max-line-length = "88"
 disable="fixme"
 
+[tool.pylint.imports]
+disable="wrong-import-order"
+
 [tool.pyright]
 exclude = ["**/__pycache__", ".venv"]
 
@@ -60,4 +63,9 @@ executionEnvironments = [
 [tool.pytest.ini_options]
 addopts = [
     "--import-mode=importlib",
+]
+
+[tool.ruff.lint]
+select = [
+    "I", # isort
 ]

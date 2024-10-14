@@ -1,8 +1,9 @@
-import pytest
 from unittest.mock import MagicMock
 
-from cdsetool.logger import NoopLogger
+import pytest
+
 from cdsetool.download import download_feature
+from cdsetool.logger import NoopLogger
 
 
 def test_noop_logger_is_default() -> None:

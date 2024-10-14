@@ -2,8 +2,7 @@
 This module provides functions for processing data concurrently
 """
 
-from concurrent.futures import Future, wait, FIRST_COMPLETED
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from typing import Callable, Generator, Iterable, List, Union
 
 from cdsetool.query import FeatureQuery

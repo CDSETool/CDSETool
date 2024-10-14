@@ -1,19 +1,20 @@
 # pyright: reportAttributeAccessIssue=false
 
+import base64
+import datetime
 import json
+
+import jwt
 import pytest
 import requests
-import datetime
-import jwt
-import base64
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 from cdsetool.credentials import (
     Credentials,
-    NoCredentialsException,
     InvalidCredentialsException,
+    NoCredentialsException,
     TokenExchangeException,
 )
 

@@ -3,13 +3,13 @@ This module provides a class for handling credentials for
 the Copernicus Identity and Access Management (IAM) system.
 """
 
-from datetime import datetime, timedelta
 import netrc
 import threading
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 
-import requests
 import jwt
+import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
