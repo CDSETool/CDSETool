@@ -2,15 +2,17 @@
 Command line interface
 """
 
+import json as JSON
 import os
 import sys
-import json as JSON
 from typing import Dict, List, Optional
-from typing_extensions import Annotated
+
 import typer
-from cdsetool.query import describe_collection, query_features
-from cdsetool.monitor import StatusMonitor
+from typing_extensions import Annotated
+
 from cdsetool.download import download_features
+from cdsetool.monitor import StatusMonitor
+from cdsetool.query import describe_collection, query_features
 
 app = typer.Typer(no_args_is_help=True)
 

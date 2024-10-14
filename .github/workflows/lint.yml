@@ -10,6 +10,9 @@ jobs:
       - uses: chartboost/ruff-action@v1
         with:
           args: 'format --check --diff'
+      - uses: astral-sh/ruff-action@v1
+        with:
+          args: 'check'
 
   pylint:
     runs-on: ubuntu-latest

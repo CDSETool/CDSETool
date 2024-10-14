@@ -7,14 +7,15 @@ all features in a result set.
 
 import os
 import random
+import shutil
 import tempfile
 import time
-import shutil
 from typing import Any, Dict, Generator, Union
 
 from requests import Session
 from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import ProtocolError
+
 from cdsetool._processing import _concurrent_process
 from cdsetool.credentials import (
     Credentials,
