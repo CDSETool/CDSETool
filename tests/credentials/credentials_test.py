@@ -103,16 +103,18 @@ def _mock_token(requests_mock) -> None:
 
 def _mock_jwks(mocker) -> None:
     class MockResponse:
-        def __init__(self, json_data):
+        def __init__(self, json_data) -> None:
             self.json_data = json_data
 
-        def __enter__(self):
+        def __enter__(self) -> "MockResponse":
             return self
 
-        def read(self):
+        def read(self) -> bytes:
             return json.dumps(self.json_data).encode("utf-8")
 
-        def __exit__(self, exc_type, exc_value, traceback):
+        def __exit__(
+            self, exc_type: object, exc_value: object, traceback: object
+        ) -> None:
             pass
 
     n = private_key.public_key().public_numbers().n

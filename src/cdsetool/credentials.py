@@ -32,7 +32,7 @@ class DeprecatedNoTokenException(Exception):
     """
 
 
-def NoTokenException(*args, **kwargs):  # pylint: disable=invalid-name
+def NoTokenException(*args: object, **kwargs: object):  # pylint: disable=invalid-name
     """
     Raised when no token is available
     """
