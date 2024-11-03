@@ -211,8 +211,14 @@ def _query_url(
     query_list = []
     for key, value in search_terms.items():
         val = _serialize_search_term(value)
-        _validate_search_term(key, val, description)
-        query_list.append(f"{key}={val}")
+        if key not in description:
+            assert False, (
+                f'search_term with name "{key}" was not found for collection.'
+                + f" Available terms are: {', '.join(description.keys())}"
+            )
+            continue
+        if _valid_search_term(key, val, description):
+            query_list.append(f"{key}={val}")
 
     return (
         "https://catalogue.dataspace.copernicus.eu"
@@ -233,46 +239,46 @@ def _serialize_search_term(search_term: Any) -> str:
     return str(search_term)
 
 
-def _validate_search_term(key: str, search_term: str, description) -> None:
-    _assert_valid_key(key, description)
-    _assert_match_pattern(search_term, description.get(key).get("pattern"))
-    _assert_min_inclusive(search_term, description.get(key).get("minInclusive"))
-    _assert_max_inclusive(search_term, description.get(key).get("maxInclusive"))
-
-
-def _assert_valid_key(key: str, description: Dict[str, Any]) -> None:
-    assert key in description.keys(), (
-        f'search_term with name "{key}" '
-        + "was not found for collection."
-        + f" Available terms are: {', '.join(description.keys())}"
+def _valid_search_term(key: str, search_term: str, description) -> bool:
+    return (
+        _valid_match_pattern(search_term, description.get(key).get("pattern"))
+        and _valid_min_inclusive(search_term, description.get(key).get("minInclusive"))
+        and _valid_max_inclusive(search_term, description.get(key).get("maxInclusive"))
     )
 
 
-def _assert_match_pattern(search_term: str, pattern: Union[str, None]) -> None:
+def _valid_match_pattern(search_term: str, pattern: Union[str, None]) -> bool:
     if not pattern:
-        return
+        return True
 
-    assert re.match(
-        pattern, search_term
-    ), f"search_term {search_term} does not match pattern {pattern}"
+    if re.match(pattern, search_term) is None:
+        assert False, f"search_term {search_term} does not match pattern {pattern}"
+        return False
+    return True
 
 
-def _assert_min_inclusive(search_term: str, min_inclusive: Union[str, None]) -> None:
+def _valid_min_inclusive(search_term: str, min_inclusive: Union[str, None]) -> bool:
     if not min_inclusive:
-        return
+        return True
 
-    assert int(search_term) >= int(
-        min_inclusive
-    ), f"search_term {search_term} is less than min_inclusive {min_inclusive}"
+    if int(search_term) < int(min_inclusive):
+        assert (
+            False
+        ), f"search_term {search_term} is less than min_inclusive {min_inclusive}"
+        return False
+    return True
 
 
-def _assert_max_inclusive(search_term: str, max_inclusive: Union[str, None]) -> None:
+def _valid_max_inclusive(search_term: str, max_inclusive: Union[str, None]) -> bool:
     if not max_inclusive:
-        return
+        return True
 
-    assert int(search_term) <= int(
-        max_inclusive
-    ), f"search_term {search_term} is greater than max_inclusive {max_inclusive}"
+    if int(search_term) > int(max_inclusive):
+        assert (
+            False
+        ), f"search_term {search_term} is greater than max_inclusive {max_inclusive}"
+        return False
+    return True
 
 
 _describe_docs: Dict[str, bytes] = {}
