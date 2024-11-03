@@ -61,7 +61,7 @@ class StatusMonitor(threading.Thread):
         Start the monitor
         """
 
-        def _set_line_length(_signal_num, _stack):
+        def _set_line_length(_signal_num: Union[int, None], _stack) -> None:
             self.line_length, _ = shutil.get_terminal_size()
 
         _set_line_length(None, None)
@@ -167,11 +167,11 @@ class StatusMonitor(threading.Thread):
             status.size for status in self.__done
         )
 
-    def __enter__(self):
+    def __enter__(self) -> "StatusMonitor":
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
         self.stop()
 
 
@@ -186,7 +186,7 @@ class NoopMonitor:
         """
         return Status(self)
 
-    def remove_status(self, status) -> None:
+    def remove_status(self, status: "Status") -> None:
         """
         Remove a status from the monitor
         """
@@ -201,10 +201,10 @@ class NoopMonitor:
         Stop the monitor
         """
 
-    def __enter__(self):
+    def __enter__(self) -> "NoopMonitor":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
         pass
 
 
@@ -257,7 +257,7 @@ class Status:
 
         return filename_line, progress_line
 
-    def add_progress(self, chunk_bytes) -> None:
+    def add_progress(self, chunk_bytes: int) -> None:
         """
         Add to the number of bytes downloaded
         """
@@ -275,13 +275,13 @@ class Status:
         """
         self.size = size
 
-    def __init__(self, monitor) -> None:
+    def __init__(self, monitor: Union[NoopMonitor, StatusMonitor]) -> None:
         self.__monitor = monitor
 
-    def __enter__(self):
+    def __enter__(self) -> "Status":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
         if self.__monitor:
             self.__monitor.remove_status(self)
 

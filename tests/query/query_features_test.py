@@ -1,7 +1,9 @@
-from cdsetool.query import FeatureQuery, query_features
+from typing import Any
+
+from cdsetool.query import query_features
 
 
-def _mock_describe(requests_mock):
+def _mock_describe(requests_mock: Any) -> None:
     url = "https://catalogue.dataspace.copernicus.eu/resto/api/collections/Sentinel1/describe.xml"
     with open(
         "tests/query/mock/sentinel_1/describe.xml", "r", encoding="utf-8"
@@ -9,7 +11,7 @@ def _mock_describe(requests_mock):
         requests_mock.get(url, text=file.read())
 
 
-def _mock_sentinel_1(requests_mock):
+def _mock_sentinel_1(requests_mock: Any) -> None:
     urls = [
         (
             "tests/query/mock/sentinel_1/page_1.json",
@@ -38,7 +40,7 @@ def _mock_sentinel_1(requests_mock):
             requests_mock.get(url, text=file.read())
 
 
-def test_query_features_length(requests_mock) -> None:
+def test_query_features_length(requests_mock: Any) -> None:
     _mock_describe(requests_mock)
     _mock_sentinel_1(requests_mock)
 
@@ -53,7 +55,7 @@ def test_query_features_length(requests_mock) -> None:
     assert manual_count == 48
 
 
-def test_query_features_reusable(requests_mock) -> None:
+def test_query_features_reusable(requests_mock: Any) -> None:
     _mock_describe(requests_mock)
     _mock_sentinel_1(requests_mock)
 
@@ -65,7 +67,7 @@ def test_query_features_reusable(requests_mock) -> None:
     assert list(query) == list(query)  # query is not exhausted after first iteration
 
 
-def test_query_features_random_access(requests_mock) -> None:
+def test_query_features_random_access(requests_mock: Any) -> None:
     _mock_describe(requests_mock)
     _mock_sentinel_1(requests_mock)
 

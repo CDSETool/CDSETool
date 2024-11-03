@@ -73,7 +73,7 @@ class FeatureQuery:
 
         return self.total_results
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int):
         while index >= len(self.features) and self.next_url is not None:
             self.__fetch_features()
 

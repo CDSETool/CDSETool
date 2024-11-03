@@ -54,6 +54,7 @@ exclude = ["**/__pycache__", ".venv"]
 
 # Can be strict too, see more fine-grained settings at:
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#diagnostic-settings-defaults
+# reportMissingParameterType = true
 typeCheckingMode = "standard"
 
 executionEnvironments = [
