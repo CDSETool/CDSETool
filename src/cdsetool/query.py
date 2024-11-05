@@ -211,13 +211,14 @@ def _query_url(
     query_list = []
     for key, value in search_terms.items():
         val = _serialize_search_term(value)
-        if key not in description:
+        cfg = description.get(key)
+        if cfg is None:
             assert False, (
                 f'search_term with name "{key}" was not found for collection.'
                 + f" Available terms are: {', '.join(description.keys())}"
             )
             continue
-        if _valid_search_term(key, val, description):
+        if _valid_search_term(val, cfg):
             query_list.append(f"{key}={val}")
 
     return (
@@ -239,15 +240,16 @@ def _serialize_search_term(search_term: Any) -> str:
     return str(search_term)
 
 
-def _valid_search_term(key: str, search_term: str, description) -> bool:
+def _valid_search_term(search_term: str, cfg: Dict[str, str]) -> bool:
     return (
-        _valid_match_pattern(search_term, description.get(key).get("pattern"))
-        and _valid_min_inclusive(search_term, description.get(key).get("minInclusive"))
-        and _valid_max_inclusive(search_term, description.get(key).get("maxInclusive"))
+        _valid_match_pattern(search_term, cfg)
+        and _valid_min_inclusive(search_term, cfg)
+        and _valid_max_inclusive(search_term, cfg)
     )
 
 
-def _valid_match_pattern(search_term: str, pattern: Union[str, None]) -> bool:
+def _valid_match_pattern(search_term: str, cfg: Dict[str, str]) -> bool:
+    pattern = cfg.get("pattern")
     if not pattern:
         return True
 
@@ -257,7 +259,8 @@ def _valid_match_pattern(search_term: str, pattern: Union[str, None]) -> bool:
     return True
 
 
-def _valid_min_inclusive(search_term: str, min_inclusive: Union[str, None]) -> bool:
+def _valid_min_inclusive(search_term: str, cfg: Dict[str, str]) -> bool:
+    min_inclusive = cfg.get("minInclusive")
     if not min_inclusive:
         return True
 
@@ -269,7 +272,8 @@ def _valid_min_inclusive(search_term: str, min_inclusive: Union[str, None]) -> b
     return True
 
 
-def _valid_max_inclusive(search_term: str, max_inclusive: Union[str, None]) -> bool:
+def _valid_max_inclusive(search_term: str, cfg: Dict[str, str]) -> bool:
+    max_inclusive = cfg.get("maxInclusive")
     if not max_inclusive:
         return True
 
