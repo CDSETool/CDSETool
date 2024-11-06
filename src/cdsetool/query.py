@@ -227,7 +227,7 @@ def _query_url(
     )
 
 
-def _serialize_search_term(search_term: Any) -> str:
+def _serialize_search_term(search_term: object) -> str:
     if isinstance(search_term, list):
         return ",".join(search_term)
 
