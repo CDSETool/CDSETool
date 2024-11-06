@@ -295,16 +295,19 @@ def _get_describe_doc(
     if docs:
         return docs
     session = Credentials.make_session(None, False, Credentials.RETRIES, proxies)
-    with session.get(
-        "https://catalogue.dataspace.copernicus.eu"
-        + f"/resto/api/collections/{collection}/describe.xml",
-    ) as res:
-        assert res.status_code == 200, (
-            f"Unable to find collection with name {collection}. Please see "
-            + "https://documentation.dataspace.copernicus.eu"
-            + "/APIs/OpenSearch.html#collections "
-            + "for a list of available collections"
-        )
+    attempts = 0
+    while attempts < 10:
+        attempts += 1
+        with session.get(
+            "https://catalogue.dataspace.copernicus.eu"
+            f"/resto/api/collections/{collection}/describe.xml"
+        ) as res:
+            assert res.status_code == 200, (
+                f"Unable to find collection with name {collection}. Please see "
+                "https://documentation.dataspace.copernicus.eu"
+                "/APIs/OpenSearch.html#collections for a list of collections"
+            )
 
-        _describe_docs[collection] = res.content
-        return res.content
+            _describe_docs[collection] = res.content
+            return res.content
+    assert False, f"Failed {attempts} times to get collection {collection}, giving up."
