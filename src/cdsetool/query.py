@@ -302,6 +302,9 @@ def _get_describe_doc(
             "https://catalogue.dataspace.copernicus.eu"
             f"/resto/api/collections/{collection}/describe.xml"
         ) as res:
+            if res.status_code >= 500:
+                sleep(60 * (1 + (random() / 4)))
+                continue
             assert res.status_code == 200, (
                 f"Unable to find collection with name {collection}. Please see "
                 "https://documentation.dataspace.copernicus.eu"
