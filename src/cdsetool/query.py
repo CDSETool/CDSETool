@@ -61,7 +61,10 @@ class FeatureQuery:
         self.proxies = proxies
         self.log = (options or {}).get("logger") or NoopLogger()
         self.next_url = _query_url(
-            collection, {**search_terms, "exactCount": "1"}, proxies=proxies
+            collection,
+            {**search_terms, "exactCount": "1"},
+            proxies=proxies,
+            validate_search_terms=(options or {}).get("validate_search_terms", True),
         )
 
     def __iter__(self):
@@ -204,20 +207,28 @@ def describe_collection(
 def _query_url(
     collection: str,
     search_terms: Dict[str, Any],
-    proxies: Union[Dict[str, str], None] = None,
+    proxies: Union[Dict[str, str], None],
+    validate_search_terms: bool,
 ) -> str:
-    description = describe_collection(collection, proxies=proxies)
-
+    description = (
+        describe_collection(collection, proxies=proxies)
+        if validate_search_terms
+        else {}
+    )
     query_list = []
     for key, value in search_terms.items():
         val = _serialize_search_term(value)
-        if key not in description:
-            assert False, (
-                f'search_term with name "{key}" was not found for collection.'
-                + f" Available terms are: {', '.join(description.keys())}"
-            )
-            continue
-        if _valid_search_term(key, val, description):
+        valid = True
+        if validate_search_terms:
+            cfg = description.get(key)
+            if cfg is None:
+                assert False, (
+                    f'search_term with name "{key}" was not found for collection.'
+                    + f" Available terms are: {', '.join(description.keys())}"
+                )
+                continue
+            valid = _valid_search_term(val, cfg)
+        if valid:
             query_list.append(f"{key}={val}")
 
     return (
@@ -226,7 +237,7 @@ def _query_url(
     )
 
 
-def _serialize_search_term(search_term: Any) -> str:
+def _serialize_search_term(search_term: object) -> str:
     if isinstance(search_term, list):
         return ",".join(search_term)
 
@@ -239,15 +250,16 @@ def _serialize_search_term(search_term: Any) -> str:
     return str(search_term)
 
 
-def _valid_search_term(key: str, search_term: str, description) -> bool:
+def _valid_search_term(search_term: str, cfg: Dict[str, str]) -> bool:
     return (
-        _valid_match_pattern(search_term, description.get(key).get("pattern"))
-        and _valid_min_inclusive(search_term, description.get(key).get("minInclusive"))
-        and _valid_max_inclusive(search_term, description.get(key).get("maxInclusive"))
+        _valid_match_pattern(search_term, cfg)
+        and _valid_min_inclusive(search_term, cfg)
+        and _valid_max_inclusive(search_term, cfg)
     )
 
 
-def _valid_match_pattern(search_term: str, pattern: Union[str, None]) -> bool:
+def _valid_match_pattern(search_term: str, cfg: Dict[str, str]) -> bool:
+    pattern = cfg.get("pattern")
     if not pattern:
         return True
 
@@ -257,7 +269,8 @@ def _valid_match_pattern(search_term: str, pattern: Union[str, None]) -> bool:
     return True
 
 
-def _valid_min_inclusive(search_term: str, min_inclusive: Union[str, None]) -> bool:
+def _valid_min_inclusive(search_term: str, cfg: Dict[str, str]) -> bool:
+    min_inclusive = cfg.get("minInclusive")
     if not min_inclusive:
         return True
 
@@ -269,7 +282,8 @@ def _valid_min_inclusive(search_term: str, min_inclusive: Union[str, None]) -> b
     return True
 
 
-def _valid_max_inclusive(search_term: str, max_inclusive: Union[str, None]) -> bool:
+def _valid_max_inclusive(search_term: str, cfg: Dict[str, str]) -> bool:
+    max_inclusive = cfg.get("maxInclusive")
     if not max_inclusive:
         return True
 
@@ -291,16 +305,22 @@ def _get_describe_doc(
     if docs:
         return docs
     session = Credentials.make_session(None, False, Credentials.RETRIES, proxies)
-    with session.get(
-        "https://catalogue.dataspace.copernicus.eu"
-        + f"/resto/api/collections/{collection}/describe.xml",
-    ) as res:
-        assert res.status_code == 200, (
-            f"Unable to find collection with name {collection}. Please see "
-            + "https://documentation.dataspace.copernicus.eu"
-            + "/APIs/OpenSearch.html#collections "
-            + "for a list of available collections"
-        )
+    attempts = 0
+    while attempts < 10:
+        attempts += 1
+        with session.get(
+            "https://catalogue.dataspace.copernicus.eu"
+            f"/resto/api/collections/{collection}/describe.xml"
+        ) as res:
+            if res.status_code >= 500:
+                sleep(60 * (1 + (random() / 4)))
+                continue
+            assert res.status_code == 200, (
+                f"Unable to find collection with name {collection}. Please see "
+                "https://documentation.dataspace.copernicus.eu"
+                "/APIs/OpenSearch.html#collections for a list of collections"
+            )
 
-        _describe_docs[collection] = res.content
-        return res.content
+            _describe_docs[collection] = res.content
+            return res.content
+    assert False, f"Failed {attempts} times to get collection {collection}, giving up."

@@ -1,5 +1,7 @@
 from typing import Any
 
+import pytest
+
 from cdsetool.query import query_features
 
 
@@ -53,6 +55,20 @@ def test_query_features_length(requests_mock: Any) -> None:
         manual_count += 1
 
     assert manual_count == 48
+
+
+def test_query_features_bad_search_terms(requests_mock: Any) -> None:
+    _mock_describe(requests_mock)
+    _mock_sentinel_1(requests_mock)
+
+    with pytest.raises(AssertionError):
+        query_features("Sentinel1", {"maxRecords": 10, "bogusParam": 27})
+
+    query_features(
+        "Sentinel1",
+        {"maxRecords": 10, "bogusParam": 27},
+        options={"validate_search_terms": False},
+    )
 
 
 def test_query_features_reusable(requests_mock: Any) -> None:

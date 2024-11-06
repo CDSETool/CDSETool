@@ -23,32 +23,32 @@ def test_serialize_search_term() -> None:
 
 
 def test_validate_search_term() -> None:
-    description = {
-        "productType": {"pattern": "^(S2MSI1C|S2MSI2A)$"},
-        "orbitNumber": {
-            "minInclusive": "1",
-            "pattern": "^(\\[|\\]|[0-9])?[0-9]+$|^[0-9]+?(\\[|\\])$|^(\\[|\\])[0-9]+,[0-9]+(\\[|\\])$",
-        },
+    product_type = {"pattern": "^(S2MSI1C|S2MSI2A)$"}
+    orbit_number = {
+        "minInclusive": "1",
+        "pattern": "^(\\[|\\]|[0-9])?[0-9]+$|^[0-9]+?(\\[|\\])$|^(\\[|\\])[0-9]+,[0-9]+(\\[|\\])$",
     }
-    assert _valid_search_term("productType", "S2MSI1C", description)
-    assert _valid_search_term("orbitNumber", "1", description)
-    assert _valid_search_term("orbitNumber", "43212", description)
+    assert _valid_search_term("S2MSI1C", product_type)
+    assert _valid_search_term("1", orbit_number)
+    assert _valid_search_term("43212", orbit_number)
 
     with pytest.raises(AssertionError):
-        _valid_search_term("productType", "foo", description)
+        _valid_search_term("foo", product_type)
 
     with pytest.raises(AssertionError):
-        _valid_search_term("orbitNumber", "0", description)
+        _valid_search_term("0", orbit_number)
 
     with pytest.raises(AssertionError):
-        _valid_search_term("orbitNumber", "-100", description)
+        _valid_search_term("-100", orbit_number)
 
     with pytest.raises(AssertionError):
-        _valid_search_term("orbitNumber", "foobar", description)
+        _valid_search_term("foobar", orbit_number)
 
 
 def test_assert_match_pattern() -> None:
-    pattern = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(|Z|[\\+\\-][0-9]{2}:[0-9]{2}))?$"
+    pattern = {
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(|Z|[\\+\\-][0-9]{2}:[0-9]{2}))?$"
+    }
 
     with pytest.raises(AssertionError):
         _valid_match_pattern("foo", pattern)
@@ -56,11 +56,10 @@ def test_assert_match_pattern() -> None:
     with pytest.raises(AssertionError):
         _valid_match_pattern("01-01-2020", pattern)
 
-    assert _valid_match_pattern("2020-01-01", None)
     assert _valid_match_pattern("2020-01-01", pattern)
     assert _valid_match_pattern("2020-01-01T20:31:28.888Z", pattern)
 
-    pattern = "^(asc|desc|ascending|descending)$"
+    pattern = {"pattern": "^(asc|desc|ascending|descending)$"}
 
     with pytest.raises(AssertionError):
         _valid_match_pattern("foo", pattern)
@@ -73,19 +72,19 @@ def test_assert_match_pattern() -> None:
 
 
 def test_assert_min_inclusive() -> None:
-    assert _valid_min_inclusive("1", "1")
-    assert _valid_min_inclusive("2", "1")
+    assert _valid_min_inclusive("1", {"minInclusive": "1"})
+    assert _valid_min_inclusive("2", {"minInclusive": "1"})
 
     with pytest.raises(AssertionError):
-        _valid_min_inclusive("0", "1")
+        _valid_min_inclusive("0", {"minInclusive": "1"})
 
 
 def test_assert_max_inclusive() -> None:
-    assert _valid_max_inclusive("1", "1")
-    assert _valid_max_inclusive("0", "1")
+    assert _valid_max_inclusive("1", {"maxInclusive": "1"})
+    assert _valid_max_inclusive("0", {"maxInclusive": "1"})
 
     with pytest.raises(AssertionError):
-        _valid_max_inclusive("2", "1")
+        _valid_max_inclusive("2", {"maxInclusive": "1"})
 
 
 def test_shape_to_wkt() -> None:

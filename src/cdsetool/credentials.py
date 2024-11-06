@@ -73,7 +73,7 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
     RETRY_CODES = frozenset([413, 429, 500, 502, 503])
 
     RETRIES = Retry(
-        total=5,
+        total=25,
         backoff_factor=0.5,
         raise_on_status=False,
         status_forcelist=RETRY_CODES,
