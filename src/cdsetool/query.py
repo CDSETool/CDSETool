@@ -61,7 +61,10 @@ class FeatureQuery:
         self.proxies = proxies
         self.log = (options or {}).get("logger") or NoopLogger()
         self.next_url = _query_url(
-            collection, {**search_terms, "exactCount": "1"}, proxies=proxies
+            collection,
+            {**search_terms, "exactCount": "1"},
+            proxies=proxies,
+            validate_search_terms=(options or {}).get("validate_search_terms", True),
         )
 
     def __iter__(self):
@@ -204,21 +207,28 @@ def describe_collection(
 def _query_url(
     collection: str,
     search_terms: Dict[str, Any],
-    proxies: Union[Dict[str, str], None] = None,
+    proxies: Union[Dict[str, str], None],
+    validate_search_terms: bool,
 ) -> str:
-    description = describe_collection(collection, proxies=proxies)
-
+    description = (
+        describe_collection(collection, proxies=proxies)
+        if validate_search_terms
+        else {}
+    )
     query_list = []
     for key, value in search_terms.items():
         val = _serialize_search_term(value)
-        cfg = description.get(key)
-        if cfg is None:
-            assert False, (
-                f'search_term with name "{key}" was not found for collection.'
-                + f" Available terms are: {', '.join(description.keys())}"
-            )
-            continue
-        if _valid_search_term(val, cfg):
+        valid = True
+        if validate_search_terms:
+            cfg = description.get(key)
+            if cfg is None:
+                assert False, (
+                    f'search_term with name "{key}" was not found for collection.'
+                    + f" Available terms are: {', '.join(description.keys())}"
+                )
+                continue
+            valid = _valid_search_term(val, cfg)
+        if valid:
             query_list.append(f"{key}={val}")
 
     return (
