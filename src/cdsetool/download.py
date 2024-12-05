@@ -5,12 +5,12 @@ Provides a function to download a single feature, and a function to download
 all features in a result set.
 """
 
+import hashlib
 import os
 import random
 import shutil
 import tempfile
 import time
-import hashlib
 from typing import Any, Dict, Generator, Union
 
 from requests import Session
