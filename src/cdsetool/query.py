@@ -327,6 +327,7 @@ def _get_describe_doc(
 
 
 def get_odata_by_name(name: str, proxies: Union[Dict[str, str], None] = None) -> Dict:
+    """Get odata for checksum given a product name"""
     session = Credentials.make_session(None, False, Credentials.RETRIES, proxies)
     attempts = 0
     while attempts < 10:

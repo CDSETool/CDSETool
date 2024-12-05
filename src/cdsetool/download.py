@@ -169,6 +169,7 @@ def _get_temp_dir(options: Dict) -> Union[str, None]:
 def checksum_for_file(
     file_path: str, file_name: str, proxy: Union[Dict[str, str], None] = None
 ) -> bool:
+    """Evaluate the checksum of a file. If the file was downloaded correctly"""
     odata_for_checksum = get_odata_by_name(file_name, proxy)
     array_values = odata_for_checksum.get("value", [])
     if len(array_values) == 0:
@@ -187,7 +188,7 @@ def checksum_for_file(
 
 
 def calculate_value_checksum(file_path: str, algorithm: str) -> str:
-    # calculate value for checksum
+    """Calculate the checksum of a file given an algorithm"""
     if algorithm == "MD5":
         return hashlib.md5(open(file_path, "rb").read()).hexdigest()
     assert False, f"Failed {algorithm} not supported"
