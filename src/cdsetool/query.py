@@ -324,3 +324,24 @@ def _get_describe_doc(
             _describe_docs[collection] = res.content
             return res.content
     assert False, f"Failed {attempts} times to get collection {collection}, giving up."
+
+
+def get_odata_by_name(name: str, proxies: Union[Dict[str, str], None] = None) -> Dict:
+    session = Credentials.make_session(None, False, Credentials.RETRIES, proxies)
+    attempts = 0
+    while attempts < 10:
+        attempts += 1
+        with session.get(
+            "https://catalogue.dataspace.copernicus.eu"
+            f"/odata/v1/Products?$filter=Name eq '{name}'"
+        ) as res:
+            if res.status_code >= 500:
+                sleep(60 * (1 + (random() / 4)))
+                continue
+            assert res.status_code == 200, (
+                f"Unable to find product checksum with name {name}. Please see "
+                "https://documentation.dataspace.copernicus.eu"
+                "/APIs/OpenSearch.html#collections for a list of collections"
+            )
+            return res.content  # type: ignore
+    assert False, f"Failed {attempts} times to get product checksum {name}, giving up."

@@ -10,6 +10,7 @@ import random
 import shutil
 import tempfile
 import time
+import hashlib
 from typing import Any, Dict, Generator, Union
 
 from requests import Session
@@ -24,7 +25,7 @@ from cdsetool.credentials import (
 )
 from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor, StatusMonitor
-from cdsetool.query import FeatureQuery
+from cdsetool.query import FeatureQuery, get_odata_by_name
 
 
 def download_feature(
@@ -39,6 +40,7 @@ def download_feature(
     log = _get_logger(options)
     url = _get_feature_url(feature)
     title = feature.get("properties").get("title")
+    checksum = feature.get("properties").get("checksum", True)  # always active
     temp_dir_usr = _get_temp_dir(options)
 
     if not url or not title:
@@ -97,6 +99,10 @@ def download_feature(
                         log.warning(e)
                         continue
                 # Close file before copy so all buffers are flushed.
+                if checksum:
+                    checksum_for_file(tmp_file, title, options.get("proxies", None))
+                    os.remove(tmp_file)
+                    continue  # download retry
                 shutil.copy(tmp_file, result_path)
                 return filename
     log.error(f"Failed to download {filename}")
@@ -158,3 +164,30 @@ def _get_credentials(options: Dict) -> Credentials:
 
 def _get_temp_dir(options: Dict) -> Union[str, None]:
     return options.get("tmpdir") or None
+
+
+def checksum_for_file(
+    file_path: str, file_name: str, proxy: Union[Dict[str, str], None] = None
+) -> bool:
+    odata_for_checksum = get_odata_by_name(file_name, proxy)
+    array_values = odata_for_checksum.get("value", [])
+    if len(array_values) == 0:
+        # no data available for checksum
+        return False
+    for value in array_values:
+        if value["name"] != file_name:
+            continue
+        checksums: list = value["Checksum"]
+        for checksum in checksums:
+            if checksum.get("Algorithm", "") == "MD5":
+                retrieved_value = checksum.get("Value", "")
+                calculated_value = calculate_value_checksum(file_path, "MD5")
+                return retrieved_value == calculated_value
+    assert False, f"Failed {file_name} odata does not contain any available checksum"
+
+
+def calculate_value_checksum(file_path: str, algorithm: str) -> str:
+    # calculate value for checksum
+    if algorithm == "MD5":
+        return hashlib.md5(open(file_path, "rb").read()).hexdigest()
+    assert False, f"Failed {algorithm} not supported"
