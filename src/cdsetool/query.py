@@ -342,7 +342,7 @@ def get_odata_by_name(name: str, proxies: Union[Dict[str, str], None] = None) ->
             assert res.status_code == 200, (
                 f"Unable to find product checksum with name {name}. Please see "
                 "https://documentation.dataspace.copernicus.eu"
-                "/APIs/OpenSearch.html#collections for a list of collections"
+                "/APIs/OData.html#query-by-name"
             )
             return res.json()  # type: ignore
     assert False, f"Failed {attempts} times to get product checksum {name}, giving up."
