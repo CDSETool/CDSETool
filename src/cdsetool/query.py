@@ -343,5 +343,5 @@ def get_odata_by_name(name: str, proxies: Union[Dict[str, str], None] = None) ->
                 "https://documentation.dataspace.copernicus.eu"
                 "/APIs/OpenSearch.html#collections for a list of collections"
             )
-            return res.content  # type: ignore
+            return res.json()  # type: ignore
     assert False, f"Failed {attempts} times to get product checksum {name}, giving up."
