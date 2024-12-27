@@ -183,11 +183,12 @@ def checksum_for_file(
     for value in array_values:
         if value.get("Name", "") != file_name:
             continue
-        checksums: list = value["Checksum"]
+        checksums: list[dict] = value["Checksum"]
         for checksum in checksums:
             calculated_sum = ""
+            algorithm = checksum.get("Algorithm", "")
             with open(file_path, "rb") as file_for_checksum:
-                match checksum.get("Algorithm", ""):
+                match algorithm:
                     case "MD5":
                         calculated_sum = hashlib.md5(
                             file_for_checksum.read()
