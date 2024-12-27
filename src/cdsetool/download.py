@@ -100,9 +100,11 @@ def download_feature(
                         continue
                 # Close file before copy so all buffers are flushed.
                 if checksum:
-                    checksum_for_file(tmp_file, title, options.get("proxies", None))
-                    os.remove(tmp_file)
-                    continue  # download retry
+                    if not checksum_for_file(
+                        tmp_file, title, log, options.get("proxies", None)
+                    ):
+                        os.remove(tmp_file)
+                        continue  # download retry
                 shutil.copy(tmp_file, result_path)
                 return filename
     log.error(f"Failed to download {filename}")
@@ -167,7 +169,10 @@ def _get_temp_dir(options: Dict) -> Union[str, None]:
 
 
 def checksum_for_file(
-    file_path: str, file_name: str, proxy: Union[Dict[str, str], None] = None
+    file_path: str,
+    file_name: str,
+    log: NoopLogger,
+    proxy: Union[Dict[str, str], None] = None,
 ) -> bool:
     """Evaluate the checksum of a file. If the file was downloaded correctly"""
     odata_for_checksum = get_odata_by_name(file_name, proxy)
@@ -176,19 +181,22 @@ def checksum_for_file(
         # no data available for checksum
         return False
     for value in array_values:
-        if value["name"] != file_name:
+        if value.get("Name", "") != file_name:
             continue
         checksums: list = value["Checksum"]
         for checksum in checksums:
-            if checksum.get("Algorithm", "") == "MD5":
-                retrieved_value = checksum.get("Value", "")
-                calculated_value = calculate_value_checksum(file_path, "MD5")
-                return retrieved_value == calculated_value
-    assert False, f"Failed {file_name} odata does not contain any available checksum"
-
-
-def calculate_value_checksum(file_path: str, algorithm: str) -> str:
-    """Calculate the checksum of a file given an algorithm"""
-    if algorithm == "MD5":
-        return hashlib.md5(open(file_path, "rb").read()).hexdigest()
-    assert False, f"Failed {algorithm} not supported"
+            calculated_sum = ""
+            match checksum.get("Algorithm"):
+                case "MD5":
+                    calculated_sum = hashlib.md5(
+                        open(file_path, "rb").read()
+                    ).hexdigest()
+                case "SHA3-256":
+                    calculated_sum = hashlib.sha3_256(
+                        open(file_path, "rb").read()
+                    ).hexdigest()
+            expected_sum = checksum.get("Value", "")
+            if calculated_sum == expected_sum:
+                return True
+    log.warning(f"No valid checksum calculated for {file_name}")
+    return False

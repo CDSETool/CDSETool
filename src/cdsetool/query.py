@@ -336,7 +336,7 @@ def get_odata_by_name(name: str, proxies: Union[Dict[str, str], None] = None) ->
             "https://catalogue.dataspace.copernicus.eu"
             f"/odata/v1/Products?$filter=Name eq '{name}'"
         ) as res:
-            if res.status_code >= 500:
+            if res.status_code != 200:
                 sleep(60 * (1 + (random() / 4)))
                 continue
             assert res.status_code == 200, (
