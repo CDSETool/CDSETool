@@ -186,15 +186,16 @@ def checksum_for_file(
         checksums: list = value["Checksum"]
         for checksum in checksums:
             calculated_sum = ""
-            match checksum.get("Algorithm"):
-                case "MD5":
-                    calculated_sum = hashlib.md5(
-                        open(file_path, "rb").read()
-                    ).hexdigest()
-                case "SHA3-256":
-                    calculated_sum = hashlib.sha3_256(
-                        open(file_path, "rb").read()
-                    ).hexdigest()
+            with open(file_path, "rb") as file_for_checksum:
+                match checksum.get("Algorithm", ""):
+                    case "MD5":
+                        calculated_sum = hashlib.md5(
+                            file_for_checksum.read()
+                        ).hexdigest()
+                    case "SHA3-256":
+                        calculated_sum = hashlib.sha3_256(
+                            file_for_checksum.read()
+                        ).hexdigest()
             expected_sum = checksum.get("Value", "")
             if calculated_sum == expected_sum:
                 return True
