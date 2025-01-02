@@ -184,21 +184,25 @@ def checksum_for_file(
         if value.get("Name", "") != file_name:
             continue
         checksums: list[dict] = value["Checksum"]
-        for checksum in checksums:
-            calculated_sum = ""
-            algorithm = checksum.get("Algorithm", "")
-            with open(file_path, "rb") as file_for_checksum:
-                match algorithm:
-                    case "MD5":
-                        calculated_sum = hashlib.md5(
-                            file_for_checksum.read()
-                        ).hexdigest()
-                    case "SHA3-256":
-                        calculated_sum = hashlib.sha3_256(
-                            file_for_checksum.read()
-                        ).hexdigest()
-            expected_sum = checksum.get("Value", "")
-            if calculated_sum == expected_sum:
-                return True
+        if not checksums:
+            return True
+        list_supported_checksum_algo = [("MD5", hashlib.md5)]
+        # add new checksums algo here order list is relevant!
+        for name, fun in list_supported_checksum_algo:
+            expected_sum = get_expected_checksum(name, checksums)
+            if expected_sum:
+                with open(file_path, "rb") as file:
+                    calculated_sum = fun(file.read()).hexdigest()
+                    return calculated_sum == expected_sum
+        return False
     log.warning(f"No valid checksum calculated for {file_name}")
     return False
+
+
+def get_expected_checksum(algo, checksums_list):
+    """Return a Value checksum for an algo among a list of dict"""
+    for checksum in checksums_list:
+        algorithm = checksum.get("Algorithm", "")
+        if algorithm == algo:
+            return checksum.get("Value", "")
+    return ""
