@@ -1,20 +1,20 @@
 """
 Download features from a Copernicus Data Space Ecosystem OpenSearch API result
 
-Provides a function to download a single feature, and a function to download
-all features in a result set.
+Provides a function to download a single feature, a function to download all features
+in a result set, and a function to download specific files in a given feature using
+node filtering.
 """
 
 import fnmatch
-import json
 import os
 import random
 import shutil
 import tempfile
 import time
 from typing import Any, Dict, Generator, List, Union
+from xml.etree import ElementTree as etree
 
-import requests
 from requests import Session
 from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import ProtocolError
@@ -29,67 +29,174 @@ from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor, StatusMonitor
 from cdsetool.query import FeatureQuery
 
+MANIFEST_BASENAMES = {
+    "SENTINEL-1": "manifest.safe",
+    "SENTINEL-2": "manifest.safe",
+    "SENTINEL-3": "manifest.xml",
+}
 
-def search_nodes(
-    node_url: str, pattern: str, exclude: bool = False
+
+def _href_to_url(odata_url: str, product_id: str, product_name: str, href: str) -> str:
+    """
+    Convert href, describing file location in manifest file, to an OData download URL.
+    """
+    path = "/".join([f"Nodes({item})" for item in href.split("/")])
+    return f"{odata_url}/Products({product_id})/Nodes({product_name})/{path}/$value"
+
+
+def filter_files(
+    manifest_file: str, pattern: str, exclude: bool = False
 ) -> List[Dict[str, Any]]:
     """
-    Search for a given pattern in product node tree obtained from a CDSE OData API url.
+    Filter a product's files, listed in its manifest, based on a given pattern.
 
-    If "exclude" is set to False, only nodes that match pattern are returned. If it's
-    set to True, only nodes that do not match pattern are returned.
+    Returns a list of files paths within the product bundle.
+
+    If "exclude" is set to False, only files that match pattern are returned. If it's
+    set to True, only files that do not match pattern are returned.
     """
-    input_nodes = json.loads(requests.get(node_url, timeout=20).text)["result"]
-    output_nodes = []
-    for node in input_nodes:
-        # If this node is a dir, call 'search_nodes' recursively
-        if node["ContentLength"] == 0:
-            output_nodes.extend(search_nodes(node["Nodes"]["uri"], pattern))
+    paths = []
+    xmldoc = etree.parse(manifest_file)
 
-        # If it's a file, check for pattern match and optionally append to results
-        elif node["ContentLength"] >= 0:
-            match = fnmatch.fnmatch(node["Name"], pattern)
+    if os.path.basename(manifest_file) == "manifest.safe":
+        data_obj_section_elem = xmldoc.find("dataObjectSection")
+        for elem in data_obj_section_elem.iterfind("dataObject"):
+            path = elem.find("byteStream/fileLocation").attrib["href"]
+            path = path[2:]  # Remove "./" prefix present in S2 and S3 manifests
+            match = fnmatch.fnmatch(path.lower(), pattern)
             if match and not exclude or exclude and not match:
-                output_nodes.append(node)
+                paths.append(path)
 
-    return output_nodes
+    elif os.path.basename(manifest_file) == "manifest.xml":
+        namespaces = {"ns": "http://www.eumetsat.int/sip"}
+        data_section_elem = xmldoc.find("ns:dataSection", namespaces)
+        for elem in data_section_elem.iterfind("ns:dataObject", namespaces):
+            path = elem.find("ns:path", namespaces).text
+            path = "/".join(
+                path.split("/")[1:]
+            )  # Remove product name prefix in S3 manifests
+            match = fnmatch.fnmatch(path.lower(), pattern)
+            if match and not exclude or exclude and not match:
+                paths.append(path)
+
+    return paths
 
 
-def download_node(
-    feature_id,
+def download_file(url: str, path: str, options: Dict[str, Any]) -> Union[str, None]:
+    """
+    Download a single file.
+
+    Returns local path of downloaded file, or None in case of failure.
+    """
+    log = _get_logger(options)
+    basename = os.path.basename(path)
+
+    with _get_monitor(options).status() as status:
+        status.set_filename(basename)
+        attempts = 0
+        while attempts < 10:
+            attempts += 1
+            try:
+                session = _get_credentials(options).get_session()
+            except TokenClientConnectionError:
+                log.warning("Token client connection failed, retrying..")
+                continue
+            except TokenExpiredSignatureError:
+                log.warning("Token signature expired, retrying..")
+                continue
+            url = _follow_redirect(url, session)
+            with session.get(url, stream=True) as response:
+                if response.status_code != 200:
+                    log.warning(f"Status code {response.status_code}, retrying..")
+                    time.sleep(60 * (1 + (random.random() / 4)))
+                    continue
+
+                status.set_filesize(int(response.headers["Content-Length"]))
+                with open(path, "wb") as outfile:
+                    try:
+                        for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
+                            outfile.write(chunk)
+                            status.add_progress(len(chunk))
+                    except (
+                        ChunkedEncodingError,
+                        ConnectionResetError,
+                        ProtocolError,
+                    ) as e:
+                        log.warning(e)
+                        continue
+                return path
+
+    log.error(f"Failed to download {basename}")
+    return None
+
+
+def download_nodes(
+    feature,
     path: str,
-    username: str,
-    password: str,
-    nodefilter_pattern: str,
-):
+    filter_pattern: str,
+    options: Union[Dict[str, Any], None] = None,
+) -> Union[str, None]:
     """
-    Download specific files within a feature using node filtering.
+    Download specific files within a feature using OData API's node functionality.
+
+    Returns the product name, or None in case of failure.
     """
-    url = (
-        "https://download.dataspace.copernicus.eu/"
-        f"odata/v1/Products({feature_id})/Nodes"
-    )
-    nodes = search_nodes(url, nodefilter_pattern)
+    options = options or {}
+    log = _get_logger(options)
+    temp_dir_usr = _get_temp_dir(options)
 
-    for node in nodes:
-        # Authenticate to CDSE
-        session = Credentials(username, password).get_session()
+    odata_url = "https://download.dataspace.copernicus.eu/odata/v1"
+    product_name = feature["properties"]["title"]
 
-        url = f"{node['Nodes']['uri'][:-5]}$value"
-        response = session.get(url, stream=True)
+    with tempfile.TemporaryDirectory(prefix=product_name, dir=temp_dir_usr) as temp_dir:
+        temp_product_path = os.path.join(temp_dir, product_name)
+        os.makedirs(temp_product_path, exist_ok=True)
 
-        # Download file if request was successful
-        if response.status_code == 200:
-            with open(
-                os.path.join(path, node["Name"]),
-                "wb",  # TODO: Reproduce directories tree structure
-            ) as file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        file.write(chunk)
-        else:
-            print(f"Failed to download file. Status code: {response.status_code}")
-            print(response.text)
+        # Download manifest file
+        manifest_basename = MANIFEST_BASENAMES[feature["properties"]["collection"]]
+        manifest_file = os.path.join(temp_product_path, manifest_basename)
+        manifest_file = download_file(
+            _href_to_url(odata_url, feature["id"], product_name, manifest_basename),
+            manifest_file,
+            options,
+        )
+        if manifest_file is None:
+            log.error(f"Failed to download {manifest_basename} in {product_name}")
+            return None
+
+        # List files that match pattern based on manifest file contents
+        try:
+            filtered_files = filter_files(manifest_file, filter_pattern)
+        except Exception as e:
+            log.error(f"Failed to filter files in {product_name}: {e}")
+            return None
+
+        for filtered_file in filtered_files:
+            output_file = os.path.join(
+                temp_product_path,
+                filtered_file,  # TODO: Check if this needs to be generalized
+            )
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+            output_file = download_file(
+                _href_to_url(
+                    odata_url,
+                    feature["id"],
+                    product_name,
+                    filtered_file,  # TODO: Check if this needs to be generalized
+                ),
+                output_file,
+                options,
+            )
+            if output_file is None:
+                log.error(f"Failed to download all selected files in {product_name}")
+                return None
+
+        # Move downloaded files to output dir
+        os.makedirs(path, exist_ok=True)
+        shutil.move(temp_product_path, path)
+
+    return product_name
 
 
 def download_feature(
