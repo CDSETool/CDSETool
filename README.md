@@ -260,6 +260,45 @@ for feature in features:
     download_feature(feature, download_path)
 ```
 
+#### Download specific files within features
+
+It's possible to download specific files within products bundles using Unix filename pattern matching.
+
+It can be used in CDSETool:
+
+- Through the `filter_pattern` option of `download_features`:
+    ```python
+    from cdsetool.query import query_features
+    from cdsetool.download import download_features
+
+    features = query_features("Sentinel2")
+
+    download_path = "/path/to/download/folder"
+    filter_pattern = "*tci.jp2"
+    downloads = download_features(features, download_path, {"filter_pattern": "*tci.jp2"})
+
+    for id in downloads:
+        print(f"feature {id} downloaded")
+    ```
+
+- Through the `download_nodes` function directly:
+    ```python
+    from cdsetool.query import query_features
+    from cdsetool.download import download_nodes
+
+    features = query_features("Sentinel2")
+
+    download_path = "/path/to/download/folder"
+    filter_pattern = "*tci.jp2"
+    for feature in features:
+        download_nodes(feature, download_path, filter_pattern)
+    ```
+
+- Or through the CLI:
+    ```
+    cdsetool download Sentinel2 PATH/TO/DIR --filter-pattern *tci.jp2 --concurrency 4 --search-term startDate=2020-01-01 --search-term completionDate=2020-01-10 --search-term processingLevel=S2MSI2A --search-term box="4","51","4.5","52"
+    ```
+
 ## Roadmap
 
 - [X] Query schema validation
