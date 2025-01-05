@@ -85,6 +85,12 @@ def download(
             + "Pass multiple times for multiple search terms"
         ),
     ] = None,
+    filter_pattern: Annotated[Optional[str], typer.Option(
+        help=(
+            "Download specific files within product bundles using OData API's node"
+            " filtering functionality"
+        )
+    )] = None,
 ) -> None:
     """
     Download all features matching the search terms
@@ -104,6 +110,7 @@ def download(
                 "monitor": StatusMonitor(),
                 "concurrency": concurrency,
                 "overwrite_existing": overwrite_existing,
+                "filter_pattern": filter_pattern,
             },
         )
     )

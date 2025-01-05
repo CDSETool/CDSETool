@@ -292,7 +292,10 @@ def download_features(
     options["monitor"].start()
 
     def _download_feature(feature) -> Union[str, None]:
-        return download_feature(feature, path, options)
+        if options["filter_pattern"] is not None:
+            return download_nodes(feature, path, options["filter_pattern"], options)
+        else:
+            return download_feature(feature, path, options)
 
     yield from _concurrent_process(
         _download_feature, features, options.get("concurrency", 1)
