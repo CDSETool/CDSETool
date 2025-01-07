@@ -199,7 +199,7 @@ def checksum_for_file(
     return False
 
 
-def get_expected_checksum(algo, checksums_list):
+def get_expected_checksum(algo: str, checksums_list: list[dict]):
     """Return a Value checksum for an algo among a list of dict"""
     for checksum in checksums_list:
         algorithm = checksum.get("Algorithm", "")
