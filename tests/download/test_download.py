@@ -208,7 +208,6 @@ def test_download_nodes_failure(mocker):
     )
 
     with tempfile.TemporaryDirectory(prefix="test_download_nodes_success") as final_dir:
-        try:
-            download_nodes(mock_feature, final_dir, "*.jp2", options)
-        except Exception as e:
-            assert str(e) == "Failed to download http://example.com/file1"
+        product_name = download_nodes(mock_feature, final_dir, "*.jp2", options)
+        assert os.listdir(final_dir) == []
+        assert product_name is None
