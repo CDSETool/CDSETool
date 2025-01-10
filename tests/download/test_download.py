@@ -2,7 +2,6 @@
 
 import logging
 import os
-import tempfile
 from unittest import mock
 
 from cdsetool.download import _href_to_url, download_file, download_nodes, filter_files
@@ -85,7 +84,7 @@ def test_filter_files_no_match():
     assert not filtered_files
 
 
-def test_download_file_success(mocker):
+def test_download_file_success(mocker, tmp_path):
     url = "http://example.com/file"
     options = {}
 
@@ -104,21 +103,20 @@ def test_download_file_success(mocker):
     mocker.patch("cdsetool.download._get_credentials", return_value=mock_credentials)
     mocker.patch("cdsetool.download._follow_redirect", return_value=url)
 
-    with tempfile.NamedTemporaryFile() as temp_file:
-        path = temp_file.name
+    mock_file = tmp_path / "mock_file"
 
-        result = download_file(url, path, options)
+    result = download_file(url, mock_file, options)
 
-        # Check that file was written correctly
-        with open(path, "rb") as f:
-            file_content = f.read()
-        expected_content = b"data" * 5
-        assert file_content == expected_content
+    # Check that file was written correctly
+    with open(mock_file, "rb") as f:
+        file_content = f.read()
+    expected_content = b"data" * 5
+    assert file_content == expected_content
 
-        assert result == path
+    assert result == mock_file
 
 
-def test_download_file_failure(mocker):
+def test_download_file_failure(mocker, tmp_path):
     url = "http://example.com/file"
     options = {}
 
@@ -137,15 +135,14 @@ def test_download_file_failure(mocker):
     mocker.patch("cdsetool.download._follow_redirect", return_value=url)
     mocker.patch("time.sleep", return_value=None)
 
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        path = temp_file.name
+    mock_file = tmp_path / "mock_file"
 
-        result = download_file(url, path, options)
+    result = download_file(url, mock_file, options)
 
-        assert result is None
+    assert result is None
 
 
-def test_download_nodes_success(mocker):
+def test_download_nodes_success(mocker, tmp_path):
     def mock_download_file(url, path, options):
         """Mock the download_file function to create mock files."""
         with open(path, "wb") as f:
@@ -169,28 +166,28 @@ def test_download_nodes_success(mocker):
         mock_download_file,
     )
 
-    with tempfile.TemporaryDirectory(prefix="test_download_nodes_success") as final_dir:
-        product_name = download_nodes(mock_feature, final_dir, "*.jp2", options)
-        assert os.path.exists(
-            os.path.join(
-                final_dir,
-                "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE",
-                "GRANULE",
-                "file1.jp2",
-            )
+    final_dir = tmp_path / "test_download_nodes_success"
+    product_name = download_nodes(mock_feature, final_dir, "*.jp2", options)
+    assert os.path.exists(
+        os.path.join(
+            final_dir,
+            "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE",
+            "GRANULE",
+            "file1.jp2",
         )
-        assert os.path.exists(
-            os.path.join(
-                final_dir,
-                "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE",
-                "GRANULE",
-                "file2.jp2",
-            )
+    )
+    assert os.path.exists(
+        os.path.join(
+            final_dir,
+            "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE",
+            "GRANULE",
+            "file2.jp2",
         )
-        assert product_name == mock_feature["properties"]["title"]
+    )
+    assert product_name == mock_feature["properties"]["title"]
 
 
-def test_download_nodes_failure(mocker):
+def test_download_nodes_failure(mocker, tmp_path):
     options = {}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
@@ -208,13 +205,13 @@ def test_download_nodes_failure(mocker):
         side_effect=lambda url, path, options: None,
     )
 
-    with tempfile.TemporaryDirectory(prefix="test_download_nodes_success") as final_dir:
-        product_name = download_nodes(mock_feature, final_dir, "*.jp2", options)
-        assert os.listdir(final_dir) == []
-        assert product_name is None
+    final_dir = tmp_path / "test_download_nodes_failure"
+    product_name = download_nodes(mock_feature, final_dir, "*.jp2", options)
+    assert os.listdir(tmp_path) == []
+    assert product_name is None
 
 
-def test_download_nodes_unsupported_coll(caplog):
+def test_download_nodes_unsupported_coll(caplog, tmp_path):
     options = {"logger": logging.getLogger(__name__)}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
@@ -224,13 +221,11 @@ def test_download_nodes_unsupported_coll(caplog):
         },
     }
 
-    with tempfile.TemporaryDirectory(
-        prefix="test_download_nodes_unsupported_coll"
-    ) as final_dir:
-        product_name = download_nodes(mock_feature, final_dir, "*MTL.txt", options)
-        assert os.listdir(final_dir) == []
-        assert product_name is None
-        assert (
-            "Downloading specific files within product bundle with node filtering"
-            f" is not supported for this collection type: {mock_feature['properties']['title']}"
-        ) in caplog.text
+    final_dir = tmp_path / "test_download_nodes_unsupported_coll"
+    product_name = download_nodes(mock_feature, final_dir, "*MTL.txt", options)
+    assert os.listdir(tmp_path) == []
+    assert product_name is None
+    assert (
+        "Downloading specific files within product bundle with node filtering"
+        f" is not supported for this collection type: {mock_feature['properties']['title']}"
+    ) in caplog.text
