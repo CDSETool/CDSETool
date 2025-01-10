@@ -44,9 +44,7 @@ def _href_to_url(odata_url: str, product_id: str, product_name: str, href: str) 
     return f"{odata_url}/Products({product_id})/Nodes({product_name})/{path}/$value"
 
 
-def filter_files(
-    manifest_file: str, pattern: str, exclude: bool = False
-) -> List[Dict[str, Any]]:
+def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> List[str]:
     """
     Filter a product's files, listed in its manifest, based on a given pattern.
 
