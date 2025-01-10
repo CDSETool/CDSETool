@@ -62,7 +62,7 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
             path = elem.find("byteStream/fileLocation").attrib["href"]
             path = path[2:]  # Remove "./" prefix present in S2 and S3 manifests
             match = fnmatch.fnmatch(path.lower(), pattern)
-            if match and not exclude or exclude and not match:
+            if match ^ exclude:
                 paths.append(path)
 
     elif os.path.basename(manifest_file) == "manifest.xml":
@@ -74,7 +74,7 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
                 path.split("/")[1:]
             )  # Remove product name prefix in S3 manifests
             match = fnmatch.fnmatch(path.lower(), pattern)
-            if match and not exclude or exclude and not match:
+            if match ^ exclude:
                 paths.append(path)
 
     return paths
