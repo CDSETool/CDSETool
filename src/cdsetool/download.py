@@ -151,7 +151,14 @@ def download_nodes(
         os.makedirs(temp_product_path, exist_ok=True)
 
         # Download manifest file
-        manifest_basename = MANIFEST_BASENAMES[feature["properties"]["collection"]]
+        try:
+            manifest_basename = MANIFEST_BASENAMES[feature["properties"]["collection"]]
+        except KeyError:
+            log.error(
+                "Downloading specific files within product bundle with node filtering"
+                f" is not supported for this collection type: {product_name}"
+            )
+            return None
         manifest_file = os.path.join(temp_product_path, manifest_basename)
         manifest_file = download_file(
             _href_to_url(odata_url, feature["id"], product_name, manifest_basename),

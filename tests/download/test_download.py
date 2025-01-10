@@ -1,5 +1,6 @@
 """Tests for CDSETool's download module."""
 
+import logging
 import os
 import tempfile
 from unittest import mock
@@ -211,3 +212,25 @@ def test_download_nodes_failure(mocker):
         product_name = download_nodes(mock_feature, final_dir, "*.jp2", options)
         assert os.listdir(final_dir) == []
         assert product_name is None
+
+
+def test_download_nodes_unsupported_coll(caplog):
+    options = {"logger": logging.getLogger(__name__)}
+    mock_feature = {
+        "id": "a6215824-704b-46d7-a2ec-efea4e468668",
+        "properties": {
+            "title": "L8XXX",
+            "collection": "Lansat8",
+        },
+    }
+
+    with tempfile.TemporaryDirectory(
+        prefix="test_download_nodes_unsupported_coll"
+    ) as final_dir:
+        product_name = download_nodes(mock_feature, final_dir, "*MTL.txt", options)
+        assert os.listdir(final_dir) == []
+        assert product_name is None
+        assert (
+            "Downloading specific files within product bundle with node filtering"
+            f" is not supported for this collection type: {mock_feature['properties']['title']}"
+        ) in caplog.text
