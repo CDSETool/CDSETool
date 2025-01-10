@@ -60,22 +60,22 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
         data_obj_section_elem = xmldoc.find("dataObjectSection")
         for elem in data_obj_section_elem.iterfind("dataObject"):
             path = elem.find("byteStream/fileLocation").attrib["href"]
-            path = path[2:]  # Remove "./" prefix present in S2 and S3 manifests
-            match = fnmatch.fnmatch(path.lower(), pattern)
-            if match ^ exclude:
-                paths.append(path)
+            paths.append(path[2:])  # Remove "./" prefix present in S2 and S3 manifests
 
     elif os.path.basename(manifest_file) == "manifest.xml":
         namespaces = {"ns": "http://www.eumetsat.int/sip"}
         data_section_elem = xmldoc.find("ns:dataSection", namespaces)
         for elem in data_section_elem.iterfind("ns:dataObject", namespaces):
             path = elem.find("ns:path", namespaces).text
-            path = "/".join(
-                path.split("/")[1:]
+            paths.append(
+                "/".join(path.split("/")[1:])
             )  # Remove product name prefix in S3 manifests
-            match = fnmatch.fnmatch(path.lower(), pattern)
-            if match ^ exclude:
-                paths.append(path)
+
+    paths = [
+        path
+        for path in paths
+        if fnmatch.fnmatch(path.lower(), pattern) ^ exclude
+    ]
 
     return paths
 
