@@ -74,7 +74,7 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
     paths = [
         path
         for path in paths
-        if fnmatch.fnmatch(path.lower(), pattern) ^ exclude
+        if fnmatch.fnmatch(path, pattern) ^ exclude
     ]
 
     return paths

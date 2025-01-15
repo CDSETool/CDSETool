@@ -38,7 +38,7 @@ def test_filter_files_s1():
 
 def test_filter_files_s2():
     manifest_file_path = "tests/download/mock/sentinel_2/manifest.safe"
-    filtered_files = filter_files(manifest_file_path, "*tci.jp2")
+    filtered_files = filter_files(manifest_file_path, "*TCI.jp2")
     assert filtered_files == [
         (
             "GRANULE/L1C_T17UPV_A040535_20241209T162603/"
@@ -49,7 +49,7 @@ def test_filter_files_s2():
 
 def test_filter_files_s3():
     manifest_file_path = "tests/download/mock/sentinel_3/manifest.xml"
-    filtered_files = filter_files(manifest_file_path, "*oa02_reflectance.nc")
+    filtered_files = filter_files(manifest_file_path, "*Oa02_reflectance.nc")
     assert filtered_files == [("Oa02_reflectance.nc")]
 
 
