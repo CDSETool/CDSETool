@@ -23,7 +23,6 @@ def test_href_to_url():
 def test_filter_files_s1():
     manifest_file_path = "tests/download/mock/sentinel_1/manifest.safe"
     filtered_files = filter_files(manifest_file_path, "*/calibration-*.xml")
-    filtered_files.sort()
     assert filtered_files == [
         (
             "annotation/calibration/"
@@ -56,8 +55,11 @@ def test_filter_files_s3():
 def test_filter_files_with_exclude():
     manifest_file_path = "tests/download/mock/sentinel_2/manifest.safe"
     filtered_files = filter_files(manifest_file_path, "*.jp2", exclude=True)
-    filtered_files.sort()
     assert filtered_files == [
+        "MTD_MSIL1C.xml",
+        "INSPIRE.xml",
+        "HTML/UserProduct_index.html",
+        "HTML/UserProduct_index.xsl",
         "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/MTD_DS.xml",
         "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/FORMAT_CORRECTNESS.xml",
         "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/GENERAL_QUALITY.xml",
@@ -71,10 +73,6 @@ def test_filter_files_with_exclude():
         "GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/GENERAL_QUALITY.xml",
         "GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/GEOMETRIC_QUALITY.xml",
         "GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/SENSOR_QUALITY.xml",
-        "HTML/UserProduct_index.html",
-        "HTML/UserProduct_index.xsl",
-        "INSPIRE.xml",
-        "MTD_MSIL1C.xml",
     ]
 
 
