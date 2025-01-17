@@ -266,7 +266,7 @@ It's possible to download specific files within products bundles using Unix file
 
 It can be used in CDSETool:
 
-- Through the `filter_pattern` option of `download_features`:
+- Through the `filter_pattern` option of `download_features` and `download_feature`:
     ```python
     from cdsetool.query import query_features
     from cdsetool.download import download_features
@@ -279,19 +279,6 @@ It can be used in CDSETool:
 
     for id in downloads:
         print(f"feature {id} downloaded")
-    ```
-
-- Through the `download_nodes` function directly:
-    ```python
-    from cdsetool.query import query_features
-    from cdsetool.download import download_nodes
-
-    features = query_features("Sentinel2")
-
-    download_path = "/path/to/download/folder"
-    filter_pattern = "*TCI.jp2"
-    for feature in features:
-        download_nodes(feature, download_path, filter_pattern)
     ```
 
 - Or through the CLI:

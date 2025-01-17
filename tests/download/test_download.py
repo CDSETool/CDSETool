@@ -5,20 +5,25 @@ import os
 from unittest import mock
 
 import pytest
-from cdsetool.download import _href_to_url, download_file, download_nodes, filter_files
+from cdsetool.download import (
+    _get_odata_url,
+    download_feature,
+    download_file,
+    filter_files,
+)
 
 
-def test_href_to_url():
-    odata_url = "http://example.com/odata/v1"
+def test_get_odata_url():
     product_id = "a6215824-704b-46d7-a2ec-efea4e468668"
     product_name = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
     href = "path/to/resource.xml"
     expected_url = (
-        "http://example.com/odata/v1/Products(a6215824-704b-46d7-a2ec-efea4e468668)/"
+        "https://download.dataspace.copernicus.eu/odata/v1/"
+        "Products(a6215824-704b-46d7-a2ec-efea4e468668)/"
         "Nodes(S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE)/"
         "Nodes(path)/Nodes(to)/Nodes(resource.xml)/$value"
     )
-    assert _href_to_url(odata_url, product_id, product_name, href) == expected_url
+    assert _get_odata_url(product_id, product_name, href) == expected_url
 
 
 @pytest.mark.parametrize(
@@ -35,7 +40,9 @@ def test_href_to_url():
         (
             "tests/download/mock/sentinel_2/manifest.safe",
             "*TCI.jp2",
-            ["GRANULE/L1C_T17UPV_A040535_20241209T162603/IMG_DATA/T17UPV_20241209T162609_TCI.jp2"],
+            [
+                "GRANULE/L1C_T17UPV_A040535_20241209T162603/IMG_DATA/T17UPV_20241209T162609_TCI.jp2"
+            ],
         ),
         (
             "tests/download/mock/sentinel_3/manifest.xml",
@@ -137,14 +144,14 @@ def test_download_file_failure(mocker, tmp_path):
     assert result is None
 
 
-def test_download_nodes_success(mocker, tmp_path):
+def test_download_feature_with_filter(mocker, tmp_path):
     def mock_download_file(url, path, options):
         """Mock the download_file function to create mock files."""
         with open(path, "wb") as f:
             f.write(b"dummy data")
         return path
 
-    options = {}
+    options = {"filter_pattern": "*.jp2"}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
         "properties": {
@@ -161,8 +168,8 @@ def test_download_nodes_success(mocker, tmp_path):
         mock_download_file,
     )
 
-    final_dir = tmp_path / "test_download_nodes_success"
-    product_name = download_nodes(mock_feature, final_dir, "*.jp2", options)
+    final_dir = tmp_path / "test_download_feature_with_filter"
+    product_name = download_feature(mock_feature, final_dir, options)
     assert os.path.exists(
         os.path.join(
             final_dir,
@@ -182,8 +189,8 @@ def test_download_nodes_success(mocker, tmp_path):
     assert product_name == mock_feature["properties"]["title"]
 
 
-def test_download_nodes_failure(mocker, tmp_path):
-    options = {}
+def test_download_feature_with_filter_failure(mocker, tmp_path):
+    options = {"filter_pattern": "*.jp2"}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
         "properties": {
@@ -200,14 +207,14 @@ def test_download_nodes_failure(mocker, tmp_path):
         side_effect=lambda url, path, options: None,
     )
 
-    final_dir = tmp_path / "test_download_nodes_failure"
-    product_name = download_nodes(mock_feature, final_dir, "*.jp2", options)
+    final_dir = tmp_path / "test_download_feature_with_filter_failure"
+    product_name = download_feature(mock_feature, final_dir, options)
     assert os.listdir(tmp_path) == []
     assert product_name is None
 
 
-def test_download_nodes_unsupported_coll(caplog, tmp_path):
-    options = {"logger": logging.getLogger(__name__)}
+def test_download_feature_with_filter_unsupported_coll(caplog, tmp_path):
+    options = {"logger": logging.getLogger(__name__), "filter_pattern": "*MTL.txt"}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
         "properties": {
@@ -216,8 +223,8 @@ def test_download_nodes_unsupported_coll(caplog, tmp_path):
         },
     }
 
-    final_dir = tmp_path / "test_download_nodes_unsupported_coll"
-    product_name = download_nodes(mock_feature, final_dir, "*MTL.txt", options)
+    final_dir = tmp_path / "test_download_feature_with_filter_unsupported_coll"
+    product_name = download_feature(mock_feature, final_dir, options)
     assert os.listdir(tmp_path) == []
     assert product_name is None
     assert (
