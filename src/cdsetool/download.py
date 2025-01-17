@@ -12,6 +12,7 @@ import random
 import shutil
 import tempfile
 import time
+from pathlib import Path
 from typing import Any, Dict, Generator, List, Union
 from xml.etree import ElementTree as etree
 
@@ -51,19 +52,19 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
     if os.path.basename(manifest_file) == "manifest.safe":
         data_obj_section_elem = xmldoc.find("dataObjectSection")
         for elem in data_obj_section_elem.iterfind("dataObject"):
-            path = elem.find("byteStream/fileLocation").attrib["href"]
-            paths.append(path[2:])  # Remove "./" prefix present in S2 and S3 manifests
+            path = Path(elem.find("byteStream/fileLocation").attrib["href"])
+            paths.append(path)
 
     elif os.path.basename(manifest_file) == "manifest.xml":
         namespaces = {"ns": "http://www.eumetsat.int/sip"}
         data_section_elem = xmldoc.find("ns:dataSection", namespaces)
         for elem in data_section_elem.iterfind("ns:dataObject", namespaces):
-            path = elem.find("ns:path", namespaces).text
-            paths.append(
-                "/".join(path.split("/")[1:])
-            )  # Remove product name prefix in S3 manifests
+            path = Path(elem.find("ns:path", namespaces).text)
+            # Remove prefix present for some files in S3 manifests
+            path = Path(*path.parts[-1:])
+            paths.append(path)
 
-    paths = [path for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
+    paths = [str(path) for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
 
     return paths
 
