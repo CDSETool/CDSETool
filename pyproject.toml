@@ -22,13 +22,18 @@ dependencies = [
   "pyjwt[crypto] >= 2.8,< 2.11",
   "geopandas >= 0.13.2",
 ]
+[dependency-groups]
+dev = [
+    "ruff==0.8.6",
+]
+# (Jan 30 2025) Pip does not support dependency-groups yet, so
+# leave the optional dependencies for everything except Ruff.
 [project.optional-dependencies]
 test = [
     "pylint==3.3.3",
     "pytest==8.3.4",
     "pytest-cov==6.0.0",
     "requests-mock==1.12.1",
-    "ruff==0.8.6",
     "pytest-mock==3.14.0",
 ]
 
