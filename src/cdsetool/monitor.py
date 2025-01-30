@@ -245,7 +245,7 @@ class Status:
 
         progress = self.downloaded / self.size
         filename_line = (
-            f"{self.filename[0:line_length - 6]} "
+            f"{self.filename[0 : line_length - 6]} "
             + f"{bytes_to_human(self.size)} ({int(progress * 100)}%)"
         )
         progress_line = (
