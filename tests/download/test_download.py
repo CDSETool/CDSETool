@@ -2,7 +2,8 @@
 
 import logging
 import os
-from unittest import mock
+from pathlib import Path
+from typing import Any
 
 import pytest
 from cdsetool.download import (
@@ -11,6 +12,8 @@ from cdsetool.download import (
     download_file,
     filter_files,
 )
+
+from ..mock_auth import _mock_jwks, _mock_openid, _mock_token
 
 
 def test_get_odata_url():
@@ -86,28 +89,25 @@ def test_filter_files_no_match():
     assert not filtered_files
 
 
-def test_download_file_success(mocker, tmp_path):
-    url = "http://example.com/file"
-    options = {}
+def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path):
+    # Mock authentication
+    _mock_openid(requests_mock)
+    _mock_token(requests_mock)
+    _mock_jwks(mocker)
 
-    mock_response = mock.MagicMock()
-    mock_response.status_code = 200
-    mock_response.headers = {"Content-Length": "100"}
-    mock_response.iter_content = lambda chunk_size: [b"data"] * 5
+    # Mock download request
+    mock_url = "http://example.com/file"
+    mocker.patch("cdsetool.download._follow_redirect", return_value=mock_url)
+    requests_mock.get(
+        mock_url,
+        status_code=200,
+        headers={"Content-Length": "100"},
+        content=b"data" * 5,
+    )
 
-    mock_session = mock.MagicMock
-    mock_get = mock.MagicMock()
-    mock_get.return_value.__enter__.return_value = mock_response
-    mock_session.get = mock_get
+    mock_file = str(tmp_path / "mock_file")
 
-    mock_credentials = mock.MagicMock()
-    mock_credentials.get_session = mock.MagicMock(return_value=mock_session)
-    mocker.patch("cdsetool.download._get_credentials", return_value=mock_credentials)
-    mocker.patch("cdsetool.download._follow_redirect", return_value=url)
-
-    mock_file = tmp_path / "mock_file"
-
-    result = download_file(url, mock_file, options)
+    result = download_file(mock_url, mock_file, {})
 
     # Check that file was written correctly
     with open(mock_file, "rb") as f:
@@ -118,28 +118,27 @@ def test_download_file_success(mocker, tmp_path):
     assert result == mock_file
 
 
-def test_download_file_failure(mocker, tmp_path):
-    url = "http://example.com/file"
-    options = {}
+def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path):
+    # Mock authentication
+    _mock_openid(requests_mock)
+    _mock_token(requests_mock)
+    _mock_jwks(mocker)
 
-    mock_response = mock.MagicMock()
-    mock_response.status_code = 404
-    mock_response.headers = {"Content-Length": "100"}
+    # Mock download request
+    mock_url = "http://example.com/file"
+    mocker.patch("cdsetool.download._follow_redirect", return_value=mock_url)
+    requests_mock.get(
+        mock_url,
+        status_code=404,
+        headers={"Content-Length": "100"},
+    )
 
-    mock_session = mock.MagicMock
-    mock_get = mock.MagicMock()
-    mock_get.return_value.__enter__.return_value = mock_response
-    mock_session.get = mock_get
+    mock_file = str(tmp_path / "mock_file")
 
-    mock_credentials = mock.MagicMock()
-    mock_credentials.get_session = mock.MagicMock(return_value=mock_session)
-    mocker.patch("cdsetool.download._get_credentials", return_value=mock_credentials)
-    mocker.patch("cdsetool.download._follow_redirect", return_value=url)
+    # Avoid retry delay
     mocker.patch("time.sleep", return_value=None)
 
-    mock_file = tmp_path / "mock_file"
-
-    result = download_file(url, mock_file, options)
+    result = download_file(mock_url, mock_file, {})
 
     assert result is None
 
