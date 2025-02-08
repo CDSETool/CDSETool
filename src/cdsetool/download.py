@@ -51,15 +51,15 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
 
     if os.path.basename(manifest_file) == "manifest.safe":
         data_obj_section_elem = xmldoc.find("dataObjectSection")
-        for elem in data_obj_section_elem.iterfind("dataObject"):
-            path = Path(elem.find("byteStream/fileLocation").attrib["href"])
+        for elem in data_obj_section_elem.iterfind("dataObject"):  # type: ignore
+            path = Path(elem.find("byteStream/fileLocation").attrib["href"])  # type: ignore
             paths.append(path)
 
     elif os.path.basename(manifest_file) == "manifest.xml":
         namespaces = {"ns": "http://www.eumetsat.int/sip"}
         data_section_elem = xmldoc.find("ns:dataSection", namespaces)
-        for elem in data_section_elem.iterfind("ns:dataObject", namespaces):
-            path = Path(elem.find("ns:path", namespaces).text)
+        for elem in data_section_elem.iterfind("ns:dataObject", namespaces):  # type: ignore
+            path = Path(elem.find("ns:path", namespaces).text)  # type: ignore
             # Remove prefix present for some files in S3 manifests
             path = Path(*path.parts[-1:])
             paths.append(path)
