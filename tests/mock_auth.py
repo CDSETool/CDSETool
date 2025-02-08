@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
-def _mock_openid(requests_mock: Any) -> None:
+def mock_openid(requests_mock: Any) -> None:
     with open("tests/credentials/mock/openid-configuration.json") as f:
         requests_mock.get(
             "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/.well-known/openid-configuration",
@@ -19,7 +19,7 @@ def _mock_openid(requests_mock: Any) -> None:
         )
 
 
-def _mock_token(requests_mock: Any) -> None:
+def mock_token(requests_mock: Any) -> None:
     headers = {"alg": "RS256", "typ": "JWT", "kid": "key-9000"}
     now = datetime.datetime.now()
     payload = {
@@ -93,7 +93,7 @@ def _mock_token(requests_mock: Any) -> None:
     )
 
 
-def _mock_jwks(mocker: Any) -> None:
+def mock_jwks(mocker: Any) -> None:
     class MockResponse:
         def __init__(self, json_data) -> None:
             self.json_data = json_data

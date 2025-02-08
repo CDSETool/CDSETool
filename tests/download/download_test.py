@@ -13,7 +13,7 @@ from cdsetool.download import (
     filter_files,
 )
 
-from ..mock_auth import _mock_jwks, _mock_openid, _mock_token
+from ..mock_auth import mock_jwks, mock_openid, mock_token
 
 
 def test_get_odata_url():
@@ -91,9 +91,9 @@ def test_filter_files_no_match():
 
 def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path):
     # Mock authentication
-    _mock_openid(requests_mock)
-    _mock_token(requests_mock)
-    _mock_jwks(mocker)
+    mock_openid(requests_mock)
+    mock_token(requests_mock)
+    mock_jwks(mocker)
 
     # Mock download request
     mock_url = "http://example.com/file"
@@ -120,9 +120,9 @@ def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path):
 
 def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path):
     # Mock authentication
-    _mock_openid(requests_mock)
-    _mock_token(requests_mock)
-    _mock_jwks(mocker)
+    mock_openid(requests_mock)
+    mock_token(requests_mock)
+    mock_jwks(mocker)
 
     # Mock download request
     mock_url = "http://example.com/file"

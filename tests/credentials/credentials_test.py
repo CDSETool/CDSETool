@@ -12,13 +12,13 @@ from cdsetool.credentials import (
     TokenExchangeException,
 )
 
-from ..mock_auth import _mock_jwks, _mock_openid, _mock_token
+from ..mock_auth import mock_jwks, mock_openid, mock_token
 
 
 def test_ensure_tokens(requests_mock: Any, mocker: Any) -> None:
-    _mock_openid(requests_mock)
-    _mock_token(requests_mock)
-    _mock_jwks(mocker)
+    mock_openid(requests_mock)
+    mock_token(requests_mock)
+    mock_jwks(mocker)
 
     credentials = Credentials("username", "password")
     assert credentials._Credentials__access_token is not None
@@ -42,9 +42,9 @@ def test_ensure_tokens(requests_mock: Any, mocker: Any) -> None:
 
 
 def test_read_credentials(requests_mock: Any, mocker: Any) -> None:
-    _mock_openid(requests_mock)
-    _mock_token(requests_mock)
-    _mock_jwks(mocker)
+    mock_openid(requests_mock)
+    mock_token(requests_mock)
+    mock_jwks(mocker)
 
     mocker.patch(
         "netrc.netrc",
@@ -64,15 +64,15 @@ def test_read_credentials(requests_mock: Any, mocker: Any) -> None:
 
 
 def test_refresh_token(requests_mock: Any, mocker: Any) -> None:
-    _mock_openid(requests_mock)
-    _mock_token(requests_mock)
-    _mock_jwks(mocker)
+    mock_openid(requests_mock)
+    mock_token(requests_mock)
+    mock_jwks(mocker)
 
     credentials = Credentials("username", "password")
     assert credentials._Credentials__access_token is not None
     assert credentials._Credentials__refresh_token is not None
 
-    _mock_token(requests_mock)  # mock again to return a new token
+    mock_token(requests_mock)  # mock again to return a new token
 
     prev_access_token = credentials._Credentials__access_token
     credentials._Credentials__access_token_expires = datetime.datetime.now()
@@ -85,9 +85,9 @@ def test_refresh_token(requests_mock: Any, mocker: Any) -> None:
 
 
 def test_get_session(requests_mock: Any, mocker: Any) -> None:
-    _mock_openid(requests_mock)
-    _mock_token(requests_mock)
-    _mock_jwks(mocker)
+    mock_openid(requests_mock)
+    mock_token(requests_mock)
+    mock_jwks(mocker)
 
     credentials = Credentials("username", "password")
     session = credentials.get_session()
@@ -100,9 +100,9 @@ def test_get_session(requests_mock: Any, mocker: Any) -> None:
 
 
 def test_token_exchange(requests_mock: Any, mocker: Any) -> None:
-    _mock_openid(requests_mock)
-    _mock_token(requests_mock)
-    _mock_jwks(mocker)
+    mock_openid(requests_mock)
+    mock_token(requests_mock)
+    mock_jwks(mocker)
 
     credentials = Credentials("myuser123123", "password")
 
