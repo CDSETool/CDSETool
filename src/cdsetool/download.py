@@ -121,7 +121,7 @@ def download_file(url: str, path: str, options: Dict[str, Any]) -> Union[str, No
     return None
 
 
-def download_feature(
+def download_feature(  # pylint: disable=too-many-return-statements
     feature, path: str, options: Union[Dict[str, Any], None] = None
 ) -> Union[str, None]:
     """
@@ -174,7 +174,7 @@ def download_feature(
             # List files that match pattern based on manifest file contents
             try:
                 filtered_files = filter_files(manifest_file, options["filter_pattern"])
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 log.error(f"Failed to filter files in {title}: {e}")
                 return None
 

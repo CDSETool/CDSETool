@@ -69,7 +69,7 @@ def query_search(
 
 # TODO: implement limit
 @app.command("download")
-def download(
+def download(  # pylint: disable=[too-many-arguments, too-many-positional-arguments]
     collection: str,
     path: str,
     concurrency: Annotated[
