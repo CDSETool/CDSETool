@@ -131,19 +131,18 @@ def download_feature(  # pylint: disable=too-many-return-statements
     log = _get_logger(options)
     temp_dir_usr = _get_temp_dir(options)
     title = feature.get("properties").get("title")
+    filename = title + ("" if "filter_pattern" in options else ".zip")
+    result_path = os.path.join(path, filename)
+
+    if not options.get("overwrite_existing", False) and os.path.exists(result_path):
+        log.debug(f"File {result_path} already exists, skipping..")
+        return filename
 
     with tempfile.TemporaryDirectory(
         prefix=f"{title}____", dir=temp_dir_usr
     ) as temp_dir:
         if options.get("filter_pattern"):
             # Download filtered files within product from OData API's URLs
-
-            result_path = os.path.join(path, title)
-            if not options.get("overwrite_existing", False) and os.path.exists(
-                result_path
-            ):
-                log.debug(f"Result {result_path} already exists, skipping..")
-                return title
 
             temp_product_path = os.path.join(temp_dir, title)
             os.makedirs(temp_product_path, exist_ok=True)
@@ -203,17 +202,10 @@ def download_feature(  # pylint: disable=too-many-return-statements
             log.debug(f"Bad URL ('{url}') or title ('{title}')")
             return None
 
-        filename = title + ".zip"
-        result_path = os.path.join(path, filename)
-
-        if not options.get("overwrite_existing", False) and os.path.exists(result_path):
-            log.debug(f"File {result_path} already exists, skipping..")
-            return filename
-
         temp_file = os.path.join(temp_dir, filename)
         result = download_file(url, temp_file, options)
         if result:
-            shutil.copy(temp_file, result_path)            
+            shutil.copy(temp_file, result_path)
 
         return filename
 
