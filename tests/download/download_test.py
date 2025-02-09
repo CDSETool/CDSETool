@@ -115,7 +115,7 @@ def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path):
     expected_content = b"data" * 5
     assert file_content == expected_content
 
-    assert result == mock_file
+    assert result
 
 
 def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path):
@@ -140,7 +140,7 @@ def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path):
 
     result = download_file(mock_url, mock_file, {})
 
-    assert result is None
+    assert not result
 
 
 def test_download_feature_with_filter(mocker, tmp_path):

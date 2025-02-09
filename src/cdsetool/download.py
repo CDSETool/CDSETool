@@ -69,11 +69,9 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
     return paths
 
 
-def download_file(url: str, path: str, options: Dict[str, Any]) -> Union[str, None]:
+def download_file(url: str, path: str, options: Dict[str, Any]) -> bool:
     """
     Download a single file.
-
-    Returns local path of downloaded file, or None in case of failure.
     """
     log = _get_logger(options)
     filename = os.path.basename(path)
@@ -115,10 +113,10 @@ def download_file(url: str, path: str, options: Dict[str, Any]) -> Union[str, No
                     ) as e:
                         log.warning(e)
                         continue
-                return path
+                return True
 
     log.error(f"Failed to download {filename}")
-    return None
+    return False
 
 
 def download_feature(  # pylint: disable=too-many-return-statements
@@ -162,12 +160,12 @@ def download_feature(  # pylint: disable=too-many-return-statements
                 )
                 return None
             manifest_file = os.path.join(temp_product_path, manifest_filename)
-            manifest_file = download_file(
+            result = download_file(
                 _get_odata_url(feature["id"], title, manifest_filename),
                 manifest_file,
                 options,
             )
-            if manifest_file is None:
+            if not result:
                 log.error(f"Failed to download {manifest_filename} in {title}")
                 return None
 
@@ -184,12 +182,12 @@ def download_feature(  # pylint: disable=too-many-return-statements
                     filtered_file,
                 )
                 os.makedirs(os.path.dirname(output_file), exist_ok=True)
-                output_file = download_file(
+                result = download_file(
                     _get_odata_url(feature["id"], title, filtered_file),
                     output_file,
                     options,
                 )
-                if output_file is None:
+                if not result:
                     log.error(f"Failed to download all selected files in {title}")
                     return None
 
@@ -213,9 +211,9 @@ def download_feature(  # pylint: disable=too-many-return-statements
             return filename
 
         temp_file = os.path.join(temp_dir, filename)
-        filename = download_file(url, temp_file, options)
-        if filename is not None:
-            shutil.copy(temp_file, result_path)
+        result = download_file(url, temp_file, options)
+        if result:
+            shutil.copy(temp_file, result_path)            
 
         return filename
 
