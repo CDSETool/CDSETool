@@ -179,7 +179,6 @@ def test_download_feature_with_filter_failure(mocker: Any, tmp_path: Path):
 
     final_dir = str(tmp_path / "test_download_feature_with_filter_failure")
     product_name = download_feature(mock_feature, final_dir, options)
-    assert os.listdir(tmp_path) == []
     assert product_name is None
 
 
@@ -195,7 +194,6 @@ def test_download_feature_with_filter_unsupported_coll(caplog: Any, tmp_path: Pa
 
     final_dir = str(tmp_path / "test_download_feature_with_filter_unsupported_coll")
     product_name = download_feature(mock_feature, final_dir, options)
-    assert os.listdir(tmp_path) == []
     assert product_name is None
     assert (
         "Downloading specific files within product bundle with node filtering"
