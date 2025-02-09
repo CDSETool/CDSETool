@@ -14,7 +14,7 @@ import tempfile
 import time
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Union
-from xml.etree import ElementTree as etree
+from xml.etree import ElementTree as ET
 
 from requests import Session
 from requests.exceptions import ChunkedEncodingError
@@ -47,7 +47,7 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
     set to True, only files that do not match pattern are returned.
     """
     paths = []
-    xmldoc = etree.parse(manifest_file)
+    xmldoc = ET.parse(manifest_file)
 
     if os.path.basename(manifest_file) == "manifest.safe":
         data_obj_section_elem = xmldoc.find("dataObjectSection")
