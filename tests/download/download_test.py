@@ -90,22 +90,16 @@ def test_filter_files_no_match():
 
 
 def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path):
-    # Mock authentication
     mock_openid(requests_mock)
     mock_token(requests_mock)
     mock_jwks(mocker)
 
-    # Mock download request
     mock_url = "http://example.com/file"
     mocker.patch("cdsetool.download._follow_redirect", return_value=mock_url)
     content = b"data" * 5
     requests_mock.get(
-        mock_url,
-        status_code=200,
-        headers={"Content-Length": "100"},
-        content=content,
+        mock_url, status_code=200, headers={"Content-Length": "100"}, content=content
     )
-
     mock_file = str(tmp_path / "mock_file")
 
     result = download_file(mock_url, mock_file, {})
@@ -119,27 +113,17 @@ def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path):
 
 
 def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path):
-    # Mock authentication
     mock_openid(requests_mock)
     mock_token(requests_mock)
     mock_jwks(mocker)
 
-    # Mock download request
     mock_url = "http://example.com/file"
     mocker.patch("cdsetool.download._follow_redirect", return_value=mock_url)
-    requests_mock.get(
-        mock_url,
-        status_code=404,
-        headers={"Content-Length": "100"},
-    )
-
+    requests_mock.get(mock_url, status_code=404, headers={"Content-Length": "100"})
     mock_file = str(tmp_path / "mock_file")
-
-    # Avoid retry delay
-    mocker.patch("time.sleep", return_value=None)
+    mocker.patch("time.sleep", return_value=None)  # Avoid retry delay
 
     result = download_file(mock_url, mock_file, {})
-
     assert not result
 
 
@@ -151,10 +135,11 @@ def test_download_feature_with_filter(mocker: Any, tmp_path: Path):
         return True
 
     options = {"filter_pattern": "*.jp2"}
+    title = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
         "properties": {
-            "title": "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE",
+            "title": title,
             "collection": "SENTINEL-2",
         },
     }
@@ -169,22 +154,8 @@ def test_download_feature_with_filter(mocker: Any, tmp_path: Path):
 
     final_dir = str(tmp_path / "test_download_feature_with_filter")
     product_name = download_feature(mock_feature, final_dir, options)
-    assert os.path.exists(
-        os.path.join(
-            final_dir,
-            "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE",
-            "GRANULE",
-            "file1.jp2",
-        )
-    )
-    assert os.path.exists(
-        os.path.join(
-            final_dir,
-            "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE",
-            "GRANULE",
-            "file2.jp2",
-        )
-    )
+    assert os.path.exists(os.path.join(final_dir, title, "GRANULE", "file1.jp2"))
+    assert os.path.exists(os.path.join(final_dir, title, "GRANULE", "file2.jp2"))
     assert product_name == mock_feature["properties"]["title"]
 
 
