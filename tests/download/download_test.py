@@ -3,7 +3,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, List, Dict
 
 import pytest
 from cdsetool.download import (
@@ -54,7 +54,7 @@ def test_get_odata_url():
         ),
     ],
 )
-def test_filter_files(manifest_file_path, pattern, expected_files):
+def test_filter_files(manifest_file_path: str, pattern: str, expected_files: List[str]):
     filtered_files = filter_files(manifest_file_path, pattern)
     assert filtered_files == expected_files
 
@@ -143,12 +143,12 @@ def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path):
     assert not result
 
 
-def test_download_feature_with_filter(mocker, tmp_path):
-    def mock_download_file(url, path, options):
+def test_download_feature_with_filter(mocker: Any, tmp_path: Path):
+    def mock_download_file(url: str, path: str, options: Dict[str, Any]) -> bool:
         """Mock the download_file function to create mock files."""
         with open(path, "wb") as f:
             f.write(b"dummy data")
-        return path
+        return True
 
     options = {"filter_pattern": "*.jp2"}
     mock_feature = {
@@ -167,7 +167,7 @@ def test_download_feature_with_filter(mocker, tmp_path):
         mock_download_file,
     )
 
-    final_dir = tmp_path / "test_download_feature_with_filter"
+    final_dir = str(tmp_path / "test_download_feature_with_filter")
     product_name = download_feature(mock_feature, final_dir, options)
     assert os.path.exists(
         os.path.join(
@@ -188,7 +188,7 @@ def test_download_feature_with_filter(mocker, tmp_path):
     assert product_name == mock_feature["properties"]["title"]
 
 
-def test_download_feature_with_filter_failure(mocker, tmp_path):
+def test_download_feature_with_filter_failure(mocker: Any, tmp_path: Path):
     options = {"filter_pattern": "*.jp2"}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
@@ -206,13 +206,13 @@ def test_download_feature_with_filter_failure(mocker, tmp_path):
         side_effect=lambda url, path, options: None,
     )
 
-    final_dir = tmp_path / "test_download_feature_with_filter_failure"
+    final_dir = str(tmp_path / "test_download_feature_with_filter_failure")
     product_name = download_feature(mock_feature, final_dir, options)
     assert os.listdir(tmp_path) == []
     assert product_name is None
 
 
-def test_download_feature_with_filter_unsupported_coll(caplog, tmp_path):
+def test_download_feature_with_filter_unsupported_coll(caplog: Any, tmp_path: Path):
     options = {"logger": logging.getLogger(__name__), "filter_pattern": "*MTL.txt"}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
@@ -222,7 +222,7 @@ def test_download_feature_with_filter_unsupported_coll(caplog, tmp_path):
         },
     }
 
-    final_dir = tmp_path / "test_download_feature_with_filter_unsupported_coll"
+    final_dir = str(tmp_path / "test_download_feature_with_filter_unsupported_coll")
     product_name = download_feature(mock_feature, final_dir, options)
     assert os.listdir(tmp_path) == []
     assert product_name is None
