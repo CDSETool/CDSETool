@@ -41,10 +41,9 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
     """
     Filter a product's files, listed in its manifest, based on a given pattern.
 
-    Returns a list of files paths within the product bundle.
+    Returns a list of file paths within the product bundle.
 
-    If "exclude" is set to False, only files that match pattern are returned. If it's
-    set to True, only files that do not match pattern are returned.
+    All files not matching the pattern are returned if "exclude" is set to true.
     """
     paths = []
     xmldoc = ET.parse(manifest_file)
