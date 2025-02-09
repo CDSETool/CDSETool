@@ -98,11 +98,12 @@ def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path):
     # Mock download request
     mock_url = "http://example.com/file"
     mocker.patch("cdsetool.download._follow_redirect", return_value=mock_url)
+    content = b"data" * 5
     requests_mock.get(
         mock_url,
         status_code=200,
         headers={"Content-Length": "100"},
-        content=b"data" * 5,
+        content=content,
     )
 
     mock_file = str(tmp_path / "mock_file")
@@ -112,8 +113,7 @@ def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path):
     # Check that file was written correctly
     with open(mock_file, "rb") as f:
         file_content = f.read()
-    expected_content = b"data" * 5
-    assert file_content == expected_content
+    assert file_content == content
 
     assert result
 
