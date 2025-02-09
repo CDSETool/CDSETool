@@ -176,10 +176,7 @@ def download_feature(  # pylint: disable=too-many-return-statements
                 return None
 
             for filtered_file in filtered_files:
-                output_file = os.path.join(
-                    temp_product_path,
-                    filtered_file,
-                )
+                output_file = os.path.join(temp_product_path, filtered_file)
                 os.makedirs(os.path.dirname(output_file), exist_ok=True)
                 result = download_file(
                     _get_odata_url(feature["id"], title, filtered_file),
