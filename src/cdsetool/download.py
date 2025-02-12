@@ -45,6 +45,7 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
 
     All files not matching the pattern are returned if "exclude" is set to true.
     """
+    # pylint: disable=line-too-long
     paths = []
     xmldoc = ET.parse(manifest_file)
     if os.path.basename(manifest_file) == "manifest.safe":
