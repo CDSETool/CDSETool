@@ -47,25 +47,14 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
     """
     paths = []
     xmldoc = ET.parse(manifest_file)
-
     if os.path.basename(manifest_file) == "manifest.safe":
-        data_obj_section_elem = xmldoc.find("dataObjectSection")
-        for elem in data_obj_section_elem.iterfind("dataObject"):  # type: ignore
-            path = Path(elem.find("byteStream/fileLocation").attrib["href"])  # type: ignore
-            paths.append(path)
-
+        for elem in xmldoc.find("dataObjectSection").iterfind("dataObject"):  # type: ignore
+            paths.append(Path(elem.find("byteStream/fileLocation").attrib["href"]))  # type: ignore
     elif os.path.basename(manifest_file) == "manifest.xml":
-        namespaces = {"ns": "http://www.eumetsat.int/sip"}
-        data_section_elem = xmldoc.find("ns:dataSection", namespaces)
-        for elem in data_section_elem.iterfind("ns:dataObject", namespaces):  # type: ignore
-            path = Path(elem.find("ns:path", namespaces).text)  # type: ignore
-            # Remove prefix present for some files in S3 manifests
-            path = Path(*path.parts[-1:])
-            paths.append(path)
-
-    paths = [str(path) for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
-
-    return paths
+        ns = {"ns": "http://www.eumetsat.int/sip"}
+        for elem in xmldoc.find("ns:dataSection", ns).iterfind("ns:dataObject", ns):  # type: ignore
+            paths.append(Path(elem.find("ns:path", ns).text).name)  # type: ignore
+    return [str(path) for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
 
 
 def download_file(url: str, path: str, options: Dict[str, Any]) -> bool:
