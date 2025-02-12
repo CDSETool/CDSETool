@@ -48,12 +48,12 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
     paths = []
     xmldoc = ET.parse(manifest_file)
     if os.path.basename(manifest_file) == "manifest.safe":
-        for elem in xmldoc.find("dataObjectSection").iterfind("dataObject"):  # type: ignore
-            paths.append(Path(elem.find("byteStream/fileLocation").attrib["href"]))  # type: ignore
+        for elem in xmldoc.find("dataObjectSection").iterfind("dataObject"):  # pyright:ignore[reportOptionalMemberAccess]
+            paths.append(Path(elem.find("byteStream/fileLocation").attrib["href"]))  # pyright:ignore[reportOptionalMemberAccess]
     elif os.path.basename(manifest_file) == "manifest.xml":
         ns = {"ns": "http://www.eumetsat.int/sip"}
-        for elem in xmldoc.find("ns:dataSection", ns).iterfind("ns:dataObject", ns):  # type: ignore
-            paths.append(Path(elem.find("ns:path", ns).text).name)  # type: ignore
+        for elem in xmldoc.find("ns:dataSection", ns).iterfind("ns:dataObject", ns):  # pyright:ignore[reportOptionalMemberAccess]
+            paths.append(Path(elem.find("ns:path", ns).text).name)  # pyright:ignore[reportOptionalMemberAccess,reportArgumentType]
     return [str(path) for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
 
 
