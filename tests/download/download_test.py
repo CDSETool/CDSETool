@@ -16,7 +16,7 @@ from cdsetool.download import (
 from ..mock_auth import mock_jwks, mock_openid, mock_token
 
 
-def test_get_odata_url():
+def test_get_odata_url() -> None:
     product_id = "a6215824-704b-46d7-a2ec-efea4e468668"
     product_name = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
     href = "path/to/resource.xml"
@@ -54,12 +54,12 @@ def test_get_odata_url():
         ),
     ],
 )
-def test_filter_files(manifest_file_path: str, pattern: str, expected_files: List[str]):
+def test_filter_files(manifest_file_path: str, pattern: str, expected_files: List[str]) -> None:
     filtered_files = filter_files(manifest_file_path, pattern)
     assert filtered_files == expected_files
 
 
-def test_filter_files_with_exclude():
+def test_filter_files_with_exclude() -> None:
     manifest_file_path = "tests/download/mock/sentinel_2/manifest.safe"
     filtered_files = filter_files(manifest_file_path, "*.jp2", exclude=True)
     assert filtered_files == [
@@ -83,13 +83,13 @@ def test_filter_files_with_exclude():
     ]
 
 
-def test_filter_files_no_match():
+def test_filter_files_no_match() -> None:
     manifest_file_path = "tests/download/mock/sentinel_2/manifest.safe"
     filtered_files = filter_files(manifest_file_path, "Oa1*.nc")
     assert not filtered_files
 
 
-def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path):
+def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path) -> None:
     mock_openid(requests_mock)
     mock_token(requests_mock)
     mock_jwks(mocker)
@@ -112,7 +112,7 @@ def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path):
     assert result
 
 
-def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path):
+def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path) -> None:
     mock_openid(requests_mock)
     mock_token(requests_mock)
     mock_jwks(mocker)
@@ -127,7 +127,7 @@ def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path):
     assert not result
 
 
-def test_download_feature_with_filter(mocker: Any, tmp_path: Path):
+def test_download_feature_with_filter(mocker: Any, tmp_path: Path) -> None:
     def mock_download_file(url: str, path: str, options: Dict[str, Any]) -> bool:
         """Mock the download_file function to create mock files."""
         with open(path, "wb") as f:
@@ -159,7 +159,7 @@ def test_download_feature_with_filter(mocker: Any, tmp_path: Path):
     assert product_name == mock_feature["properties"]["title"]
 
 
-def test_download_feature_with_filter_failure(mocker: Any, tmp_path: Path):
+def test_download_feature_with_filter_failure(mocker: Any, tmp_path: Path) -> None:
     options = {"filter_pattern": "*.jp2"}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
@@ -182,7 +182,7 @@ def test_download_feature_with_filter_failure(mocker: Any, tmp_path: Path):
     assert product_name is None
 
 
-def test_download_feature_with_filter_unsupported_coll(caplog: Any, tmp_path: Path):
+def test_download_feature_with_filter_unsupported_coll(caplog: Any, tmp_path: Path) -> None:
     options = {"logger": logging.getLogger(__name__), "filter_pattern": "*MTL.txt"}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
