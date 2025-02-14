@@ -158,11 +158,7 @@ def download_feature(  # pylint: disable=too-many-return-statements
                 return None
 
             # List files that match pattern based on manifest file contents
-            try:
-                filtered_files = filter_files(manifest_file, options["filter_pattern"])
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                log.error(f"Failed to filter files in {title}: {e}")
-                return None
+            filtered_files = filter_files(manifest_file, options["filter_pattern"])
 
             for filtered_file in filtered_files:
                 output_file = os.path.join(temp_product_path, filtered_file)
