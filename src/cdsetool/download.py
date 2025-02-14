@@ -188,8 +188,9 @@ def download_feature(  # pylint: disable=too-many-return-statements
         result = download_file(url, temp_file, options)
         if result:
             shutil.copy(temp_file, result_path)
+            return filename
 
-        return filename
+        return None
 
 
 def download_features(
