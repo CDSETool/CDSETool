@@ -131,11 +131,6 @@ def download_feature(  # pylint: disable=too-many-return-statements
         prefix=f"{title}____", dir=temp_dir_usr
     ) as temp_dir:
         if options.get("filter_pattern"):
-            # Download filtered files within product from OData API's URLs
-
-            temp_product_path = os.path.join(temp_dir, title)
-            os.makedirs(temp_product_path, exist_ok=True)
-
             # Download manifest file
             try:
                 manifest_filename = MANIFEST_FILENAMES[
@@ -147,7 +142,7 @@ def download_feature(  # pylint: disable=too-many-return-statements
                     f"filtering is not supported for this collection type: {title}"
                 )
                 return None
-            manifest_file = os.path.join(temp_product_path, manifest_filename)
+            manifest_file = os.path.join(temp_dir, manifest_filename)
             result = download_file(
                 _get_odata_url(feature["id"], title, manifest_filename),
                 manifest_file,
@@ -157,10 +152,10 @@ def download_feature(  # pylint: disable=too-many-return-statements
                 log.error(f"Failed to download {manifest_filename} in {title}")
                 return None
 
-            # List files that match pattern based on manifest file contents
-            filtered_files = filter_files(manifest_file, options["filter_pattern"])
-
-            for filtered_file in filtered_files:
+            # Create product dir structure and download filtered files from OData API
+            temp_product_path = os.path.join(temp_dir, title)
+            os.makedirs(temp_product_path, exist_ok=True)
+            for filtered_file in filter_files(manifest_file, options["filter_pattern"]):
                 output_file = os.path.join(temp_product_path, filtered_file)
                 os.makedirs(os.path.dirname(output_file), exist_ok=True)
                 result = download_file(
