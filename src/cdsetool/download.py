@@ -120,23 +120,19 @@ def download_feature(  # pylint: disable=too-many-return-statements
     log = _get_logger(options)
     temp_dir_usr = _get_temp_dir(options)
     title = feature.get("properties").get("title")
+    collection = feature.get("properties").get("collection")
     download_full = "filter_pattern" not in options
 
-    manifest_filename = ""
-    if not download_full:
-        try:
-            manifest_filename = MANIFEST_FILENAMES[feature["properties"]["collection"]]
-        except KeyError:
-            log.error(
-                "Downloading specific files within product bundle with node "
-                f"filtering is not supported for this collection type: {title}"
-            )
-            return None
+    try:
+        manifest_filename = "" if download_full else MANIFEST_FILENAMES[collection]
+    except KeyError:
+        log.error(
+            f"No support for downloading individual files in {collection} products"
+        )
+        return None
 
     filename = title + ".zip" if download_full else manifest_filename
-    result_path = (
-        os.path.join(path, filename) if download_full else os.path.join(path, title)
-    )
+    result_path = os.path.join(path, filename if download_full else title)
     if not options.get("overwrite_existing", False) and os.path.exists(result_path):
         log.debug(f"File {result_path} already exists, skipping..")
         return os.path.basename(result_path)
@@ -144,7 +140,7 @@ def download_feature(  # pylint: disable=too-many-return-statements
     url = (
         _get_feature_url(feature)
         if download_full
-        else _get_odata_url(feature["id"], title, manifest_filename)
+        else _get_odata_url(feature["id"], title, filename)
     )
 
     if not url or not title:
@@ -166,18 +162,15 @@ def download_feature(  # pylint: disable=too-many-return-statements
         os.makedirs(temp_product_path, exist_ok=True)
 
         # List files that match pattern based on manifest file contents
-        filtered_files = filter_files(temp_file, options["filter_pattern"])
-
-        for filtered_file in filtered_files:
-            output_file = os.path.join(temp_product_path, filtered_file)
+        for file in filter_files(temp_file, options["filter_pattern"]):
+            output_file = os.path.join(temp_product_path, file)
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
-            result = download_file(
-                _get_odata_url(feature["id"], title, filtered_file),
+            if not download_file(
+                _get_odata_url(feature["id"], title, file),
                 output_file,
                 options,
-            )
-            if not result:
-                log.error(f"Failed to download all selected files in {title}")
+            ):
+                log.error(f"Failed to download {file} from {title}")
                 return None
 
         # Move downloaded files to output dir

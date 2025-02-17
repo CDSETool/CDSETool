@@ -3,7 +3,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, List, Dict
+from typing import Any, Dict, List
 
 import pytest
 from cdsetool.download import (
@@ -54,7 +54,9 @@ def test_get_odata_url() -> None:
         ),
     ],
 )
-def test_filter_files(manifest_file_path: str, pattern: str, expected_files: List[str]) -> None:
+def test_filter_files(
+    manifest_file_path: str, pattern: str, expected_files: List[str]
+) -> None:
     filtered_files = filter_files(manifest_file_path, pattern)
     assert filtered_files == expected_files
 
@@ -182,7 +184,9 @@ def test_download_feature_with_filter_failure(mocker: Any, tmp_path: Path) -> No
     assert product_name is None
 
 
-def test_download_feature_with_filter_unsupported_coll(caplog: Any, tmp_path: Path) -> None:
+def test_download_feature_with_filter_unsupported_coll(
+    caplog: Any, tmp_path: Path
+) -> None:
     options = {"logger": logging.getLogger(__name__), "filter_pattern": "*MTL.txt"}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
@@ -196,6 +200,6 @@ def test_download_feature_with_filter_unsupported_coll(caplog: Any, tmp_path: Pa
     product_name = download_feature(mock_feature, final_dir, options)
     assert product_name is None
     assert (
-        "Downloading specific files within product bundle with node filtering"
-        f" is not supported for this collection type: {mock_feature['properties']['title']}"
+        "No support for downloading individual files in "
+        f"{mock_feature['properties']['collection']} products"
     ) in caplog.text
