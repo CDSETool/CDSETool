@@ -166,9 +166,7 @@ def download_feature(  # pylint: disable=too-many-return-statements
             output_file = os.path.join(temp_product_path, file)
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
             if not download_file(
-                _get_odata_url(feature["id"], title, file),
-                output_file,
-                options,
+                _get_odata_url(feature["id"], title, file), output_file, options
             ):
                 log.error(f"Failed to download {file} from {title}")
                 return None
