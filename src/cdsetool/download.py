@@ -132,20 +132,19 @@ def download_feature(  # pylint: disable=too-many-return-statements
         return None
 
     filename = title + ".zip" if download_full else manifest_filename
-    result_path = os.path.join(path, filename if download_full else title)
-    if not options.get("overwrite_existing", False) and os.path.exists(result_path):
-        log.debug(f"File {result_path} already exists, skipping..")
-        return os.path.basename(result_path)
-
     url = (
         _get_feature_url(feature)
         if download_full
         else _get_odata_url(feature["id"], title, filename)
     )
-
     if not url or not title:
         log.debug(f"Bad URL ('{url}') or title ('{title}')")
         return None
+
+    result_path = os.path.join(path, filename if download_full else title)
+    if not options.get("overwrite_existing", False) and os.path.exists(result_path):
+        log.debug(f"File {result_path} already exists, skipping..")
+        return os.path.basename(result_path)
 
     with tempfile.TemporaryDirectory(
         prefix=f"{title}____", dir=temp_dir_usr
