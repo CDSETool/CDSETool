@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import pytest
+
 from cdsetool.download import (
     _get_odata_url,
     download_feature,
@@ -14,6 +15,13 @@ from cdsetool.download import (
 )
 
 from ..mock_auth import mock_jwks, mock_openid, mock_token
+
+
+def mock_download_file(url: str, path: str, options: Dict[str, Any]) -> bool:
+    """Mock the download_file function to create mock files."""
+    with open(path, "wb") as f:
+        f.write(b"dummy data")
+    return True
 
 
 def test_get_odata_url() -> None:
@@ -129,13 +137,48 @@ def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path) 
     assert not result
 
 
-def test_download_feature_with_filter(mocker: Any, tmp_path: Path) -> None:
-    def mock_download_file(url: str, path: str, options: Dict[str, Any]) -> bool:
-        """Mock the download_file function to create mock files."""
-        with open(path, "wb") as f:
-            f.write(b"dummy data")
-        return True
+def test_download_feature(mocker: Any, tmp_path: Path) -> None:
+    title = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
+    mock_feature = {
+        "id": "a6215824-704b-46d7-a2ec-efea4e468668",
+        "properties": {
+            "title": title,
+            "collection": "SENTINEL-2",
+            "services": {"download": {"url": "http://example.com"}},
+        },
+    }
+    mocker.patch(
+        "cdsetool.download.download_file",
+        mock_download_file,
+    )
 
+    final_dir = str(tmp_path / "test_download_feature")
+    filename = download_feature(mock_feature, final_dir)
+    assert filename == f"{title}.zip"
+    assert os.path.exists(os.path.join(final_dir, f"{title}.zip"))
+
+
+def test_download_feature_failure(mocker: Any, tmp_path: Path) -> None:
+    title = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
+    mock_feature = {
+        "id": "a6215824-704b-46d7-a2ec-efea4e468668",
+        "properties": {
+            "title": title,
+            "collection": "SENTINEL-2",
+            "services": {"download": {"url": "http://example.com"}},
+        },
+    }
+    mocker.patch(
+        "cdsetool.download.download_file",
+        side_effect=lambda url, path, options: None,
+    )
+
+    final_dir = str(tmp_path / "test_download_feature_failure")
+    filename = download_feature(mock_feature, final_dir)
+    assert filename is None
+
+
+def test_download_feature_with_filter(mocker: Any, tmp_path: Path) -> None:
     options = {"filter_pattern": "*.jp2"}
     title = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
     mock_feature = {
