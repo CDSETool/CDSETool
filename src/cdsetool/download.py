@@ -114,7 +114,7 @@ def download_file(url: str, path: str, options: Dict[str, Any]) -> bool:
     return False
 
 
-def download_feature(  # pylint: disable=too-many-return-statements
+def download_feature(
     feature, path: str, options: Union[Dict[str, Any], None] = None
 ) -> Union[str, None]:
     """
