@@ -37,7 +37,9 @@ MANIFEST_FILENAMES = {
 }
 
 
-def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> List[str]:
+def filter_files(
+    manifest_file: str, pattern: Union[str, None], exclude: bool = False
+) -> List[str]:
     """
     Filter a product's files, listed in its manifest, based on a given pattern.
 
@@ -46,6 +48,9 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
     All files not matching the pattern are returned if "exclude" is set to true.
     """
     # pylint: disable=line-too-long
+    if pattern is None:
+        return []
+
     paths = []
     xmldoc = ET.parse(manifest_file)
     if os.path.basename(manifest_file) == "manifest.safe":
@@ -55,6 +60,7 @@ def filter_files(manifest_file: str, pattern: str, exclude: bool = False) -> Lis
         ns = {"ns": "http://www.eumetsat.int/sip"}
         for elem in xmldoc.find("ns:dataSection", ns).iterfind("ns:dataObject", ns):  # pyright:ignore[reportOptionalMemberAccess]
             paths.append(Path(elem.find("ns:path", ns).text).name)  # pyright:ignore[reportOptionalMemberAccess,reportArgumentType]
+
     return [str(path) for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
 
 
@@ -131,6 +137,7 @@ def download_feature(  # pylint: disable=too-many-return-statements
         )
         return None
 
+    # Prepare to download full product, or manifest file if filter_pattern is used
     filename = title + ".zip" if download_full else manifest_filename
     url = (
         _get_feature_url(feature)
@@ -152,16 +159,11 @@ def download_feature(  # pylint: disable=too-many-return-statements
         temp_file = os.path.join(temp_dir, filename)
         if not download_file(url, temp_file, options):
             return None
-        if download_full:
-            shutil.copy(temp_file, result_path)
-            return filename
 
-        # Create product dir structure to download filtered contents from OData API
+        # If filter_pattern is used, list matching files based on manifest contents
         temp_product_path = os.path.join(temp_dir, title)
-        os.makedirs(temp_product_path, exist_ok=True)
-
-        # List files that match pattern based on manifest file contents
-        for file in filter_files(temp_file, options["filter_pattern"]):
+        filtered_files = filter_files(temp_file, options.get("filter_pattern"))
+        for file in filtered_files:
             output_file = os.path.join(temp_product_path, file)
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
             if not download_file(
@@ -171,10 +173,11 @@ def download_feature(  # pylint: disable=too-many-return-statements
                 return None
 
         # Move downloaded files to output dir
-        os.makedirs(path, exist_ok=True)
-        shutil.move(temp_product_path, path)
+        if download_full or filtered_files:
+            os.makedirs(path, exist_ok=True)
+            shutil.move(temp_file if download_full else temp_product_path, path)
 
-        return title
+        return filename if download_full else title
 
 
 def download_features(
