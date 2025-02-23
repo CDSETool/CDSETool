@@ -31,7 +31,7 @@ def test_get_odata_url() -> None:
     expected_url = (
         "https://download.dataspace.copernicus.eu/odata/v1/"
         "Products(a6215824-704b-46d7-a2ec-efea4e468668)/"
-        "Nodes(S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE)/"
+        f"Nodes({product_name})/"
         "Nodes(path)/Nodes(to)/Nodes(resource.xml)/$value"
     )
     assert _get_odata_url(product_id, product_name, href) == expected_url
