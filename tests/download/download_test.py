@@ -114,12 +114,12 @@ def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path) 
 
     result = download_file(mock_url, mock_file, {})
 
+    assert result is True
+
     # Check that file was written correctly
     with open(mock_file, "rb") as f:
         file_content = f.read()
     assert file_content == content
-
-    assert result
 
 
 def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path) -> None:
@@ -134,7 +134,7 @@ def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path) 
     mocker.patch("time.sleep", return_value=None)  # Avoid retry delay
 
     result = download_file(mock_url, mock_file, {})
-    assert not result
+    assert result is False
 
 
 def test_download_feature(mocker: Any, tmp_path: Path) -> None:
@@ -199,9 +199,9 @@ def test_download_feature_with_filter(mocker: Any, tmp_path: Path) -> None:
 
     final_dir = str(tmp_path / "test_download_feature_with_filter")
     product_name = download_feature(mock_feature, final_dir, options)
+    assert product_name == mock_feature["properties"]["title"]
     assert os.path.exists(os.path.join(final_dir, title, "GRANULE", "file1.jp2"))
     assert os.path.exists(os.path.join(final_dir, title, "GRANULE", "file2.jp2"))
-    assert product_name == mock_feature["properties"]["title"]
 
 
 def test_download_feature_with_filter_failure(mocker: Any, tmp_path: Path) -> None:
