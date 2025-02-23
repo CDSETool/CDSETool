@@ -147,10 +147,7 @@ def test_download_feature(mocker: Any, tmp_path: Path) -> None:
             "services": {"download": {"url": "http://example.com"}},
         },
     }
-    mocker.patch(
-        "cdsetool.download.download_file",
-        mock_download_file,
-    )
+    mocker.patch("cdsetool.download.download_file", mock_download_file)
 
     final_dir = str(tmp_path / "test_download_feature")
     filename = download_feature(mock_feature, final_dir)
@@ -169,8 +166,7 @@ def test_download_feature_failure(mocker: Any, tmp_path: Path) -> None:
         },
     }
     mocker.patch(
-        "cdsetool.download.download_file",
-        side_effect=lambda url, path, options: None,
+        "cdsetool.download.download_file", side_effect=lambda url, path, options: None
     )
 
     final_dir = str(tmp_path / "test_download_feature_failure")
@@ -183,19 +179,13 @@ def test_download_feature_with_filter(mocker: Any, tmp_path: Path) -> None:
     title = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
-        "properties": {
-            "title": title,
-            "collection": "SENTINEL-2",
-        },
+        "properties": {"title": title, "collection": "SENTINEL-2"},
     }
     mocker.patch(
         "cdsetool.download.filter_files",
         return_value=["./GRANULE/file1.jp2", "./GRANULE/file2.jp2"],
     )
-    mocker.patch(
-        "cdsetool.download.download_file",
-        mock_download_file,
-    )
+    mocker.patch("cdsetool.download.download_file", mock_download_file)
 
     final_dir = str(tmp_path / "test_download_feature_with_filter")
     product_name = download_feature(mock_feature, final_dir, options)
@@ -218,8 +208,7 @@ def test_download_feature_with_filter_failure(mocker: Any, tmp_path: Path) -> No
         return_value=["./GRANULE/file1.jp2", "./GRANULE/file2.jp2"],
     )
     mocker.patch(
-        "cdsetool.download.download_file",
-        side_effect=lambda url, path, options: None,
+        "cdsetool.download.download_file", side_effect=lambda url, path, options: None
     )
 
     final_dir = str(tmp_path / "test_download_feature_with_filter_failure")
@@ -233,10 +222,7 @@ def test_download_feature_with_filter_unsupported_coll(
     options = {"logger": logging.getLogger(__name__), "filter_pattern": "*MTL.txt"}
     mock_feature = {
         "id": "a6215824-704b-46d7-a2ec-efea4e468668",
-        "properties": {
-            "title": "L8XXX",
-            "collection": "Lansat8",
-        },
+        "properties": {"title": "L8XXX", "collection": "Landsat8"},
     }
 
     final_dir = str(tmp_path / "test_download_feature_with_filter_unsupported_coll")
