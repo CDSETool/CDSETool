@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import pytest
-
 from cdsetool.download import (
     _get_odata_url,
     download_feature,
@@ -41,60 +40,80 @@ def test_get_odata_url() -> None:
     "manifest_file_path, pattern, expected_files",
     [
         (
-            "tests/download/mock/sentinel_1/manifest.safe",
+            Path("tests/download/mock/sentinel_1/manifest.safe"),
             "*/calibration-*.xml",
             [
-                "annotation/calibration/calibration-s1a-iw-grd-vh-20241217t061735-20241217t061800-057028-07020f-002.xml",
-                "annotation/calibration/calibration-s1a-iw-grd-vv-20241217t061735-20241217t061800-057028-07020f-001.xml",
+                Path(
+                    "annotation/calibration/calibration-s1a-iw-grd-vh-20241217t061735-20241217t061800-057028-07020f-002.xml"
+                ),
+                Path(
+                    "annotation/calibration/calibration-s1a-iw-grd-vv-20241217t061735-20241217t061800-057028-07020f-001.xml"
+                ),
             ],
         ),
         (
-            "tests/download/mock/sentinel_2/manifest.safe",
+            Path("tests/download/mock/sentinel_2/manifest.safe"),
             "*TCI.jp2",
             [
-                "GRANULE/L1C_T17UPV_A040535_20241209T162603/IMG_DATA/T17UPV_20241209T162609_TCI.jp2"
+                Path(
+                    "GRANULE/L1C_T17UPV_A040535_20241209T162603/IMG_DATA/T17UPV_20241209T162609_TCI.jp2"
+                )
             ],
         ),
         (
-            "tests/download/mock/sentinel_3/manifest.xml",
+            Path("tests/download/mock/sentinel_3/manifest.xml"),
             "*Oa02_reflectance.nc",
-            [("Oa02_reflectance.nc")],
+            [Path("Oa02_reflectance.nc")],
         ),
     ],
 )
 def test_filter_files(
-    manifest_file_path: str, pattern: str, expected_files: List[str]
+    manifest_file_path: Path, pattern: str, expected_files: List[str]
 ) -> None:
     filtered_files = filter_files(manifest_file_path, pattern)
     assert filtered_files == expected_files
 
 
 def test_filter_files_with_exclude() -> None:
-    manifest_file_path = "tests/download/mock/sentinel_2/manifest.safe"
+    manifest_file_path = Path("tests/download/mock/sentinel_2/manifest.safe")
     filtered_files = filter_files(manifest_file_path, "*.jp2", exclude=True)
     assert filtered_files == [
-        "MTD_MSIL1C.xml",
-        "INSPIRE.xml",
-        "HTML/UserProduct_index.html",
-        "HTML/UserProduct_index.xsl",
-        "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/MTD_DS.xml",
-        "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/FORMAT_CORRECTNESS.xml",
-        "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/GENERAL_QUALITY.xml",
-        "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/GEOMETRIC_QUALITY.xml",
-        "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/RADIOMETRIC_QUALITY.xml",
-        "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/SENSOR_QUALITY.xml",
-        "GRANULE/L1C_T17UPV_A040535_20241209T162603/AUX_DATA/AUX_CAMSFO",
-        "GRANULE/L1C_T17UPV_A040535_20241209T162603/AUX_DATA/AUX_ECMWFT",
-        "GRANULE/L1C_T17UPV_A040535_20241209T162603/MTD_TL.xml",
-        "GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/FORMAT_CORRECTNESS.xml",
-        "GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/GENERAL_QUALITY.xml",
-        "GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/GEOMETRIC_QUALITY.xml",
-        "GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/SENSOR_QUALITY.xml",
+        Path("MTD_MSIL1C.xml"),
+        Path("INSPIRE.xml"),
+        Path("HTML/UserProduct_index.html"),
+        Path("HTML/UserProduct_index.xsl"),
+        Path("DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/MTD_DS.xml"),
+        Path(
+            "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/FORMAT_CORRECTNESS.xml"
+        ),
+        Path(
+            "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/GENERAL_QUALITY.xml"
+        ),
+        Path(
+            "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/GEOMETRIC_QUALITY.xml"
+        ),
+        Path(
+            "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/RADIOMETRIC_QUALITY.xml"
+        ),
+        Path(
+            "DATASTRIP/DS_2BPS_20241209T195414_S20241209T162603/QI_DATA/SENSOR_QUALITY.xml"
+        ),
+        Path("GRANULE/L1C_T17UPV_A040535_20241209T162603/AUX_DATA/AUX_CAMSFO"),
+        Path("GRANULE/L1C_T17UPV_A040535_20241209T162603/AUX_DATA/AUX_ECMWFT"),
+        Path("GRANULE/L1C_T17UPV_A040535_20241209T162603/MTD_TL.xml"),
+        Path(
+            "GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/FORMAT_CORRECTNESS.xml"
+        ),
+        Path("GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/GENERAL_QUALITY.xml"),
+        Path(
+            "GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/GEOMETRIC_QUALITY.xml"
+        ),
+        Path("GRANULE/L1C_T17UPV_A040535_20241209T162603/QI_DATA/SENSOR_QUALITY.xml"),
     ]
 
 
 def test_filter_files_no_match() -> None:
-    manifest_file_path = "tests/download/mock/sentinel_2/manifest.safe"
+    manifest_file_path = Path("tests/download/mock/sentinel_2/manifest.safe")
     filtered_files = filter_files(manifest_file_path, "Oa1*.nc")
     assert not filtered_files
 
@@ -110,7 +129,7 @@ def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path) 
     requests_mock.get(
         mock_url, status_code=200, headers={"Content-Length": "100"}, content=content
     )
-    mock_file = str(tmp_path / "mock_file")
+    mock_file = tmp_path / "mock_file"
 
     result = download_file(mock_url, mock_file, {})
 
@@ -130,7 +149,7 @@ def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path) 
     mock_url = "http://example.com/file"
     mocker.patch("cdsetool.download._follow_redirect", return_value=mock_url)
     requests_mock.get(mock_url, status_code=404, headers={"Content-Length": "100"})
-    mock_file = str(tmp_path / "mock_file")
+    mock_file = tmp_path / "mock_file"
     mocker.patch("time.sleep", return_value=None)  # Avoid retry delay
 
     result = download_file(mock_url, mock_file, {})
@@ -183,7 +202,7 @@ def test_download_feature_with_filter(mocker: Any, tmp_path: Path) -> None:
     }
     mocker.patch(
         "cdsetool.download.filter_files",
-        return_value=["./GRANULE/file1.jp2", "./GRANULE/file2.jp2"],
+        return_value=[Path("./GRANULE/file1.jp2"), Path("./GRANULE/file2.jp2")],
     )
     mocker.patch("cdsetool.download.download_file", mock_download_file)
 

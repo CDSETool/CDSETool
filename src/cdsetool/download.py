@@ -38,8 +38,8 @@ MANIFEST_FILENAMES = {
 
 
 def filter_files(
-    manifest_file: str, pattern: Union[str, None], exclude: bool = False
-) -> List[str]:
+    manifest_file: Path, pattern: Union[str, None], exclude: bool = False
+) -> List[Path]:
     """
     Filter a product's files, listed in its manifest, based on a given pattern.
 
@@ -53,23 +53,22 @@ def filter_files(
 
     paths = []
     xmldoc = ET.parse(manifest_file)
-    if os.path.basename(manifest_file) == "manifest.safe":
+    if manifest_file.name == "manifest.safe":
         for elem in xmldoc.find("dataObjectSection").iterfind("dataObject"):  # pyright:ignore[reportOptionalMemberAccess]
             paths.append(Path(elem.find("byteStream/fileLocation").attrib["href"]))  # pyright:ignore[reportOptionalMemberAccess]
     elif os.path.basename(manifest_file) == "manifest.xml":
         ns = {"ns": "http://www.eumetsat.int/sip"}
         for elem in xmldoc.find("ns:dataSection", ns).iterfind("ns:dataObject", ns):  # pyright:ignore[reportOptionalMemberAccess]
-            paths.append(Path(elem.find("ns:path", ns).text).name)  # pyright:ignore[reportOptionalMemberAccess,reportArgumentType]
+            paths.append(Path(Path(elem.find("ns:path", ns).text).name))  # pyright:ignore[reportOptionalMemberAccess,reportArgumentType]
+    return [path for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
 
-    return [str(path) for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
 
-
-def download_file(url: str, path: str, options: Dict[str, Any]) -> bool:
+def download_file(url: str, path: Path, options: Dict[str, Any]) -> bool:
     """
     Download a single file.
     """
     log = _get_logger(options)
-    filename = os.path.basename(path)
+    filename = path.name
 
     with _get_monitor(options).status() as status:
         status.set_filename(filename)
@@ -157,17 +156,19 @@ def download_feature(
         prefix=f"{title}____", dir=temp_dir_usr
     ) as temp_dir:
         temp_file = os.path.join(temp_dir, filename)
-        if not download_file(url, temp_file, options):
+        if not download_file(url, Path(temp_file), options):
             return None
 
         # If filter_pattern is used, list matching files based on manifest contents
         temp_product_path = os.path.join(temp_dir, title)
-        filtered_files = filter_files(temp_file, options.get("filter_pattern"))
+        filtered_files = filter_files(Path(temp_file), options.get("filter_pattern"))
         for file in filtered_files:
             output_file = os.path.join(temp_product_path, file)
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
             if not download_file(
-                _get_odata_url(feature["id"], title, file), output_file, options
+                _get_odata_url(feature["id"], title, str(file)),
+                Path(output_file),
+                options,
             ):
                 log.error(f"Failed to download {file} from {title}")
                 return None
