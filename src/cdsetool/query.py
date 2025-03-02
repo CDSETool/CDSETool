@@ -140,7 +140,8 @@ def shape_to_wkt(shape: str) -> str:
     """
     Convert a shapefile to a WKT string
     """
-    coordinates = list(gpd.read_file(shape).geometry[0].exterior.coords)
+    # pylint: disable=line-too-long
+    coordinates = list(gpd.read_file(shape).geometry[0].exterior.coords)  # pyright:ignore[reportAttributeAccessIssue]
     return (
         "POLYGON(("
         + ", ".join(" ".join(map(str, coord)) for coord in coordinates)
