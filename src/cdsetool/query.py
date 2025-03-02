@@ -140,7 +140,8 @@ def shape_to_wkt(shape: str) -> str:
     """
     Convert a shapefile to a WKT string
     """
-    coordinates = list(gpd.read_file(shape).geometry[0].exterior.coords)
+    # pylint: disable=line-too-long
+    coordinates = list(gpd.read_file(shape).geometry[0].exterior.coords)  # pyright:ignore[reportAttributeAccessIssue]
     return (
         "POLYGON(("
         + ", ".join(" ".join(map(str, coord)) for coord in coordinates)
@@ -275,9 +276,9 @@ def _valid_min_inclusive(search_term: str, cfg: Dict[str, str]) -> bool:
         return True
 
     if int(search_term) < int(min_inclusive):
-        assert (
-            False
-        ), f"search_term {search_term} is less than min_inclusive {min_inclusive}"
+        assert False, (
+            f"search_term {search_term} is less than min_inclusive {min_inclusive}"
+        )
         return False
     return True
 
@@ -288,9 +289,9 @@ def _valid_max_inclusive(search_term: str, cfg: Dict[str, str]) -> bool:
         return True
 
     if int(search_term) > int(max_inclusive):
-        assert (
-            False
-        ), f"search_term {search_term} is greater than max_inclusive {max_inclusive}"
+        assert False, (
+            f"search_term {search_term} is greater than max_inclusive {max_inclusive}"
+        )
         return False
     return True
 
