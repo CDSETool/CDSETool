@@ -1,16 +1,20 @@
 """
 Download features from a Copernicus Data Space Ecosystem OpenSearch API result
 
-Provides a function to download a single feature, and a function to download
-all features in a result set.
+Provides a function to download a single feature, a function to download all features
+in a result set, and a function to download specific files in a given feature using
+node filtering.
 """
 
+import fnmatch
 import os
 import random
 import shutil
 import tempfile
 import time
-from typing import Any, Dict, Generator, Union
+from pathlib import Path
+from typing import Any, Dict, Generator, List, Union
+from xml.etree import ElementTree as ET
 
 from requests import Session
 from requests.exceptions import ChunkedEncodingError
@@ -26,31 +30,45 @@ from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor, StatusMonitor
 from cdsetool.query import FeatureQuery
 
+MANIFEST_FILENAMES = {
+    "SENTINEL-1": "manifest.safe",
+    "SENTINEL-2": "manifest.safe",
+    "SENTINEL-3": "manifest.xml",
+}
 
-def download_feature(
-    feature, path: str, options: Union[Dict[str, Any], None] = None
-) -> Union[str, None]:
-    """
-    Download a single feature
 
-    Returns the feature ID
+def filter_files(
+    manifest_file: Path, pattern: Union[str, None], exclude: bool = False
+) -> List[Path]:
     """
-    options = options or {}
+    Filter a product's files, listed in its manifest, based on a given pattern.
+
+    Returns a list of file paths within the product bundle.
+
+    All files not matching the pattern are returned if "exclude" is set to true.
+    """
+    # pylint: disable=line-too-long
+    if pattern is None:
+        return []
+
+    paths = []
+    xmldoc = ET.parse(manifest_file)
+    if manifest_file.name == "manifest.safe":
+        for elem in xmldoc.find("dataObjectSection").iterfind("dataObject"):  # pyright:ignore[reportOptionalMemberAccess]
+            paths.append(Path(elem.find("byteStream/fileLocation").attrib["href"]))  # pyright:ignore[reportOptionalMemberAccess]
+    elif os.path.basename(manifest_file) == "manifest.xml":
+        ns = {"ns": "http://www.eumetsat.int/sip"}
+        for elem in xmldoc.find("ns:dataSection", ns).iterfind("ns:dataObject", ns):  # pyright:ignore[reportOptionalMemberAccess]
+            paths.append(Path(Path(elem.find("ns:path", ns).text).name))  # pyright:ignore[reportOptionalMemberAccess,reportArgumentType]
+    return [path for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
+
+
+def download_file(url: str, path: Path, options: Dict[str, Any]) -> bool:
+    """
+    Download a single file.
+    """
     log = _get_logger(options)
-    url = _get_feature_url(feature)
-    title = feature.get("properties").get("title")
-    temp_dir_usr = _get_temp_dir(options)
-
-    if not url or not title:
-        log.debug(f"Bad URL ('{url}') or title ('{title}')")
-        return None
-
-    filename = title + ".zip"
-    result_path = os.path.join(path, filename)
-
-    if not options.get("overwrite_existing", False) and os.path.exists(result_path):
-        log.debug(f"File {result_path} already exists, skipping..")
-        return filename
+    filename = path.name
 
     with _get_monitor(options).status() as status:
         status.set_filename(filename)
@@ -67,27 +85,20 @@ def download_feature(
                 log.warning("Token signature expired, retrying..")
                 continue
             url = _follow_redirect(url, session)
-            name_dir_prefix = filename.replace(".zip", "____")
-            with (
-                session.get(url, stream=True) as response,
-                tempfile.TemporaryDirectory(
-                    prefix=name_dir_prefix, dir=temp_dir_usr
-                ) as temp_dir,
-            ):
+            with session.get(url, stream=True) as response:
                 if response.status_code != 200:
                     log.warning(f"Status code {response.status_code}, retrying..")
                     time.sleep(60 * (1 + (random.random() / 4)))
                     continue
 
                 status.set_filesize(int(response.headers["Content-Length"]))
-                tmp_file = os.path.join(temp_dir, "download.zip")
-                with open(tmp_file, "wb") as file:
+                with open(path, "wb") as outfile:
                     # Server might not send all bytes specified by the
                     # Content-Length header before closing connection.
                     # Log as a warning and try again.
                     try:
                         for chunk in response.iter_content(chunk_size=1024 * 1024 * 5):
-                            file.write(chunk)
+                            outfile.write(chunk)
                             status.add_progress(len(chunk))
                     except (
                         ChunkedEncodingError,
@@ -96,11 +107,78 @@ def download_feature(
                     ) as e:
                         log.warning(e)
                         continue
-                # Close file before copy so all buffers are flushed.
-                shutil.copy(tmp_file, result_path)
-                return filename
+                return True
+
     log.error(f"Failed to download {filename}")
-    return None
+    return False
+
+
+def download_feature(
+    feature, path: str, options: Union[Dict[str, Any], None] = None
+) -> Union[str, None]:
+    """
+    Download a single feature.
+
+    Returns the feature title.
+    """
+    options = options or {}
+    log = _get_logger(options)
+    temp_dir_usr = _get_temp_dir(options)
+    title = feature.get("properties").get("title")
+    collection = feature.get("properties").get("collection")
+    download_full = "filter_pattern" not in options
+
+    try:
+        manifest_filename = "" if download_full else MANIFEST_FILENAMES[collection]
+    except KeyError:
+        log.error(
+            f"No support for downloading individual files in {collection} products"
+        )
+        return None
+
+    # Prepare to download full product, or manifest file if filter_pattern is used
+    filename = title + ".zip" if download_full else manifest_filename
+    url = (
+        _get_feature_url(feature)
+        if download_full
+        else _get_odata_url(feature["id"], title, filename)
+    )
+    if not url or not title:
+        log.debug(f"Bad URL ('{url}') or title ('{title}')")
+        return None
+
+    result_path = os.path.join(path, filename if download_full else title)
+    if not options.get("overwrite_existing", False) and os.path.exists(result_path):
+        log.debug(f"File {result_path} already exists, skipping..")
+        return os.path.basename(result_path)
+
+    with tempfile.TemporaryDirectory(
+        prefix=f"{title}____", dir=temp_dir_usr
+    ) as temp_dir:
+        temp_file = os.path.join(temp_dir, filename)
+        if not download_file(url, Path(temp_file), options):
+            return None
+
+        # If filter_pattern is used, list matching files based on manifest contents
+        temp_product_path = os.path.join(temp_dir, title)
+        filtered_files = filter_files(Path(temp_file), options.get("filter_pattern"))
+        for file in filtered_files:
+            output_file = os.path.join(temp_product_path, file)
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+            if not download_file(
+                _get_odata_url(feature["id"], title, str(file)),
+                Path(output_file),
+                options,
+            ):
+                log.error(f"Failed to download {file} from {title}")
+                return None
+
+        # Move downloaded files to output dir
+        if download_full or filtered_files:
+            os.makedirs(path, exist_ok=True)
+            shutil.move(temp_file if download_full else temp_product_path, path)
+
+        return filename if download_full else title
 
 
 def download_features(
@@ -131,6 +209,15 @@ def download_features(
 
 def _get_feature_url(feature) -> str:
     return feature.get("properties").get("services").get("download").get("url")
+
+
+def _get_odata_url(product_id: str, product_name: str, href: str) -> str:
+    """
+    Convert href, describing file location in manifest file, to an OData download URL.
+    """
+    odata_url = "https://download.dataspace.copernicus.eu/odata/v1"
+    path = "/".join([f"Nodes({item})" for item in href.split("/")])
+    return f"{odata_url}/Products({product_id})/Nodes({product_name})/{path}/$value"
 
 
 def _follow_redirect(url: str, session: Session) -> str:

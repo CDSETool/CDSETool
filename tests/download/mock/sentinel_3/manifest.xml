@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<informationPackage xmlns="http://www.eumetsat.int/sip">
+    <dataSection>
+        <dataObject ID="browse.jpg">
+            <fileType>Browse</fileType>
+            <format>JPEG</format>
+            <size>45149</size>
+            <path>browse.jpg</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/tie_geometries.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>2043953</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/tie_geometries.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa04_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>5394967</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa04_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa02_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>5628438</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa02_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa16_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>2666436</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa16_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/tie_geo_coordinates.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>1202465</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/tie_geo_coordinates.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/time_coordinates.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>15069</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/time_coordinates.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa11_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>4676247</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa11_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/iwv.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>8872129</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/iwv.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa06_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>5200143</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa06_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/xfdumanifest.xml">
+            <fileType>Data</fileType>
+            <format>XML</format>
+            <size>386445</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/xfdumanifest.xml</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa21_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>5018360</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa21_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa05_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>5356941</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa05_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/instrument_data.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>827459</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/instrument_data.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa17_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>2671065</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa17_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa07_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>5117832</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa07_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/par.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>1228344</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/par.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa10_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>4758927</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa10_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/chl_nn.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>4336407</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/chl_nn.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa18_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>2696298</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa18_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/iop_nn.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>4188650</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/iop_nn.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa08_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>4836875</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa08_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/w_aer.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>3824496</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/w_aer.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa12_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>4373592</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa12_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/trsp.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>2139413</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/trsp.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/wqsf.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>5633106</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/wqsf.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/iop_lsd.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>29411715</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/iop_lsd.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa09_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>4818989</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa09_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/tie_meteo.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>19523323</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/tie_meteo.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa03_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>5546555</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa03_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/chl_oc4me.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>3748257</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/chl_oc4me.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa01_reflectance.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>5692703</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/Oa01_reflectance.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/tsm_nn.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>4301777</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/tsm_nn.nc</path>
+        </dataObject>
+        <dataObject ID="S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/geo_coordinates.nc">
+            <fileType>Data</fileType>
+            <format>NetCDF</format>
+            <size>63433821</size>
+            <path>S3B_OL_2_WFR____20241217T095305_20241217T095605_20241217T115046_0179_101_079_2160_MAR_O_NR_003.SEN3/geo_coordinates.nc</path>
+        </dataObject>
+    </dataSection>
+    <eopmetadataSection>
+        <path>EOPMetadata.xml</path>
+    </eopmetadataSection>
+</informationPackage>
