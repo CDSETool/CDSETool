@@ -27,17 +27,15 @@ def subset_last_baseline(features):
         processingBaseline.append(features[i].get("properties").get("processingBaseline"))
     fi = list(map(lambda x: startDate.index(x), startDate))
     fl = []
-    for d in range(max(fi)+1):
+    for d in set(fi):
         ff = [i for i,x in enumerate(fi) if x==d]
         if len(ff) == 1:
             fl.append(int("".join(map(str, ff))))
         else:
             pBl = [processingBaseline[i] for i in ff]
-            if 99.99 in set(pBl):
-                pBl[pBl.index(99.99)] = 0
-            pBp = pBl.index(max(pBl))
-            pBv = int("".join(str(ff[pBp])))
-            fl.append(pBv)
+            for b in range(0, len(pBl)):
+                if pBl[b] < 9900 and pBl[b] == max(pBl):
+                    fl.append(int("".join(str(ff[b]))))
     sub_features = [features[i] for i in fl]
     return(sub_features)
 
