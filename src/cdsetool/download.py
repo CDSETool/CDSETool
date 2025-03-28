@@ -48,25 +48,25 @@ def filter_files(
     All files not matching the pattern are returned if "exclude" is set to true.
     """
 
-    def read_paths_from_manifest(manifest_file: Path) -> List[Path] | None:
+    def read_sentinel_manifest(manifest_file: Path) -> List[Path] | None:
         xmldoc = ET.parse(manifest_file)
         section = xmldoc.find("dataObjectSection")
         if section is None:
             return None
         paths = []
-        for elem in section.iterfind("dataObject"):
-            obj = elem.find("byteStream/fileLocation")
-            if obj is None:
+        for obj in section.iterfind("dataObject"):
+            loc = obj.find("byteStream/fileLocation")
+            if loc is None:
                 return None
-            obj = obj.get("href")
-            if obj is None:
+            path = loc.get("href")
+            if path is None:
                 return None
-            paths.append(Path(obj))
+            paths.append(Path(path))
         return paths
 
     if pattern is None:
         return []
-    paths = read_paths_from_manifest(manifest_file)
+    paths = read_sentinel_manifest(manifest_file)
     if paths is None:
         return None
     return [path for path in paths if fnmatch.fnmatch(str(path), pattern) ^ exclude]
