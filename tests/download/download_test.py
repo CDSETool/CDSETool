@@ -61,7 +61,7 @@ def test_get_odata_url() -> None:
             ],
         ),
         (
-            Path("tests/download/mock/sentinel_3/manifest.xml"),
+            Path("tests/download/mock/sentinel_3/xfdumanifest.xml"),
             "*Oa02_reflectance.nc",
             [Path("Oa02_reflectance.nc")],
         ),

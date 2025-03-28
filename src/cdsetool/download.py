@@ -33,7 +33,7 @@ from cdsetool.query import FeatureQuery
 MANIFEST_FILENAMES = {
     "SENTINEL-1": "manifest.safe",
     "SENTINEL-2": "manifest.safe",
-    "SENTINEL-3": "manifest.xml",
+    "SENTINEL-3": "xfdumanifest.xml",
 }
 
 
@@ -53,13 +53,8 @@ def filter_files(
 
     paths = []
     xmldoc = ET.parse(manifest_file)
-    if manifest_file.name == "manifest.safe":
-        for elem in xmldoc.find("dataObjectSection").iterfind("dataObject"):  # pyright:ignore[reportOptionalMemberAccess]
-            paths.append(Path(elem.find("byteStream/fileLocation").attrib["href"]))  # pyright:ignore[reportOptionalMemberAccess]
-    elif os.path.basename(manifest_file) == "manifest.xml":
-        ns = {"ns": "http://www.eumetsat.int/sip"}
-        for elem in xmldoc.find("ns:dataSection", ns).iterfind("ns:dataObject", ns):  # pyright:ignore[reportOptionalMemberAccess]
-            paths.append(Path(Path(elem.find("ns:path", ns).text).name))  # pyright:ignore[reportOptionalMemberAccess,reportArgumentType]
+    for elem in xmldoc.find("dataObjectSection").iterfind("dataObject"):  # pyright:ignore[reportOptionalMemberAccess]
+        paths.append(Path(elem.find("byteStream/fileLocation").attrib["href"]))  # pyright:ignore[reportOptionalMemberAccess]
     return [path for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
 
 
