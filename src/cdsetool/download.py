@@ -39,7 +39,7 @@ MANIFEST_FILENAMES = {
 
 def filter_files(
     manifest_file: Path, pattern: Union[str, None], exclude: bool = False
-) -> List[Path]:
+) -> List[Path] | None:
     """
     Filter a product's files, listed in its manifest, based on a given pattern.
 
@@ -47,14 +47,21 @@ def filter_files(
 
     All files not matching the pattern are returned if "exclude" is set to true.
     """
-    # pylint: disable=line-too-long
     if pattern is None:
         return []
-
-    paths = []
     xmldoc = ET.parse(manifest_file)
-    for elem in xmldoc.find("dataObjectSection").iterfind("dataObject"):  # pyright:ignore[reportOptionalMemberAccess]
-        paths.append(Path(elem.find("byteStream/fileLocation").attrib["href"]))  # pyright:ignore[reportOptionalMemberAccess]
+    section = xmldoc.find("dataObjectSection")
+    if section is None:
+        return None
+    paths = []
+    for elem in section.iterfind("dataObject"):
+        obj = elem.find("byteStream/fileLocation")
+        if obj is None:
+            return None
+        obj = obj.attrib["href"]
+        if obj is None:
+            return None
+        paths.append(Path(obj))
     return [path for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
 
 
@@ -108,7 +115,7 @@ def download_file(url: str, path: Path, options: Dict[str, Any]) -> bool:
     return False
 
 
-def download_feature(
+def download_feature(  # pylint: disable=too-many-return-statements
     feature, path: str, options: Union[Dict[str, Any], None] = None
 ) -> Union[str, None]:
     """
@@ -157,6 +164,9 @@ def download_feature(
         # If filter_pattern is used, list matching files based on manifest contents
         temp_product_path = os.path.join(temp_dir, title)
         filtered_files = filter_files(Path(temp_file), options.get("filter_pattern"))
+        if filtered_files is None:
+            log.error(f"Failed to parse manifest file for {title}")
+            return None
         for file in filtered_files:
             output_file = os.path.join(temp_product_path, file)
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
