@@ -118,6 +118,12 @@ def test_filter_files_no_match() -> None:
     assert not filtered_files
 
 
+def test_filter_files_broken_manifest() -> None:
+    manifest_file_path = Path("tests/download/mock/sentinel_2/broken_manifest.safe")
+    filtered_files = filter_files(manifest_file_path, "*TCI.jp2")
+    assert filtered_files is None
+
+
 def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path) -> None:
     mock_openid(requests_mock)
     mock_token(requests_mock)

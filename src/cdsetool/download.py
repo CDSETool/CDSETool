@@ -47,22 +47,29 @@ def filter_files(
 
     All files not matching the pattern are returned if "exclude" is set to true.
     """
+
+    def read_paths_from_manifest(manifest_file: Path) -> List[Path] | None:
+        xmldoc = ET.parse(manifest_file)
+        section = xmldoc.find("dataObjectSection")
+        if section is None:
+            return None
+        paths = []
+        for elem in section.iterfind("dataObject"):
+            obj = elem.find("byteStream/fileLocation")
+            if obj is None:
+                return None
+            obj = obj.get("href")
+            if obj is None:
+                return None
+            paths.append(Path(obj))
+        return paths
+
     if pattern is None:
         return []
-    xmldoc = ET.parse(manifest_file)
-    section = xmldoc.find("dataObjectSection")
-    if section is None:
+    paths = read_paths_from_manifest(manifest_file)
+    if paths is None:
         return None
-    paths = []
-    for elem in section.iterfind("dataObject"):
-        obj = elem.find("byteStream/fileLocation")
-        if obj is None:
-            return None
-        obj = obj.attrib["href"]
-        if obj is None:
-            return None
-        paths.append(Path(obj))
-    return [path for path in paths if fnmatch.fnmatch(path, pattern) ^ exclude]
+    return [path for path in paths if fnmatch.fnmatch(str(path), pattern) ^ exclude]
 
 
 def download_file(url: str, path: Path, options: Dict[str, Any]) -> bool:
