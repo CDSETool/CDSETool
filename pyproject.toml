@@ -31,7 +31,7 @@ dev = [
 [project.optional-dependencies]
 test = [
     "pylint==3.3.7",
-    "pytest==8.3.5",
+    "pytest==8.4.0",
     "pytest-cov==6.1.1",
     "requests-mock==1.12.1",
     "pytest-mock==3.14.1",
