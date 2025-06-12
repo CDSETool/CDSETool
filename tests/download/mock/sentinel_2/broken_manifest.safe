@@ -1,0 +1,8 @@
+<dataObjectSection>
+    <dataObject ID="S2_Level-1C_Product_Metadata">
+        <byteStream mimeType="text/xml" size="45353">
+            <fileLocation locatorType="URL"/>
+            <checksum checksumName="SHA3-256">91CB5B925086749536F310AC7F5E0F2F892CE36FBAA85D6DF2E696EAA64B8400</checksum>
+        </byteStream>
+    </dataObject>
+</dataObjectSection>
