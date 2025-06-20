@@ -5,6 +5,7 @@ Provides a function to download a single feature, and a function to download
 all features in a result set.
 """
 
+import hashlib
 import os
 import random
 import shutil
@@ -24,7 +25,7 @@ from cdsetool.credentials import (
 )
 from cdsetool.logger import NoopLogger
 from cdsetool.monitor import NoopMonitor, StatusMonitor
-from cdsetool.query import FeatureQuery
+from cdsetool.query import FeatureQuery, get_odata_by_name
 
 
 def download_feature(
@@ -39,6 +40,7 @@ def download_feature(
     log = _get_logger(options)
     url = _get_feature_url(feature)
     title = feature.get("properties").get("title")
+    checksum = feature.get("properties").get("checksum", True)  # always active
     temp_dir_usr = _get_temp_dir(options)
 
     if not url or not title:
@@ -97,6 +99,12 @@ def download_feature(
                         log.warning(e)
                         continue
                 # Close file before copy so all buffers are flushed.
+                if checksum:
+                    if not checksum_for_file(
+                        tmp_file, title, log, options.get("proxies", None)
+                    ):
+                        os.remove(tmp_file)
+                        continue  # download retry
                 shutil.copy(tmp_file, result_path)
                 return filename
     log.error(f"Failed to download {filename}")
@@ -158,3 +166,43 @@ def _get_credentials(options: Dict) -> Credentials:
 
 def _get_temp_dir(options: Dict) -> Union[str, None]:
     return options.get("tmpdir") or None
+
+
+def checksum_for_file(
+    file_path: str,
+    file_name: str,
+    log: NoopLogger,
+    proxy: Union[Dict[str, str], None] = None,
+) -> bool:
+    """Evaluate the checksum of a file. If the file was downloaded correctly"""
+    odata_for_checksum = get_odata_by_name(file_name, proxy)
+    array_values = odata_for_checksum.get("value", [])
+    if len(array_values) == 0:
+        # no data available for checksum
+        return False
+    for value in array_values:
+        if value.get("Name", "") != file_name:
+            continue
+        checksums: list[dict] = value["Checksum"]
+        if not checksums:
+            return True
+        list_supported_checksum_algo = [("MD5", hashlib.md5)]
+        # add new checksums algo here order list is relevant!
+        for name, fun in list_supported_checksum_algo:
+            expected_sum = get_expected_checksum(name, checksums)
+            if expected_sum:
+                with open(file_path, "rb") as file:
+                    calculated_sum = fun(file.read()).hexdigest()
+                    return calculated_sum == expected_sum
+        return False
+    log.warning(f"No valid checksum calculated for {file_name}")
+    return False
+
+
+def get_expected_checksum(algo: str, checksums_list: list[dict]):
+    """Return a Value checksum for an algo among a list of dict"""
+    for checksum in checksums_list:
+        algorithm = checksum.get("Algorithm", "")
+        if algorithm == algo:
+            return checksum.get("Value", "")
+    return ""
