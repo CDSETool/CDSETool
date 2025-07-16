@@ -7,6 +7,7 @@ from typing import Any, Dict, List
 
 import pytest
 
+from cdsetool.credentials import Credentials
 from cdsetool.download import (
     _get_odata_url,
     download_feature,
@@ -138,7 +139,9 @@ def test_download_file_success(requests_mock: Any, mocker: Any, tmp_path: Path) 
     )
     mock_file = tmp_path / "mock_file"
 
-    result = download_file(mock_url, mock_file, {})
+    result = download_file(
+        mock_url, mock_file, {"credentials": Credentials("usr", "pwd")}
+    )
 
     assert result is True
 
@@ -159,7 +162,9 @@ def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path) 
     mock_file = tmp_path / "mock_file"
     mocker.patch("time.sleep", return_value=None)  # Avoid retry delay
 
-    result = download_file(mock_url, mock_file, {})
+    result = download_file(
+        mock_url, mock_file, {"credentials": Credentials("usr", "pwd")}
+    )
     assert result is False
 
 
