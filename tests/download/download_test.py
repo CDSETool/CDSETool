@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import pytest
+
 from cdsetool.download import (
     _get_odata_url,
     download_feature,

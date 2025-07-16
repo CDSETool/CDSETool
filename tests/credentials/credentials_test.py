@@ -5,6 +5,7 @@ from typing import Any
 
 import pytest
 import requests
+
 from cdsetool.credentials import (
     Credentials,
     InvalidCredentialsException,
