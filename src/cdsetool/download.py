@@ -192,7 +192,7 @@ def download_feature(  # pylint: disable=too-many-return-statements
             os.makedirs(path, exist_ok=True)
             shutil.move(temp_file if download_full else temp_product_path, path)
 
-        return filename if download_full else title
+    return filename if download_full else title
 
 
 def download_features(
