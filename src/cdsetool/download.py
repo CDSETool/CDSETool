@@ -75,6 +75,8 @@ def filter_files(
 def download_file(url: str, path: Path, options: Dict[str, Any]) -> bool:
     """
     Download a single file.
+
+    Caller is responsible for ensuring that nothing else writes to path.
     """
     log = _get_logger(options)
     filename = path.name
