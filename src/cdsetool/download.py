@@ -39,7 +39,7 @@ MANIFEST_FILENAMES = {
 
 def filter_files(
     manifest_file: Path, pattern: Union[str, None], exclude: bool = False
-) -> List[Path] | None:
+) -> Union[List[Path], None]:
     """
     Filter a product's files, listed in its manifest, based on a given pattern.
 
@@ -48,7 +48,7 @@ def filter_files(
     All files not matching the pattern are returned if "exclude" is set to true.
     """
 
-    def read_sentinel_manifest(manifest_file: Path) -> List[Path] | None:
+    def read_sentinel_manifest(manifest_file: Path) -> Union[List[Path], None]:
         xmldoc = ET.parse(manifest_file)
         section = xmldoc.find("dataObjectSection")
         if section is None:
