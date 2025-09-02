@@ -6,8 +6,7 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   pytest:
@@ -15,9 +14,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-    permissions:
-      pull-requests: write
-      contents: write
     steps:
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
     - name: Set up Python ${{ matrix.python-version }}
