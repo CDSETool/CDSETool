@@ -32,7 +32,7 @@ dev = [
 test = [
     "pylint==3.3.8",
     "pytest==8.4.2",
-    "pytest-cov==6.2.1",
+    "pytest-cov==6.3.0",
     "requests-mock==1.12.1",
     "pytest-mock==3.15.0",
 ]
