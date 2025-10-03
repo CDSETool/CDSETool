@@ -9,9 +9,7 @@ status monitoring.
 """
 
 import os
-import shutil
 import signal
-import sys
 import threading
 import time
 from typing import List, Tuple, Union
@@ -60,6 +58,7 @@ class StatusMonitor(threading.Thread):
         """
         Start the monitor
         """
+        import shutil
 
         def _set_line_length(_signal_num: Union[int, None], _stack) -> None:
             self.line_length, _ = shutil.get_terminal_size()
@@ -129,6 +128,8 @@ class StatusMonitor(threading.Thread):
         if IS_IPYTHON:
             clear_output(wait=True)  # type:ignore[reportPossiblyUnboundVariable]
             return
+
+        import sys
 
         sys.stdout.write("\033[K")
         for _ in range(self.__progress_lines + 2):
