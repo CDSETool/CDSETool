@@ -10,11 +10,8 @@ from datetime import date, datetime
 from random import random
 from time import sleep
 from typing import Any, Dict, Union
-from xml.etree import ElementTree
 
-import geopandas as gpd
 from requests.exceptions import ChunkedEncodingError
-from urllib3.exceptions import ProtocolError
 
 from cdsetool.credentials import Credentials
 from cdsetool.logger import NoopLogger
@@ -83,6 +80,8 @@ class FeatureQuery:
         return self.features[index]
 
     def __fetch_features(self) -> None:
+        from urllib3.exceptions import ProtocolError
+
         if self.next_url is None:
             return
         session = Credentials.make_session(
@@ -140,6 +139,8 @@ def shape_to_wkt(shape: str) -> str:
     """
     Convert a shapefile to a WKT string
     """
+    import geopandas as gpd
+
     # pylint: disable=line-too-long
     coordinates = list(gpd.read_file(shape).geometry[0].exterior.coords)  # pyright:ignore[reportAttributeAccessIssue]
     return (
@@ -178,6 +179,8 @@ def describe_collection(
     """
     Get a list of valid options for a given collection in key value pairs
     """
+    from xml.etree import ElementTree
+
     content = _get_describe_doc(collection, proxies=proxies)
     tree = ElementTree.fromstring(content)
     parameter_node_parent = tree.find(

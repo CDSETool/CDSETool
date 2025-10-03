@@ -2,7 +2,6 @@
 This module provides functions for processing data concurrently
 """
 
-from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from typing import Callable, Generator, Iterable, List, Union
 
 from cdsetool.query import FeatureQuery
@@ -20,6 +19,7 @@ def _concurrent_process(
 
     Returns an iterable of the results
     """
+    from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 
     # Futures are submitted in batches instead of all at once to avoid
     # requesting too many items from the iterable at once, which is important if
