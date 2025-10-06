@@ -30,7 +30,7 @@ dev = [
 # leave the optional dependencies for everything except Ruff.
 [project.optional-dependencies]
 test = [
-    "pylint==3.3.8",
+    "pylint==3.3.9",
     "pytest==8.4.2",
     "pytest-cov==7.0.0",
     "requests-mock==1.12.1",
