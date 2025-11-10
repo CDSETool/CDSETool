@@ -19,6 +19,25 @@ app = typer.Typer(no_args_is_help=True)
 query_app = typer.Typer(no_args_is_help=True)
 app.add_typer(query_app, name="query")
 
+def subset_last_baseline(features):
+    startDate = []
+    processingBaseline = []
+    for i in range(len(features)):
+        startDate.append(features[i].get("properties").get("startDate").split(".")[0])
+        processingBaseline.append(features[i].get("properties").get("processingBaseline"))
+    fi = list(map(lambda x: startDate.index(x), startDate))
+    fl = []
+    for d in set(fi):
+        ff = [i for i,x in enumerate(fi) if x==d]
+        if len(ff) == 1:
+            fl.append(int("".join(map(str, ff))))
+        else:
+            pBl = [processingBaseline[i] for i in ff]
+            for b in range(0, len(pBl)):
+                if pBl[b] < 9900 and pBl[b] == max(pBl):
+                    fl.append(int("".join(str(ff[b]))))
+    sub_features = [features[i] for i in fl]
+    return(sub_features)
 
 @query_app.command("search-terms")
 def query_search_terms(collection: str) -> None:
@@ -78,6 +97,9 @@ def download(  # pylint: disable=[too-many-arguments, too-many-positional-argume
     overwrite_existing: Annotated[
         bool, typer.Option(help="Overwrite already downloaded files")
     ] = False,
+    last_baseline: Annotated[
+        bool, typer.Option(help="Download only last available processing baseline (only applicable to 'Sentinel2' collection)")
+    ] = False,
     search_term: Annotated[
         Optional[List[str]],
         typer.Option(
@@ -104,6 +126,9 @@ def download(  # pylint: disable=[too-many-arguments, too-many-positional-argume
 
     search_term = search_term or []
     features = query_features(collection, _to_dict(search_term))
+
+    if collection == 'Sentinel2' and last_baseline == True:
+        features = subset_last_baseline(features)
 
     list(
         download_features(
