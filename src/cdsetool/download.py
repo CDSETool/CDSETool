@@ -14,11 +14,8 @@ import tempfile
 import time
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Union
-from xml.etree import ElementTree as ET
 
 from requests import Session
-from requests.exceptions import ChunkedEncodingError
-from urllib3.exceptions import ProtocolError
 
 from cdsetool._processing import _concurrent_process
 from cdsetool.credentials import (
@@ -49,6 +46,8 @@ def filter_files(
     """
 
     def read_sentinel_manifest(manifest_file: Path) -> Union[List[Path], None]:
+        from xml.etree import ElementTree as ET
+
         xmldoc = ET.parse(manifest_file)
         section = xmldoc.find("dataObjectSection")
         if section is None:
@@ -78,6 +77,9 @@ def download_file(url: str, path: Path, options: Dict[str, Any]) -> bool:
 
     Caller is responsible for ensuring that nothing else writes to path.
     """
+    from requests.exceptions import ChunkedEncodingError
+    from urllib3.exceptions import ProtocolError
+
     log = _get_logger(options)
     filename = path.name
 
