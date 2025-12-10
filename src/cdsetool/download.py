@@ -1,5 +1,5 @@
 """
-Download features from a Copernicus Data Space Ecosystem OpenSearch API result
+Download features from a Copernicus Data Space Ecosystem OData API result
 
 Provides a function to download a single feature, a function to download all features
 in a result set, and a function to download specific files in a given feature using
@@ -135,9 +135,9 @@ def download_feature(  # pylint: disable=too-many-return-statements
     options = options or {}
     log = _get_logger(options)
     temp_dir_usr = _get_temp_dir(options)
-    title = feature.get("properties").get("title")
-    collection = feature.get("properties").get("collection")
-    download_full = "filter_pattern" not in options
+    title = feature.get("Name")
+    collection = feature.get("Collection")
+    download_full = options.get("filter_pattern") is None
 
     try:
         manifest_filename = "" if download_full else MANIFEST_FILENAMES[collection]
@@ -152,7 +152,7 @@ def download_feature(  # pylint: disable=too-many-return-statements
     url = (
         _get_feature_url(feature)
         if download_full
-        else _get_odata_url(feature["id"], title, filename)
+        else _get_odata_url(feature["Id"], title, filename)
     )
     if not url or not title:
         log.debug(f"Bad URL ('{url}') or title ('{title}')")
@@ -180,7 +180,7 @@ def download_feature(  # pylint: disable=too-many-return-statements
             output_file = os.path.join(temp_product_path, file)
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
             if not download_file(
-                _get_odata_url(feature["id"], title, str(file)),
+                _get_odata_url(feature["Id"], title, str(file)),
                 Path(output_file),
                 options,
             ):
@@ -214,15 +214,27 @@ def download_features(
     def _download_feature(feature) -> Union[str, None]:
         return download_feature(feature, path, options)
 
-    yield from _concurrent_process(
-        _download_feature, features, options.get("concurrency", 1)
-    )
-
-    options["monitor"].stop()
+    try:
+        yield from _concurrent_process(
+            _download_feature, features, options.get("concurrency", 1)
+        )
+    finally:
+        options["monitor"].stop()
 
 
 def _get_feature_url(feature) -> str:
-    return feature.get("properties").get("services").get("download").get("url")
+    """
+    Generate OData download URL for a feature from its ID.
+    """
+    feature_id = feature.get("Id")
+    return (
+        (
+            "https://download.dataspace.copernicus.eu"
+            f"/odata/v1/Products({feature_id})/$value"
+        )
+        if feature_id
+        else ""
+    )
 
 
 def _get_odata_url(product_id: str, product_name: str, href: str) -> str:

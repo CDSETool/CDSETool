@@ -1,3 +1,5 @@
+"""Tests for CDSETool's logger module."""
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -14,10 +16,8 @@ def test_noop_logger_is_default() -> None:
     download_feature(
         {
             "bad_object": True,
-            "properties": {
-                "title": "myfile.xml",
-                "services": {"download": {}},  # missing url
-            },
+            "Name": "myfile.xml",
+            # Missing Id will cause bad URL
         },
         "somewhere",
     )
@@ -30,10 +30,8 @@ def test_noop_does_not_error() -> None:
         download_feature(
             {
                 "bad_object": True,
-                "properties": {
-                    "title": "myfile.xml",
-                    "services": {"download": {}},  # missing url
-                },
+                "Name": "myfile.xml",
+                # Missing Id will cause bad URL
             },
             "somewhere",
         )

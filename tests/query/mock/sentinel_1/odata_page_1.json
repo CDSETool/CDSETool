@@ -1,0 +1,973 @@
+{
+  "@odata.context": "$metadata#Products(Attributes())",
+  "@odata.count": 47,
+  "value": [
+    {
+      "@odata.mediaContentType": "application/octet-stream",
+      "Id": "67360f3a-f36b-11ef-9d3f-0050561a7772",
+      "Name": "S1A_AUX_INS_V20140406T010000_G20140409T142540.SAFE",
+      "ContentType": "application/octet-stream",
+      "ContentLength": 728976,
+      "OriginDate": "2024-10-08T18:04:08.818000Z",
+      "PublicationDate": "2025-07-17T11:55:07.282635Z",
+      "ModificationDate": "2025-10-10T17:56:18.034265Z",
+      "Online": true,
+      "EvictionDate": "9999-12-31T23:59:59.999999Z",
+      "S3Path": "/eodata/Sentinel-1/AUX/AUX_INS/2014/04/06/S1A_AUX_INS_V20140406T010000_G20140409T142540.SAFE.zip",
+      "Checksum": [
+        {
+          "Value": "23383d85c5231487ce13d1c10aeb8e7b",
+          "Algorithm": "MD5",
+          "ChecksumDate": "2025-10-10T17:56:17.610209Z"
+        },
+        {
+          "Value": "6a7eacd5bd2ac39a1761270e3194302951d4db3a3ca44d0f2917b4473c45e955",
+          "Algorithm": "BLAKE3",
+          "ChecksumDate": "2025-10-10T17:56:17.631542Z"
+        }
+      ],
+      "ContentDate": {
+        "Start": "2014-04-06T01:00:00.000000Z",
+        "End": "2014-04-06T01:00:00.000000Z"
+      },
+      "Footprint": null,
+      "GeoFootprint": null,
+      "Attributes": [
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "origin",
+          "Value": "ESA",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "processingDate",
+          "Value": "2014-04-09T14:25:40.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "processingCenter",
+          "Value": "Richmond",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformShortName",
+          "Value": "SENTINEL-1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "productGeneration",
+          "Value": "2014-04-09T14:25:40.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "instrumentShortName",
+          "Value": "AUX",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformSerialIdentifier",
+          "Value": "A",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.IntegerAttribute",
+          "Name": "instrumentConfigurationID",
+          "Value": 1,
+          "ValueType": "Integer"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "productType",
+          "Value": "AUX_INS",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "beginningDateTime",
+          "Value": "2014-04-06T01:00:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "endingDateTime",
+          "Value": "2014-04-06T01:00:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        }
+      ]
+    },
+    {
+      "@odata.mediaContentType": "application/octet-stream",
+      "Id": "6a466590-9ecc-4861-ab8d-b243c328e906",
+      "Name": "S1A_OPER_AUX_GNSSRD_POD__20171211T085403_V20140406T011619_20140406T235939",
+      "ContentType": "application/octet-stream",
+      "ContentLength": 2406530,
+      "OriginDate": "2021-04-17T08:24:30.362000Z",
+      "PublicationDate": "2023-10-30T07:06:19.506482Z",
+      "ModificationDate": "2025-10-10T17:56:18.484437Z",
+      "Online": true,
+      "EvictionDate": "9999-12-31T23:59:59.999999Z",
+      "S3Path": "/eodata/Sentinel-1/AUX/AUX_GNSSRD/2014/04/06/S1A_OPER_AUX_GNSSRD_POD__20171211T085403_V20140406T011619_20140406T235939",
+      "Checksum": [
+        {
+          "Value": "15b7e274662c235eae380c40c30d02f1",
+          "Algorithm": "MD5",
+          "ChecksumDate": "2025-10-10T17:56:18.076397Z"
+        },
+        {
+          "Value": "2ee0015f0935c66ac85c103853d18ac97567609311c639bf4de5ffa586dbeb80",
+          "Algorithm": "BLAKE3",
+          "ChecksumDate": "2025-10-10T17:56:18.099629Z"
+        }
+      ],
+      "ContentDate": {
+        "Start": "2014-04-06T01:16:35.000000Z",
+        "End": "2014-04-06T23:59:55.000000Z"
+      },
+      "Footprint": null,
+      "GeoFootprint": null,
+      "Attributes": [
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "origin",
+          "Value": "ESA",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformShortName",
+          "Value": "SENTINEL-1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "instrumentShortName",
+          "Value": "SAR",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformSerialIdentifier",
+          "Value": "A",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "productType",
+          "Value": "AUX_GNSSRD",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "beginningDateTime",
+          "Value": "2014-04-06T01:16:35.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "endingDateTime",
+          "Value": "2014-04-06T23:59:55.000000Z",
+          "ValueType": "DateTimeOffset"
+        }
+      ]
+    },
+    {
+      "@odata.mediaContentType": "application/octet-stream",
+      "Id": "02680705-cea4-4818-800c-468e396a4009",
+      "Name": "S1A_AUX_PP2_V20140406T133000_G20251021T105030.SAFE",
+      "ContentType": "application/octet-stream",
+      "ContentLength": 17275,
+      "OriginDate": "2025-10-21T10:56:37.721000Z",
+      "PublicationDate": "2025-10-21T10:57:08.538639Z",
+      "ModificationDate": "2025-10-21T10:57:08.538639Z",
+      "Online": true,
+      "EvictionDate": "9999-12-31T23:59:59.999999Z",
+      "S3Path": "/eodata/Sentinel-1/AUX/AUX_PP2/2014/04/06/S1A_AUX_PP2_V20140406T133000_G20251021T105030.SAFE.zip",
+      "Checksum": [
+        {
+          "Value": "efb620c026634f299dc63cc997bea784",
+          "Algorithm": "MD5",
+          "ChecksumDate": "2025-10-21T10:57:07.366955Z"
+        },
+        {
+          "Value": "f8c7bb722bf6f677c88cc576e7028f072e9cd694eb4cdf548e5ca157ddac45c0",
+          "Algorithm": "BLAKE3",
+          "ChecksumDate": "2025-10-21T10:57:07.392102Z"
+        }
+      ],
+      "ContentDate": {
+        "Start": "2014-04-06T13:30:00.000000Z",
+        "End": "2014-04-06T13:30:00.000000Z"
+      },
+      "Footprint": null,
+      "GeoFootprint": null,
+      "Attributes": [
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "origin",
+          "Value": "ESA",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "processingDate",
+          "Value": "2025-10-21T10:50:30.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "processingCenter",
+          "Value": "CLS-Brest",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformShortName",
+          "Value": "SENTINEL-1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "productGeneration",
+          "Value": "2025-10-21T10:50:30.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "instrumentShortName",
+          "Value": "AUX",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformSerialIdentifier",
+          "Value": "A",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.IntegerAttribute",
+          "Name": "instrumentConfigurationID",
+          "Value": 1,
+          "ValueType": "Integer"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "productType",
+          "Value": "AUX_PP2",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "beginningDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "endingDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        }
+      ]
+    },
+    {
+      "@odata.mediaContentType": "application/octet-stream",
+      "Id": "244a637a-2edf-11ef-9e13-fa163e75e309",
+      "Name": "S1__AUX_SCS_V20140406T133000_G20240620T081444.SAFE",
+      "ContentType": "application/octet-stream",
+      "ContentLength": 2330531719,
+      "OriginDate": "2024-06-20T08:28:59.320000Z",
+      "PublicationDate": "2024-06-20T08:30:31.114662Z",
+      "ModificationDate": "2025-10-10T17:56:44.222622Z",
+      "Online": true,
+      "EvictionDate": "9999-12-31T23:59:59.999999Z",
+      "S3Path": "/eodata/Sentinel-1/AUX/AUX_SCS/2014/04/06/S1__AUX_SCS_V20140406T133000_G20240620T081444.SAFE.zip",
+      "Checksum": [
+        {
+          "Value": "0a689b1679027b9026f82109d3a0f6ac",
+          "Algorithm": "MD5",
+          "ChecksumDate": "2025-10-10T17:56:13.740081Z"
+        },
+        {
+          "Value": "03fe18c0b8efade9cf24235fe5b3f1baa0e3809481993dbf722e93b669c17440",
+          "Algorithm": "BLAKE3",
+          "ChecksumDate": "2025-10-10T17:56:43.845584Z"
+        }
+      ],
+      "ContentDate": {
+        "Start": "2014-04-06T13:30:00.000000Z",
+        "End": "2014-04-06T13:30:00.000000Z"
+      },
+      "Footprint": null,
+      "GeoFootprint": null,
+      "Attributes": [
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "origin",
+          "Value": "ESA",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "processingDate",
+          "Value": "2024-06-20T08:14:44.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "processingCenter",
+          "Value": "CLS-Brest",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformShortName",
+          "Value": "SENTINEL-1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "productGeneration",
+          "Value": "2024-06-20T08:14:44.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "instrumentShortName",
+          "Value": "SAR",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformSerialIdentifier",
+          "Value": "_",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.IntegerAttribute",
+          "Name": "instrumentConfigurationID",
+          "Value": 0,
+          "ValueType": "Integer"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "productType",
+          "Value": "AUX_SCS",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "beginningDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "endingDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        }
+      ]
+    },
+    {
+      "@odata.mediaContentType": "application/octet-stream",
+      "Id": "2e0be82c-ab33-11ef-ae3b-fa163e75e309",
+      "Name": "S1A_AUX_PP1_V20140406T133000_G20241125T133722.SAFE",
+      "ContentType": "application/octet-stream",
+      "ContentLength": 30889,
+      "OriginDate": "2024-11-25T13:42:57.597000Z",
+      "PublicationDate": "2024-11-25T13:43:50.353146Z",
+      "ModificationDate": "2025-10-10T17:59:13.744028Z",
+      "Online": true,
+      "EvictionDate": "9999-12-31T23:59:59.999999Z",
+      "S3Path": "/eodata/Sentinel-1/AUX/AUX_PP1/2014/04/06/S1A_AUX_PP1_V20140406T133000_G20241125T133722.SAFE.zip",
+      "Checksum": [
+        {
+          "Value": "572fa116b39b63a8b489bfdcb63b72f4",
+          "Algorithm": "MD5",
+          "ChecksumDate": "2025-10-10T17:59:13.326111Z"
+        },
+        {
+          "Value": "f0db344bf331239519bf7cbed9b88aa7b887df60972663129d22def9d8bad8b5",
+          "Algorithm": "BLAKE3",
+          "ChecksumDate": "2025-10-10T17:59:13.347578Z"
+        }
+      ],
+      "ContentDate": {
+        "Start": "2014-04-06T13:30:00.000000Z",
+        "End": "2014-04-06T13:30:00.000000Z"
+      },
+      "Footprint": null,
+      "GeoFootprint": null,
+      "Attributes": [
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "origin",
+          "Value": "ESA",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "processingDate",
+          "Value": "2024-11-25T13:37:22.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "processingCenter",
+          "Value": "CLS-Brest",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformShortName",
+          "Value": "SENTINEL-1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "productGeneration",
+          "Value": "2024-11-25T13:37:22.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "instrumentShortName",
+          "Value": "SAR",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformSerialIdentifier",
+          "Value": "A",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.IntegerAttribute",
+          "Name": "instrumentConfigurationID",
+          "Value": 1,
+          "ValueType": "Integer"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "productType",
+          "Value": "AUX_PP1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "beginningDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "endingDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        }
+      ]
+    },
+    {
+      "@odata.mediaContentType": "application/octet-stream",
+      "Id": "44ca8f86-28c1-11ef-bb0a-fa163e75e309",
+      "Name": "S1__AUX_SCS_V20140406T133000_G20240612T132402.SAFE",
+      "ContentType": "application/octet-stream",
+      "ContentLength": 2330004686,
+      "OriginDate": "2024-06-12T13:40:01.968000Z",
+      "PublicationDate": "2024-06-12T13:41:47.352785Z",
+      "ModificationDate": "2025-10-10T17:57:01.351840Z",
+      "Online": true,
+      "EvictionDate": "9999-12-31T23:59:59.999999Z",
+      "S3Path": "/eodata/Sentinel-1/AUX/AUX_SCS/2014/04/06/S1__AUX_SCS_V20140406T133000_G20240612T132402.SAFE.zip",
+      "Checksum": [
+        {
+          "Value": "7f826324d54ba8861c85487218b5bb66",
+          "Algorithm": "MD5",
+          "ChecksumDate": "2025-10-10T17:56:21.428375Z"
+        },
+        {
+          "Value": "39541b6ae9cad47d0c275d78c41dd2a7f0d969e1418ecc82f8dbe3118556280f",
+          "Algorithm": "BLAKE3",
+          "ChecksumDate": "2025-10-10T17:57:00.687935Z"
+        }
+      ],
+      "ContentDate": {
+        "Start": "2014-04-06T13:30:00.000000Z",
+        "End": "2014-04-06T13:30:00.000000Z"
+      },
+      "Footprint": null,
+      "GeoFootprint": null,
+      "Attributes": [
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "origin",
+          "Value": "ESA",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "processingDate",
+          "Value": "2024-06-12T13:24:02.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "processingCenter",
+          "Value": "CLS-Brest",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformShortName",
+          "Value": "SENTINEL-1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "productGeneration",
+          "Value": "2024-06-12T13:24:02.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "instrumentShortName",
+          "Value": "SAR",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformSerialIdentifier",
+          "Value": "_",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.IntegerAttribute",
+          "Name": "instrumentConfigurationID",
+          "Value": 0,
+          "ValueType": "Integer"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "productType",
+          "Value": "AUX_SCS",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "beginningDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "endingDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        }
+      ]
+    },
+    {
+      "@odata.mediaContentType": "application/octet-stream",
+      "Id": "4f5ab1fe-f36b-11ef-8119-0050561a7772",
+      "Name": "S1A_AUX_INS_V20140406T133000_G20150504T145310.SAFE",
+      "ContentType": "application/octet-stream",
+      "ContentLength": 735152,
+      "OriginDate": "2021-03-15T16:14:09.302000Z",
+      "PublicationDate": "2025-07-17T11:54:56.231238Z",
+      "ModificationDate": "2025-10-10T17:56:16.871906Z",
+      "Online": true,
+      "EvictionDate": "9999-12-31T23:59:59.999999Z",
+      "S3Path": "/eodata/Sentinel-1/AUX/AUX_INS/2014/04/06/S1A_AUX_INS_V20140406T133000_G20150504T145310.SAFE.zip",
+      "Checksum": [
+        {
+          "Value": "2fed2fdfd06d783fbac536cbc4a18293",
+          "Algorithm": "MD5",
+          "ChecksumDate": "2025-10-10T17:56:16.480070Z"
+        },
+        {
+          "Value": "b423bdcf6b36ac33ba2874a6a53282345ba96939a36c59f4906d1c06a69ee852",
+          "Algorithm": "BLAKE3",
+          "ChecksumDate": "2025-10-10T17:56:16.503918Z"
+        }
+      ],
+      "ContentDate": {
+        "Start": "2014-04-06T13:30:00.000000Z",
+        "End": "2014-04-06T13:30:00.000000Z"
+      },
+      "Footprint": null,
+      "GeoFootprint": null,
+      "Attributes": [
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "origin",
+          "Value": "ESA",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "processingDate",
+          "Value": "2015-05-04T14:53:10.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "processingCenter",
+          "Value": "Brest",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformShortName",
+          "Value": "SENTINEL-1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "productGeneration",
+          "Value": "2015-05-04T14:53:10.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "instrumentShortName",
+          "Value": "AUX",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformSerialIdentifier",
+          "Value": "A",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.IntegerAttribute",
+          "Name": "instrumentConfigurationID",
+          "Value": 1,
+          "ValueType": "Integer"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "productType",
+          "Value": "AUX_INS",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "beginningDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "endingDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        }
+      ]
+    },
+    {
+      "@odata.mediaContentType": "application/octet-stream",
+      "Id": "52be1cd2-f36b-11ef-9bbf-0050561a7772",
+      "Name": "S1A_AUX_INS_V20140406T133000_G20160215T161024.SAFE",
+      "ContentType": "application/octet-stream",
+      "ContentLength": 735586,
+      "OriginDate": "2021-03-15T16:26:58.853000Z",
+      "PublicationDate": "2025-07-17T11:55:06.582216Z",
+      "ModificationDate": "2025-10-10T17:56:18.298213Z",
+      "Online": true,
+      "EvictionDate": "9999-12-31T23:59:59.999999Z",
+      "S3Path": "/eodata/Sentinel-1/AUX/AUX_INS/2014/04/06/S1A_AUX_INS_V20140406T133000_G20160215T161024.SAFE.zip",
+      "Checksum": [
+        {
+          "Value": "1e9016e1f2474e05aaa02932a25f65ef",
+          "Algorithm": "MD5",
+          "ChecksumDate": "2025-10-10T17:56:17.850040Z"
+        },
+        {
+          "Value": "472183fcf503f7f55bffd4eb8e15bd5940d3e3456cd9d5f68fcb01e40af0fd9c",
+          "Algorithm": "BLAKE3",
+          "ChecksumDate": "2025-10-10T17:56:17.871788Z"
+        }
+      ],
+      "ContentDate": {
+        "Start": "2014-04-06T13:30:00.000000Z",
+        "End": "2014-04-06T13:30:00.000000Z"
+      },
+      "Footprint": null,
+      "GeoFootprint": null,
+      "Attributes": [
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "origin",
+          "Value": "ESA",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "processingDate",
+          "Value": "2016-02-15T16:10:24.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "processingCenter",
+          "Value": "Brest",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformShortName",
+          "Value": "SENTINEL-1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "productGeneration",
+          "Value": "2016-02-15T16:10:24.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "instrumentShortName",
+          "Value": "AUX",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformSerialIdentifier",
+          "Value": "A",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.IntegerAttribute",
+          "Name": "instrumentConfigurationID",
+          "Value": 1,
+          "ValueType": "Integer"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "productType",
+          "Value": "AUX_INS",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "beginningDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "endingDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        }
+      ]
+    },
+    {
+      "@odata.mediaContentType": "application/octet-stream",
+      "Id": "563d4403-6601-4d77-ae55-b0efe321627a",
+      "Name": "S1A_AUX_ML2_V20140406T133000_G20251015T074324.SAFE",
+      "ContentType": "application/octet-stream",
+      "ContentLength": 131112741,
+      "OriginDate": "2025-10-15T07:45:00.552000Z",
+      "PublicationDate": "2025-10-15T07:46:14.022427Z",
+      "ModificationDate": "2025-10-15T07:46:14.022427Z",
+      "Online": true,
+      "EvictionDate": "9999-12-31T23:59:59.999999Z",
+      "S3Path": "/eodata/Sentinel-1/AUX/AUX_ML2/2014/04/06/S1A_AUX_ML2_V20140406T133000_G20251015T074324.SAFE.zip",
+      "Checksum": [
+        {
+          "Value": "57382b6ef3ba5620c55b42eca5639035",
+          "Algorithm": "MD5",
+          "ChecksumDate": "2025-10-15T07:46:12.378209Z"
+        },
+        {
+          "Value": "bc089a9cb31322259110e6a93a2211668efd90b43185e59e203201fc81e5650a",
+          "Algorithm": "BLAKE3",
+          "ChecksumDate": "2025-10-15T07:46:12.589837Z"
+        }
+      ],
+      "ContentDate": {
+        "Start": "2014-04-06T13:30:00.000000Z",
+        "End": "2014-04-06T13:30:00.000000Z"
+      },
+      "Footprint": null,
+      "GeoFootprint": null,
+      "Attributes": [
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "origin",
+          "Value": "ESA",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "processingDate",
+          "Value": "2025-10-15T07:43:24.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "processingCenter",
+          "Value": "CLS-Brest",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformShortName",
+          "Value": "SENTINEL-1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "productGeneration",
+          "Value": "2025-10-15T07:43:24.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "instrumentShortName",
+          "Value": "AUX",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformSerialIdentifier",
+          "Value": "A",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.IntegerAttribute",
+          "Name": "instrumentConfigurationID",
+          "Value": 1,
+          "ValueType": "Integer"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "productType",
+          "Value": "AUX_ML2",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "beginningDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "endingDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        }
+      ]
+    },
+    {
+      "@odata.mediaContentType": "application/octet-stream",
+      "Id": "56b4e0c0-ab34-11ef-91a2-fa163e75e309",
+      "Name": "S1A_AUX_PP2_V20140406T133000_G20241125T134251.SAFE",
+      "ContentType": "application/octet-stream",
+      "ContentLength": 14420,
+      "OriginDate": "2024-11-25T13:51:15.307000Z",
+      "PublicationDate": "2024-11-25T13:51:50.821487Z",
+      "ModificationDate": "2025-10-10T17:56:18.251027Z",
+      "Online": true,
+      "EvictionDate": "9999-12-31T23:59:59.999999Z",
+      "S3Path": "/eodata/Sentinel-1/AUX/AUX_PP2/2014/04/06/S1A_AUX_PP2_V20140406T133000_G20241125T134251.SAFE.zip",
+      "Checksum": [
+        {
+          "Value": "0c0abaa5364be20f9161a6c25461e57b",
+          "Algorithm": "MD5",
+          "ChecksumDate": "2025-10-10T17:56:17.836038Z"
+        },
+        {
+          "Value": "3dc7d9ad653f89472a145f0a71c204be8c1991a99b3536481eef1c4216949f03",
+          "Algorithm": "BLAKE3",
+          "ChecksumDate": "2025-10-10T17:56:17.862899Z"
+        }
+      ],
+      "ContentDate": {
+        "Start": "2014-04-06T13:30:00.000000Z",
+        "End": "2014-04-06T13:30:00.000000Z"
+      },
+      "Footprint": null,
+      "GeoFootprint": null,
+      "Attributes": [
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "origin",
+          "Value": "ESA",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "processingDate",
+          "Value": "2024-11-25T13:42:51.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "processingCenter",
+          "Value": "CLS-Brest",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformShortName",
+          "Value": "SENTINEL-1",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "productGeneration",
+          "Value": "2024-11-25T13:42:51.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "instrumentShortName",
+          "Value": "SAR",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "platformSerialIdentifier",
+          "Value": "A",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.IntegerAttribute",
+          "Name": "instrumentConfigurationID",
+          "Value": 1,
+          "ValueType": "Integer"
+        },
+        {
+          "@odata.type": "#OData.CSC.StringAttribute",
+          "Name": "productType",
+          "Value": "AUX_PP2",
+          "ValueType": "String"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "beginningDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        },
+        {
+          "@odata.type": "#OData.CSC.DateTimeOffsetAttribute",
+          "Name": "endingDateTime",
+          "Value": "2014-04-06T13:30:00.000000Z",
+          "ValueType": "DateTimeOffset"
+        }
+      ]
+    }
+  ],
+  "@odata.nextLink": "https://catalogue.dataspace.copernicus.eu/odata/v1/Products?%24filter=Collection%2FName+eq+%27SENTINEL-1%27+and+ContentDate%2FStart+gt+2014-04-05T00%3A00%3A00.000Z+and+ContentDate%2FStart+lt+2014-04-14T00%3A00%3A00.000000Z&%24top=10&%24count=true&%24expand=Attributes&%24orderby=ContentDate%2FStart+asc&%24skip=10"
+}

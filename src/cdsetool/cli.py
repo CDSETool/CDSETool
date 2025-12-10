@@ -11,7 +11,12 @@ import typer
 
 from cdsetool.download import download_features
 from cdsetool.monitor import StatusMonitor
-from cdsetool.query import describe_collection, query_features
+from cdsetool.query import (
+    SearchTermValue,
+    describe_collection,
+    describe_search_terms,
+    query_features,
+)
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -19,25 +24,48 @@ query_app = typer.Typer(no_args_is_help=True)
 app.add_typer(query_app, name="query")
 
 
+def _format_attributes(attributes: Dict[str, Dict[str, str]]) -> str:
+    """Format attribute details into a readable string."""
+    lines = []
+    for key, attr in attributes.items():
+        lines.append(f"  - {key}")
+        if title := attr.get("title"):
+            lines.append(f"      Description: {title}")
+        if attribute_type := attr.get("type"):
+            lines.append(f"      Type: {attribute_type}")
+        if example := attr.get("example"):
+            lines.append(f"      Example: {example}")
+    return "\n".join(lines)
+
+
 @query_app.command("search-terms")
-def query_search_terms(collection: str) -> None:
+def query_search_terms(
+    collection: Annotated[
+        Optional[str],
+        typer.Argument(
+            help="Collection name (e.g., SENTINEL-1, SENTINEL-2). "
+            "If omitted, shows only builtin parameters without querying the server."
+        ),
+    ] = None,
+) -> None:
     """
     List the available search terms for a collection
     """
-    print(f"Available search terms for collection {collection}:")
-    # TODO: print validators
-    for key, attributes in describe_collection(collection).items():
-        print(f"  - {key}")
-        if attributes.get("title"):
-            print(f"    - Description: {attributes.get('title')}")
-        if attributes.get("pattern"):
-            print(f"    - Pattern: {attributes.get('pattern')}")
-        if attributes.get("minInclusive"):
-            print(f"    - Min: {attributes.get('minInclusive')}")
-        if attributes.get("maxInclusive"):
-            print(f"    - Max: {attributes.get('maxInclusive')}")
-
+    if collection is None:
+        # No collection specified - show only builtin params (no API call)
+        print("Builtin search terms (use with --search-term):")
         print()
+        print(_format_attributes(describe_search_terms()))
+        print()
+        print("Specify a collection name to see collection-specific attributes.")
+    else:
+        # Collection specified - fetch from API and show all supported params
+        print(f"Search terms for collection {collection}:")
+        print()
+        if search_terms := describe_collection(collection):
+            print(_format_attributes(search_terms))
+        else:
+            print("  (none)")
 
 
 # TODO: implement limit
@@ -63,7 +91,7 @@ def query_search(
         if json:
             print(JSON.dumps(feature))
         else:
-            print(feature.get("properties").get("title"))
+            print(feature.get("Name"))
 
 
 # TODO: implement limit
@@ -125,10 +153,10 @@ def main():
     app()
 
 
-def _to_dict(term_list: List[str]) -> Dict[str, str]:
+def _to_dict(term_list: List[str]) -> Dict[str, SearchTermValue]:
     search_terms = {}
     for item in term_list:
-        key, value = item.split("=")
+        key, value = item.split("=", 1)  # Split on first = only
         search_terms[key] = value
     return search_terms
 
