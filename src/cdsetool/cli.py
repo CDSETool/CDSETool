@@ -5,10 +5,9 @@ Command line interface
 import json as JSON
 import os
 import sys
-from typing import Dict, List, Optional
+from typing import Annotated, Dict, List, Optional
 
 import typer
-from typing_extensions import Annotated
 
 from cdsetool.download import download_features
 from cdsetool.monitor import StatusMonitor
