@@ -3,14 +3,11 @@ This module provides a class for handling credentials for
 the Copernicus Identity and Access Management (IAM) system.
 """
 
-import netrc
-import threading
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 
 import jwt
 import requests
-from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 
@@ -86,6 +83,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         openid_configuration_endpoint: Union[str, None] = None,
         proxies: Union[Dict[str, str], None] = None,
     ) -> None:
+        import threading
+
         self.__username: Union[str, None] = username
         self.__password: Union[str, None] = password
 
@@ -127,6 +126,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
         Creates a new session. Authorization is only available from callers
         that are subclasses of Credentials.
         """
+        from requests.adapters import HTTPAdapter
+
         if authorization:
             caller.__ensure_tokens()  # pylint: disable=protected-access
 
@@ -215,6 +216,8 @@ class Credentials:  # pylint: disable=too-few-public-methods disable=too-many-in
                 )
 
     def __read_credentials(self) -> None:
+        import netrc
+
         rv = netrc.netrc().authenticators(self.__token_endpoint)
         if isinstance(rv, tuple):
             self.__username, _, self.__password = rv
