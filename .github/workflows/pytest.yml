@@ -6,8 +6,7 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   pytest:
@@ -15,13 +14,10 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-    permissions:
-      pull-requests: write
-      contents: write
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -32,7 +28,7 @@ jobs:
       run: |
         pytest --cov=cdsetool --cov-report xml
 #     - name: Python Coverage
-#       uses: orgoro/coverage@v3.1
+#       uses: orgoro/coverage@3f13a558c5af7376496aa4848bf0224aead366ac # v3.2
 #       with:
 #           coverageFile: coverage.xml
 #           token: ${{ secrets.GITHUB_TOKEN }}

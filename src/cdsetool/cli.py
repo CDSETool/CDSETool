@@ -5,10 +5,9 @@ Command line interface
 import json as JSON
 import os
 import sys
-from typing import Dict, List, Optional
+from typing import Annotated, Dict, List, Optional
 
 import typer
-from typing_extensions import Annotated
 
 from cdsetool.download import download_features
 from cdsetool.monitor import StatusMonitor
@@ -88,7 +87,7 @@ def query_search(
 
 # TODO: implement limit
 @app.command("download")
-def download(
+def download(  # pylint: disable=[too-many-arguments, too-many-positional-arguments]
     collection: str,
     path: str,
     concurrency: Annotated[
@@ -105,6 +104,15 @@ def download(
         typer.Option(
             help="Search by term=value pairs. "
             + "Pass multiple times for multiple search terms"
+        ),
+    ] = None,
+    filter_pattern: Annotated[
+        Optional[str],
+        typer.Option(
+            help=(
+                "Download specific files within product bundles using OData API's node"
+                " filtering functionality"
+            )
         ),
     ] = None,
 ) -> None:
@@ -129,6 +137,7 @@ def download(
                 "monitor": StatusMonitor(),
                 "concurrency": concurrency,
                 "overwrite_existing": overwrite_existing,
+                "filter_pattern": filter_pattern,
             },
         )
     )
