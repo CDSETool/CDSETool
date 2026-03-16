@@ -1,3 +1,5 @@
+"""Tests for CDSETool's credentials module."""
+
 # pyright: reportAttributeAccessIssue=false
 
 import datetime

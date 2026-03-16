@@ -9,6 +9,7 @@ import pytest
 
 from cdsetool.credentials import Credentials
 from cdsetool.download import (
+    _get_feature_url,
     _get_odata_url,
     download_feature,
     download_file,
@@ -25,7 +26,20 @@ def mock_download_file(url: str, path: str, options: Dict[str, Any]) -> bool:
     return True
 
 
+def test_get_feature_url() -> None:
+    """Test full product OData download URL generation."""
+    feature = {"Id": "a6215824-704b-46d7-a2ec-efea4e468668"}
+    expected_url = (
+        "https://download.dataspace.copernicus.eu/odata/v1/"
+        "Products(a6215824-704b-46d7-a2ec-efea4e468668)/$value"
+    )
+    assert _get_feature_url(feature) == expected_url
+    assert _get_feature_url({}) == ""
+    assert _get_feature_url({"Id": None}) == ""
+
+
 def test_get_odata_url() -> None:
+    """Test individual file OData download URL generation."""
     product_id = "a6215824-704b-46d7-a2ec-efea4e468668"
     product_name = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
     href = "path/to/resource.xml"
@@ -171,12 +185,10 @@ def test_download_file_failure(requests_mock: Any, mocker: Any, tmp_path: Path) 
 def test_download_feature(mocker: Any, tmp_path: Path) -> None:
     title = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
     mock_feature = {
-        "id": "a6215824-704b-46d7-a2ec-efea4e468668",
-        "properties": {
-            "title": title,
-            "collection": "SENTINEL-2",
-            "services": {"download": {"url": "http://example.com"}},
-        },
+        "Id": "a6215824-704b-46d7-a2ec-efea4e468668",
+        "Name": title,
+        "ContentLength": 1000,
+        "Online": True,
     }
     mocker.patch("cdsetool.download.download_file", mock_download_file)
 
@@ -189,12 +201,10 @@ def test_download_feature(mocker: Any, tmp_path: Path) -> None:
 def test_download_feature_failure(mocker: Any, tmp_path: Path) -> None:
     title = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
     mock_feature = {
-        "id": "a6215824-704b-46d7-a2ec-efea4e468668",
-        "properties": {
-            "title": title,
-            "collection": "SENTINEL-2",
-            "services": {"download": {"url": "http://example.com"}},
-        },
+        "Id": "a6215824-704b-46d7-a2ec-efea4e468668",
+        "Name": title,
+        "ContentLength": 1000,
+        "Online": True,
     }
     mocker.patch(
         "cdsetool.download.download_file", side_effect=lambda url, path, options: None
@@ -209,8 +219,11 @@ def test_download_feature_with_filter(mocker: Any, tmp_path: Path) -> None:
     options = {"filter_pattern": "*.jp2"}
     title = "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE"
     mock_feature = {
-        "id": "a6215824-704b-46d7-a2ec-efea4e468668",
-        "properties": {"title": title, "collection": "SENTINEL-2"},
+        "Id": "a6215824-704b-46d7-a2ec-efea4e468668",
+        "Name": title,
+        "ContentLength": 1000,
+        "Online": True,
+        "Collection": "SENTINEL-2",
     }
     mocker.patch(
         "cdsetool.download.filter_files",
@@ -220,7 +233,7 @@ def test_download_feature_with_filter(mocker: Any, tmp_path: Path) -> None:
 
     final_dir = str(tmp_path / "test_download_feature_with_filter")
     product_name = download_feature(mock_feature, final_dir, options)
-    assert product_name == mock_feature["properties"]["title"]
+    assert product_name == mock_feature["Name"]
     assert os.path.exists(os.path.join(final_dir, title, "GRANULE", "file1.jp2"))
     assert os.path.exists(os.path.join(final_dir, title, "GRANULE", "file2.jp2"))
 
@@ -228,11 +241,11 @@ def test_download_feature_with_filter(mocker: Any, tmp_path: Path) -> None:
 def test_download_feature_with_filter_failure(mocker: Any, tmp_path: Path) -> None:
     options = {"filter_pattern": "*.jp2"}
     mock_feature = {
-        "id": "a6215824-704b-46d7-a2ec-efea4e468668",
-        "properties": {
-            "title": "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE",
-            "collection": "SENTINEL-2",
-        },
+        "Id": "a6215824-704b-46d7-a2ec-efea4e468668",
+        "Name": "S2B_MSIL1C_20241209T162609_N0511_R040_T17UPV_20241209T195414.SAFE",
+        "ContentLength": 1000,
+        "Online": True,
+        "Collection": "SENTINEL-2",
     }
     mocker.patch(
         "cdsetool.download.filter_files",
@@ -252,8 +265,11 @@ def test_download_feature_with_filter_unsupported_coll(
 ) -> None:
     options = {"logger": logging.getLogger(__name__), "filter_pattern": "*MTL.txt"}
     mock_feature = {
-        "id": "a6215824-704b-46d7-a2ec-efea4e468668",
-        "properties": {"title": "L8XXX", "collection": "Landsat8"},
+        "Id": "a6215824-704b-46d7-a2ec-efea4e468668",
+        "Name": "L8XXX",
+        "ContentLength": 1000,
+        "Online": True,
+        "Collection": "Landsat8",
     }
 
     final_dir = str(tmp_path / "test_download_feature_with_filter_unsupported_coll")
@@ -261,5 +277,5 @@ def test_download_feature_with_filter_unsupported_coll(
     assert product_name is None
     assert (
         "No support for downloading individual files in "
-        f"{mock_feature['properties']['collection']} products"
+        f"{mock_feature['Collection']} products"
     ) in caplog.text

@@ -1,0 +1,130 @@
+[
+  {
+    "Name": "productType",
+    "ValueType": "String"
+  },
+  {
+    "Name": "origin",
+    "ValueType": "String"
+  },
+  {
+    "Name": "datatakeID",
+    "ValueType": "Integer"
+  },
+  {
+    "Name": "timeliness",
+    "ValueType": "String"
+  },
+  {
+    "Name": "coordinates",
+    "ValueType": "String"
+  },
+  {
+    "Name": "cycleNumber",
+    "ValueType": "Integer"
+  },
+  {
+    "Name": "orbitNumber",
+    "ValueType": "Integer"
+  },
+  {
+    "Name": "sliceNumber",
+    "ValueType": "Integer"
+  },
+  {
+    "Name": "totalSlices",
+    "ValueType": "Integer"
+  },
+  {
+    "Name": "productClass",
+    "ValueType": "String"
+  },
+  {
+    "Name": "processorName",
+    "ValueType": "String"
+  },
+  {
+    "Name": "orbitDirection",
+    "ValueType": "String"
+  },
+  {
+    "Name": "processingDate",
+    "ValueType": "DateTimeOffset"
+  },
+  {
+    "Name": "operationalMode",
+    "ValueType": "String"
+  },
+  {
+    "Name": "processingLevel",
+    "ValueType": "String"
+  },
+  {
+    "Name": "swathIdentifier",
+    "ValueType": "String"
+  },
+  {
+    "Name": "processingCenter",
+    "ValueType": "String"
+  },
+  {
+    "Name": "processorVersion",
+    "ValueType": "String"
+  },
+  {
+    "Name": "segmentStartTime",
+    "ValueType": "DateTimeOffset"
+  },
+  {
+    "Name": "sliceProductFlag",
+    "ValueType": "Boolean"
+  },
+  {
+    "Name": "platformShortName",
+    "ValueType": "String"
+  },
+  {
+    "Name": "productGeneration",
+    "ValueType": "DateTimeOffset"
+  },
+  {
+    "Name": "processingBaseline",
+    "ValueType": "String"
+  },
+  {
+    "Name": "productComposition",
+    "ValueType": "String"
+  },
+  {
+    "Name": "instrumentShortName",
+    "ValueType": "String"
+  },
+  {
+    "Name": "relativeOrbitNumber",
+    "ValueType": "Integer"
+  },
+  {
+    "Name": "polarisationChannels",
+    "ValueType": "String"
+  },
+  {
+    "Name": "productConsolidation",
+    "ValueType": "String"
+  },
+  {
+    "Name": "platformSerialIdentifier",
+    "ValueType": "String"
+  },
+  {
+    "Name": "instrumentConfigurationID",
+    "ValueType": "Integer"
+  },
+  {
+    "Name": "startTimeFromAscendingNode",
+    "ValueType": "Double"
+  },
+  {
+    "Name": "completionTimeFromAscendingNode",
+    "ValueType": "Double"
+  }
+]
