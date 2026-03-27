@@ -141,6 +141,7 @@ def download(  # pylint: disable=[too-many-arguments, too-many-positional-argume
                 "concurrency": concurrency,
                 "overwrite_existing": overwrite_existing,
                 "filter_pattern": filter_pattern,
+                "download_attempts": 1,
             },
         )
     )
