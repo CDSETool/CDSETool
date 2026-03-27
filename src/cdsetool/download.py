@@ -80,11 +80,12 @@ def download_file(url: str, path: Path, options: Dict[str, Any]) -> bool:
     """
     log = _get_logger(options)
     filename = path.name
+    max_attempts = options.get("download_attempts", 10)
 
     with _get_monitor(options).status() as status:
         status.set_filename(filename)
         attempts = 0
-        while attempts < 10:
+        while attempts < max_attempts:
             attempts += 1
             # Always get a new session, credentials might have expired.
             try:
