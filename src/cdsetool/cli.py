@@ -85,7 +85,9 @@ def query_search(
     Search for features matching the search terms
     """
     search_term = search_term or []
-    features = query_features(collection, _to_dict(search_term))
+    features = query_features(
+        collection, _to_dict(search_term), options={"max_attempts": 1}
+    )
 
     for feature in features:
         if json:
@@ -130,7 +132,9 @@ def download(  # pylint: disable=[too-many-arguments, too-many-positional-argume
         sys.exit(1)
 
     search_term = search_term or []
-    features = query_features(collection, _to_dict(search_term))
+    features = query_features(
+        collection, _to_dict(search_term), options={"max_attempts": 1}
+    )
 
     list(
         download_features(
