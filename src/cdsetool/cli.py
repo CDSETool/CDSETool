@@ -132,7 +132,7 @@ def download(  # pylint: disable=[too-many-arguments, too-many-positional-argume
     search_term = search_term or []
     features = query_features(collection, _to_dict(search_term))
 
-    list(
+    results = list(
         download_features(
             features,
             path,
@@ -145,6 +145,8 @@ def download(  # pylint: disable=[too-many-arguments, too-many-positional-argume
             },
         )
     )
+    downloaded = sum(1 for item in results if item is not None)
+    print(f"Successfully downloaded {downloaded}/{len(results)} feature(s)")
 
 
 def main():
