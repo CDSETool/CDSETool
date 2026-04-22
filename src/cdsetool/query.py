@@ -164,14 +164,16 @@ class FeatureQuery:  # pylint: disable=too-many-instance-attributes
         proxies: Union[Dict[str, str], None] = None,
         options: Union[Dict[str, Any], None] = None,
     ) -> None:
+        opts = options or {}
         self.total_results = -1
         self.features: List[Dict[str, Any]] = []
         self.proxies = proxies
-        self.log = (options or {}).get("logger") or NoopLogger()
+        self._max_attempts = opts.get("max_attempts", 10)
+        self.log = opts.get("logger") or NoopLogger()
         self.collection = collection
         self.search_terms = search_terms
         # Option to expand Attributes for product metadata (default: False)
-        self.expand_attributes = (options or {}).get("expand_attributes", False)
+        self.expand_attributes = opts.get("expand_attributes", False)
         self._initial_skip = _to_int(search_terms.get("skip", 0))
         self._top = _to_int(search_terms.get("top", MAX_BATCH_SIZE))
         if self._top > MAX_BATCH_SIZE:
@@ -225,16 +227,19 @@ class FeatureQuery:  # pylint: disable=too-many-instance-attributes
             None, False, Credentials.RETRIES, self.proxies
         )
         attempts = 0
-        while attempts < 10:
+        while attempts < self._max_attempts:
             attempts += 1
             try:
                 assert self.next_url is not None  # for type checker
                 with session.get(self.next_url) as response:
                     if response.status_code != 200:
+                        retrying = attempts < self._max_attempts
                         self.log.warning(
-                            f"Status code {response.status_code}, retrying.."
+                            f"Status code {response.status_code}, "
+                            f"{'retrying...' if retrying else 'aborting'}"
                         )
-                        sleep(60 * (1 + (random() / 4)))
+                        if retrying:
+                            sleep(60 * (1 + (random() / 4)))
                         continue
                     odata_response = response.json()
                     products = odata_response.get("value", [])

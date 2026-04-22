@@ -99,8 +99,13 @@ def download_file(url: str, path: Path, options: Dict[str, Any]) -> bool:
             url = _follow_redirect(url, session)
             with session.get(url, stream=True) as response:
                 if response.status_code != 200:
-                    log.warning(f"Status code {response.status_code}, retrying..")
-                    time.sleep(60 * (1 + (random.random() / 4)))
+                    retrying = attempts < max_attempts
+                    log.warning(
+                        f"Status code {response.status_code}, "
+                        f"{'retrying...' if retrying else 'aborting'}"
+                    )
+                    if retrying:
+                        time.sleep(60 * (1 + (random.random() / 4)))
                     continue
 
                 status.set_filesize(int(response.headers["Content-Length"]))
