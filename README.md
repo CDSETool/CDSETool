@@ -130,8 +130,8 @@ product = {
     "Attributes": [
         {"Name": "productType", "Value": "S2MSI2A"},
         {"Name": "cloudCover", "Value": 5.2},
-        ...
-    ]
+        ...,
+    ],
 }
 ```
 
@@ -145,13 +145,13 @@ from cdsetool.query import query_features, get_product_attribute
 features = query_features(
     "SENTINEL-2",
     {"contentDateStartGe": "2024-01-01"},
-    options={"expand_attributes": True}
+    options={"expand_attributes": True},
 )
 feature = features[0]
 
 # Access basic properties directly
 print(feature["Name"])  # Product name
-print(feature["Id"])    # Product UUID
+print(feature["Id"])  # Product UUID
 
 # Access attributes using helper function
 cloud_cover = get_product_attribute(feature, "cloudCover")
@@ -215,10 +215,19 @@ Interval syntax is only allowed on the base name, not on suffixed variants, and 
 from cdsetool.query import query_features
 from datetime import date, datetime
 
-date_from = date(2020, 1, 1) # or datetime(2020, 1, 1, 23, 59, 59, 123456) or "2020-01-01" or "2020-01-01T23:59:59.123456Z"
+date_from = date(
+    2020, 1, 1
+)  # or datetime(2020, 1, 1, 23, 59, 59, 123456) or "2020-01-01" or "2020-01-01T23:59:59.123456Z"
 date_to = date(2020, 12, 31)
 
-features = query_features("SENTINEL-2", {"contentDateStartGe": date_from, "contentDateStartLe": date_to, "cloudCover": "[0, 30]"})
+features = query_features(
+    "SENTINEL-2",
+    {
+        "contentDateStartGe": date_from,
+        "contentDateStartLe": date_to,
+        "cloudCover": "[0, 30]",
+    },
+)
 ```
 
 #### Listing search terms
@@ -282,7 +291,7 @@ Credentials can be validated using the `validate_credentials` function which wil
 ```python
 from cdsetool.credentials import validate_credentials
 
-validate_credentials(username='user', password='password')
+validate_credentials(username="user", password="password")
 ```
 
 If None are passed to username and password, `validate_credentials` will validate `.netrc`
@@ -299,7 +308,10 @@ The downloaded feature ids are yielded, so its required to await the results.
 from cdsetool.query import query_features
 from cdsetool.download import download_features
 
-features = query_features("SENTINEL-2", {"contentDateStartGe": "2024-01-01", "contentDateStartLe": "2024-01-10"})
+features = query_features(
+    "SENTINEL-2",
+    {"contentDateStartGe": "2024-01-01", "contentDateStartLe": "2024-01-10"},
+)
 
 download_path = "/path/to/download/folder"
 downloads = download_features(features, download_path, {"concurrency": 4})
@@ -320,7 +332,10 @@ Its possible to download features sequentially in a single thread if desired.
 from cdsetool.query import query_features
 from cdsetool.download import download_feature
 
-features = query_features("SENTINEL-2", {"contentDateStartGe": "2024-01-01", "contentDateStartLe": "2024-01-10"})
+features = query_features(
+    "SENTINEL-2",
+    {"contentDateStartGe": "2024-01-01", "contentDateStartLe": "2024-01-10"},
+)
 
 download_path = "/path/to/download/folder"
 for feature in features:
@@ -338,11 +353,16 @@ It can be used in CDSETool:
     from cdsetool.query import query_features
     from cdsetool.download import download_features
 
-    features = query_features("SENTINEL-2", {"contentDateStartGe": "2024-01-01", "contentDateStartLe": "2024-01-10"})
+    features = query_features(
+        "SENTINEL-2",
+        {"contentDateStartGe": "2024-01-01", "contentDateStartLe": "2024-01-10"},
+    )
 
     download_path = "/path/to/download/folder"
     filter_pattern = "*TCI.jp2"
-    downloads = download_features(features, download_path, {"filter_pattern": filter_pattern})
+    downloads = download_features(
+        features, download_path, {"filter_pattern": filter_pattern}
+    )
 
     for id in downloads:
         print(f"feature {id} downloaded")
