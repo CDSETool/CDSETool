@@ -94,21 +94,6 @@ def mock_token(requests_mock: Any) -> None:
 
 
 def mock_jwks(mocker: Any) -> None:
-    class MockResponse:
-        def __init__(self, json_data) -> None:
-            self.json_data = json_data
-
-        def __enter__(self) -> "MockResponse":
-            return self
-
-        def read(self) -> bytes:
-            return json.dumps(self.json_data).encode("utf-8")
-
-        def __exit__(
-            self, exc_type: object, exc_value: object, traceback: object
-        ) -> None:
-            pass
-
     n = private_key.public_key().public_numbers().n
     e = private_key.public_key().public_numbers().e
     n = base64.urlsafe_b64encode(
@@ -130,4 +115,6 @@ def mock_jwks(mocker: Any) -> None:
             }
         ]
     }
-    mocker.patch("urllib.request.urlopen", return_value=MockResponse(jwks))
+    # Patch PyJWT's own fetch hook rather than urllib: PyJWT 2.14 stopped
+    # calling urllib.request.urlopen when it began rejecting redirects.
+    mocker.patch("jwt.PyJWKClient.fetch_data", return_value=jwks)
