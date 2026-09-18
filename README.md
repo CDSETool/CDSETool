@@ -70,7 +70,7 @@ cdsetool download SENTINEL-2 PATH/TO/DIR --concurrency 4 --search-term contentDa
 Install `cdsetool` using pip:
 
 ```bash
-pip install cdsetool==0.3.1
+pip install cdsetool==0.3.2
 ```
 
 ## Usage
