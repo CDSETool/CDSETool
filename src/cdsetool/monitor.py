@@ -16,17 +16,12 @@ import threading
 import time
 from typing import List, Tuple, Union
 
-IS_IPYTHON = True
-
 try:
     from IPython import get_ipython  # type:ignore[reportMissingImports]
     from IPython.display import clear_output  # type:ignore[reportMissingImports]
 
-    if "IPKernelApp" not in get_ipython().config:
-        IS_IPYTHON = False
-except ImportError:
-    IS_IPYTHON = False
-except AttributeError:
+    IS_IPYTHON = "IPKernelApp" in get_ipython().config
+except (ImportError, AttributeError):
     IS_IPYTHON = False
 
 
