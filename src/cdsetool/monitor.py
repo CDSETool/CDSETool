@@ -51,6 +51,13 @@ class StatusMonitor(threading.Thread):
     __done = []
     __status = []
 
+    def __init__(self) -> None:
+        # Run as a daemon thread. The monitor loop only exits once stop() flips
+        # __is_running, so if a download raises before stop() is reached the
+        # interpreter would otherwise block forever joining this thread at exit,
+        # turning a hard error into a silent hang.
+        super().__init__(daemon=True)
+
     def start(self) -> None:
         """
         Start the monitor
